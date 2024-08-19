@@ -1,8 +1,7 @@
 package com.systextil.relatorio.controller;
 
-import com.systextil.relatorio.cliente.Cliente;
 import com.systextil.relatorio.cliente.ClienteRepository;
-import com.systextil.relatorio.cliente.ClienteRepositoryImpl;
+import com.systextil.relatorio.cliente.RepositoryImpl;
 import com.systextil.relatorio.notaFiscal.NotaFiscalRepository;
 import com.systextil.relatorio.service.Conversor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("procurar")
@@ -26,19 +26,25 @@ public class Controller {
 
     @GetMapping
     public List<Object[]> retornaCliente() {
-        ClienteRepositoryImpl repository = new ClienteRepositoryImpl();
+        RepositoryImpl repository = new RepositoryImpl();
         List<String> colunas = new ArrayList<String>();
-        colunas.add("cpf");
-        colunas.add("nome");
-        colunas.add("data_nascimento");
+        String tabela = "nota_fiscal";
+        colunas.add("numero");
+        colunas.add("valor");
         String stringColunas = Conversor.listToQuery(colunas);
         List<Object[]> clientesEncontrados = null;
         try {
-            clientesEncontrados = repository.findClientesByColumns(stringColunas);
+            clientesEncontrados = repository.findObjectByColumns(stringColunas, tabela);
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
         return clientesEncontrados;
+    }
+
+    @GetMapping("tabela")
+    public Map<String, String[]> getTablesAndColumns() throws Exception {
+        RepositoryImpl repository = new RepositoryImpl();
+        return repository.getTablesAndColumns();
     }
 
 }
