@@ -32,4 +32,20 @@ public class Cliente {
     public LocalDate getDataNascimento() {
         return dataNascimento;
     }
+
+    public void setCpf(String cpf) {
+        this.cpf = cpf;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public void setCep(String cep) {
+        this.cep = cep;
+    }
+
+    public void setDataNascimento(LocalDate dataNascimento) {
+        this.dataNascimento = dataNascimento;
+    }
 }
