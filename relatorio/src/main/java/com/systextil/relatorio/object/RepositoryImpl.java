@@ -16,11 +16,10 @@ public class RepositoryImpl {
 
     private ConexaoMySql conexao;
 
-    public ArrayList<Object[]> findObjectByColumns(String colunas, String tabela) throws SQLException, ClassNotFoundException {
+    public ArrayList<Object[]> findObjectByColumns(String sql) throws SQLException, ClassNotFoundException {
         conexao = new ConexaoMySql();
         conexao.conectar();
 
-        String sql = "SELECT " + colunas + " FROM " + tabela;
         PreparedStatement comando = conexao.getIdConexao().prepareStatement(sql);
         ResultSet dados = comando.executeQuery();
         ArrayList<Object[]> listObjects = new ArrayList<>();

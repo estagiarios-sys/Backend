@@ -32,12 +32,23 @@ public class Controller {
         List<String> colunas = new ArrayList<String>();
         colunas.add("cpf");
         colunas.add("nome");
-        String stringColunas = Conversor.listToQuery(colunas);
+        colunas.add("valor");
+
+        //String where = "";
+        String where = "data_nascimento > '2003-01-01'";
+
+        //String orderBy = "";
+        String orderBy = "nome";
+
+        //String join = "";
+        String join = " nota_fiscal ON cliente.cpf = nota_fiscal.cpf_cliente";
+
+        String sql = Conversor.finalQuery(colunas, tabela, where, orderBy, join);
 
         RepositoryImpl repository = new RepositoryImpl();
         List<Object[]> clientesEncontrados = null;
         try {
-            clientesEncontrados = repository.findObjectByColumns(stringColunas, tabela);
+            clientesEncontrados = repository.findObjectByColumns(sql);
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
