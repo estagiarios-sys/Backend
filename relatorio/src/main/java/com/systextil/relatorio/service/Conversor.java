@@ -35,5 +35,4 @@ public class Conversor {
         }
         return query;
     }
-
 }
