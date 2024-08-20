@@ -26,12 +26,15 @@ public class Controller {
 
     @GetMapping
     public List<Object[]> retornaCliente() {
-        RepositoryImpl repository = new RepositoryImpl();
-        List<String> colunas = new ArrayList<String>();
+
+        //tratamento JSON
         String tabela = "cliente";
+        List<String> colunas = new ArrayList<String>();
         colunas.add("cpf");
         colunas.add("nome");
         String stringColunas = Conversor.listToQuery(colunas);
+
+        RepositoryImpl repository = new RepositoryImpl();
         List<Object[]> clientesEncontrados = null;
         try {
             clientesEncontrados = repository.findObjectByColumns(stringColunas, tabela);
