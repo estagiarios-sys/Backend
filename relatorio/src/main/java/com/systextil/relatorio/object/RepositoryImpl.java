@@ -1,4 +1,4 @@
-package com.systextil.relatorio.cliente;
+package com.systextil.relatorio.object;
 
 import com.systextil.relatorio.infra.ConexaoMySql;
 
@@ -9,8 +9,6 @@ import java.util.ArrayList;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 

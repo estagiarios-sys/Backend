@@ -1,4 +1,4 @@
-package com.systextil.relatorio.notaFiscal;
+package com.systextil.relatorio.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

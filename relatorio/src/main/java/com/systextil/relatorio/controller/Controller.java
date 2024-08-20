@@ -1,7 +1,7 @@
 package com.systextil.relatorio.controller;
 
 import com.systextil.relatorio.cliente.ClienteRepository;
-import com.systextil.relatorio.cliente.RepositoryImpl;
+import com.systextil.relatorio.object.RepositoryImpl;
 import com.systextil.relatorio.notaFiscal.NotaFiscalRepository;
 import com.systextil.relatorio.service.Conversor;
 import org.springframework.beans.factory.annotation.Autowired;

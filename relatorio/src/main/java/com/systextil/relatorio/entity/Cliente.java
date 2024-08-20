@@ -1,4 +1,4 @@
-package com.systextil.relatorio.cliente;
+package com.systextil.relatorio.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
