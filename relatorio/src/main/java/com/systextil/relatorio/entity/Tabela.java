@@ -6,6 +6,7 @@ public class Tabela {
 
     private String nome;
     private String pk;
+    private String fk;
     private String orderBy;
     private ArrayList<String> condicoes;
     private ArrayList<String> colunas;
@@ -18,6 +19,7 @@ public class Tabela {
     ) {
         this.nome = nome;
         this.pk = null;
+        this.fk = null;
         this.orderBy = orderBy;
         this.condicoes = condicoes;
         this.colunas = colunas;
@@ -29,6 +31,10 @@ public class Tabela {
 
     public String getPk() {
         return pk;
+    }
+
+    private String getFk() {
+        return fk;
     }
 
     public String getOrderBy() {
