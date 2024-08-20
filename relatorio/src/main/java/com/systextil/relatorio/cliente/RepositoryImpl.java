@@ -55,12 +55,14 @@ public class RepositoryImpl {
             String tableName = tables.getString("TABLE_NAME");
 
             ResultSet columns = metaData.getColumns(null, null, tableName, "%");
-            String[] columnNames = new String[columns.getMetaData().getColumnCount()];
-            int i = 0;
+            ArrayList<String> columnNames = new ArrayList<>();
             while (columns.next()) {
-                columnNames[i++] = columns.getString("COLUMN_NAME");
+                String columnName = columns.getString("COLUMN_NAME");
+                if (columnName != null) {
+                    columnNames.add(columnName);
+                }
             }
-            tablesAndColumns.put(tableName, columnNames);
+            tablesAndColumns.put(tableName, columnNames.toArray(new String[0]));
         }
 
         return tablesAndColumns;

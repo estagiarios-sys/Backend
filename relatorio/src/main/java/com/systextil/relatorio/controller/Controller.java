@@ -28,9 +28,9 @@ public class Controller {
     public List<Object[]> retornaCliente() {
         RepositoryImpl repository = new RepositoryImpl();
         List<String> colunas = new ArrayList<String>();
-        String tabela = "nota_fiscal";
-        colunas.add("numero");
-        colunas.add("valor");
+        String tabela = "cliente";
+        colunas.add("cpf");
+        colunas.add("nome");
         String stringColunas = Conversor.listToQuery(colunas);
         List<Object[]> clientesEncontrados = null;
         try {
