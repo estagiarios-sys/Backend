@@ -25,7 +25,7 @@ public class RepositoryImpl {
         ArrayList<Object[]> listObjects = new ArrayList<>();
         int columnsNumber = dados.getMetaData().getColumnCount();
 
-        while(dados.next()) {
+        while (dados.next()) {
             Object[] object = new Object[columnsNumber];
             for (int i = 1; i <= columnsNumber; i++) {
                 object[i - 1] = dados.getString(i);
@@ -63,5 +63,37 @@ public class RepositoryImpl {
         }
 
         return tablesAndColumns;
+    }
+
+    public ArrayList<Object> getRelationship(String relacionamento) throws SQLException, ClassNotFoundException {
+        conexao = new ConexaoMySql();
+        conexao.conectar();
+
+        String sql = "SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME " +
+                "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
+                "WHERE TABLE_NAME = '" +
+                relacionamento +
+                "' AND REFERENCED_TABLE_NAME IS NOT NULL";
+
+        PreparedStatement comando = conexao.getIdConexao().prepareStatement(sql);
+        ResultSet dados = comando.executeQuery();
+
+        ArrayList<Object> listObjects = new ArrayList<>();
+
+        Map<String, String[]> relationships = new HashMap<>();
+        while (dados.next()) {
+            String tableName = dados.getString("TABLE_NAME");
+            String columnName = dados.getString("COLUMN_NAME");
+            String constraintName = dados.getString("CONSTRAINT_NAME");
+            String referencedTableName = dados.getString("REFERENCED_TABLE_NAME");
+            String referencedColumnName = dados.getString("REFERENCED_COLUMN_NAME");
+
+            String join = "INNER JOIN " + referencedTableName + " ON " + tableName + "." + columnName + " = " + referencedTableName + "." + referencedColumnName;
+            Object[] relationship = {referencedTableName, join};
+            listObjects.add(relationship);
+        }
+
+        conexao.desconectar();
+        return listObjects;
     }
 }

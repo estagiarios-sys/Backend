@@ -5,24 +5,27 @@ import java.util.ArrayList;
 public class Tabela {
 
     private String nome;
+    private ArrayList<String> colunas;
+    private ArrayList<String> condicoes;
+    private String orderBy;
     private String pk;
     private String fk;
-    private String orderBy;
-    private ArrayList<String> condicoes;
-    private ArrayList<String> colunas;
+
+    public Tabela() {
+    }
 
     public Tabela(
             String nome,
-            String orderBy,
             ArrayList<String> condicoes,
-            ArrayList<String> colunas
+            ArrayList<String> colunas,
+            String orderBy
     ) {
         this.nome = nome;
+        this.colunas = colunas;
+        this.condicoes = condicoes;
+        this.orderBy = orderBy;
         this.pk = null;
         this.fk = null;
-        this.orderBy = orderBy;
-        this.condicoes = condicoes;
-        this.colunas = colunas;
     }
 
     public String getNome() {

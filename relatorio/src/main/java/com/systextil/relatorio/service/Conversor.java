@@ -1,21 +1,25 @@
 package com.systextil.relatorio.service;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Conversor {
 
-    public static String finalQuery(List<String> colunas, String tabela, String where, String orderBy, String join) {
+    public static String finalQuery(String nome, List<String> colunas, ArrayList<String> condicoes, String orderBy, String join) {
         String query = "SELECT ";
         query = query.concat(listToQuery(colunas));
         query = query.concat(" FROM ");
-        query = query.concat(tabela);
+        query = query.concat(nome);
         if (!join.equals("")) {
             query = query.concat(" INNER JOIN ");
             query = query.concat(join);
         }
-        if (!where.equals("")) {
+        if (!condicoes.equals("")) {
             query = query.concat(" WHERE ");
-            query = query.concat(where);
+            for (String condicao : condicoes) {
+                query = query.concat(condicao);
+            }
         }
         if (!orderBy.equals("")) {
             query = query.concat(" ORDER BY ");
