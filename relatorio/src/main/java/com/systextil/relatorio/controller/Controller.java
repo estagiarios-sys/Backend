@@ -2,6 +2,7 @@ package com.systextil.relatorio.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.systextil.relatorio.cliente.ClienteRepository;
+import com.systextil.relatorio.entity.Tabela;
 import com.systextil.relatorio.object.RepositoryImpl;
 import com.systextil.relatorio.notaFiscal.NotaFiscalRepository;
 import com.systextil.relatorio.service.Conversor;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,7 +37,9 @@ public class Controller {
 
         ConvertJson convertJson = new ConvertJson();
 
-        String sql = Conversor.finalQuery(convertJson.getColunas(), convertJson.getTabela(), convertJson.getWhere(), convertJson.getOrderBy(), convertJson.getJoin());
+        Tabela tabela = convertJson.convertJson();
+
+        String sql = Conversor.finalQuery(tabela.getNome(), tabela.getColunas(), tabela.getCondicoes(), tabela.getOrderBy(), "");
 
         RepositoryImpl repository = new RepositoryImpl();
         List<Object[]> clientesEncontrados = null;
@@ -51,5 +55,11 @@ public class Controller {
     public Map<String, String[]> getTablesAndColumns() throws Exception {
         RepositoryImpl repository = new RepositoryImpl();
         return repository.getTablesAndColumns();
+    }
+
+    @GetMapping("relacionamento/{tabela}")
+    public ArrayList<Object> getRelationship(@PathVariable String tabela) throws Exception {
+        RepositoryImpl repository = new RepositoryImpl();
+        return repository.getRelationship(tabela);
     }
 }

@@ -1,11 +1,9 @@
 {
-  "tabela": "cliente",
+  "nome": "cliente",
   "colunas": [
     "cpf",
-    "nome",
-    "valor"
+    "nome"
   ],
-  "where": "data_nascimento > '2003-01-01'",
-  "orderBy": "nome",
-  "join": "nota_fiscal ON cliente.cpf = nota_fiscal.cpf_cliente"
+  "condicoes": ["data_nascimento > '2003-01-01'"],
+  "orderBy": "nome"
 }
