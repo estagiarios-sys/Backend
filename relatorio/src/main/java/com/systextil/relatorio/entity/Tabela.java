@@ -52,4 +52,7 @@ public class Tabela {
     public void setPk(String pk) {
         this.pk = pk;
     }
+    public void setFk(String fk) {
+        this.fk = fk;
+    }
 }
