@@ -1,8 +1,30 @@
-{
-  "joins": [
-    {
-      "table": "cliente",
-      "join_statement": "INNER JOIN cliente ON nota_fiscal.CPF_CLIENTE = cliente.CPF"
-    }
-  ]
-}
+[
+  {
+    "tabelas": "compras e fornecedores",
+    "join": "INNER JOIN fornecedores ON compras.cnpj_fornecedor = fornecedores.cnpj"
+  },
+  {
+    "tabelas": "compras e materia_prima",
+    "join": "INNER JOIN materia_prima ON compras.id_materia_prima = materia_prima.id"
+  },
+  {
+    "tabelas": "materia_prima e un_medida",
+    "join": "INNER JOIN un_medida ON materia_prima.unidade_medida = un_medida.id"
+  },
+  {
+    "tabelas": "nota_fiscal e cliente",
+    "join": "INNER JOIN cliente ON nota_fiscal.CPF_CLIENTE = cliente.CPF"
+  },
+  {
+    "tabelas": "produto e un_medida",
+    "join": "INNER JOIN un_medida ON produto.unidade_medida = un_medida.id"
+  },
+  {
+    "tabelas": "vendas e cliente",
+    "join": "INNER JOIN cliente ON vendas.cpf_cliente = cliente.CPF"
+  },
+  {
+    "tabelas": "vendas e produto",
+    "join": "INNER JOIN produto ON vendas.id_produto = produto.id"
+  }
+]

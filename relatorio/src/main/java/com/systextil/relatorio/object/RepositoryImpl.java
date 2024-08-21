@@ -2,10 +2,10 @@ package com.systextil.relatorio.object;
 
 import com.systextil.relatorio.infra.ConexaoMySql;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class RepositoryImpl {
 
@@ -32,64 +32,63 @@ public class RepositoryImpl {
         conexao.desconectar();
         return listObjects;
     }
-}
 
-//public Map<String, String[]> getTablesAndColumns() throws Exception {
-//        conexao = new ConexaoMySql();
-//        conexao.conectar();
-//
-//        Connection connection = conexao.getIdConexao();
-//        Map<String, String[]> tablesAndColumns = new HashMap<>();
-//
-//        DatabaseMetaData metaData = connection.getMetaData();
-//
-//        ResultSet tables = metaData.getTables("db_gerador_relatorio", null, "%", new String[]{"TABLE"});
-//
-//        while (tables.next()) {
-//            String tableName = tables.getString("TABLE_NAME");
-//
-//            ResultSet columns = metaData.getColumns(null, null, tableName, "%");
-//            ArrayList<String> columnNames = new ArrayList<>();
-//            while (columns.next()) {
-//                String columnName = columns.getString("COLUMN_NAME");
-//                if (columnName != null) {
-//                    columnNames.add(columnName);
-//                }
-//            }
-//            tablesAndColumns.put(tableName, columnNames.toArray(new String[0]));
-//        }
-//
-//        return tablesAndColumns;
-//    }
-//
-//    public ArrayList<Object> getRelationship(String relacionamento) throws SQLException, ClassNotFoundException {
-//        conexao = new ConexaoMySql();
-//        conexao.conectar();
-//
-//        String sql = "SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME " +
-//                "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
-//                "WHERE TABLE_NAME = '" +
-//                relacionamento +
-//                "' AND REFERENCED_TABLE_NAME IS NOT NULL";
-//
-//        PreparedStatement comando = conexao.getIdConexao().prepareStatement(sql);
-//        ResultSet dados = comando.executeQuery();
-//
-//        ArrayList<Object> listObjects = new ArrayList<>();
-//
-//        Map<String, String[]> relationships = new HashMap<>();
-//        while (dados.next()) {
-//            String tableName = dados.getString("TABLE_NAME");
-//            String columnName = dados.getString("COLUMN_NAME");
-//            String constraintName = dados.getString("CONSTRAINT_NAME");
-//            String referencedTableName = dados.getString("REFERENCED_TABLE_NAME");
-//            String referencedColumnName = dados.getString("REFERENCED_COLUMN_NAME");
-//
-//            String join = "INNER JOIN " + referencedTableName + " ON " + tableName + "." + columnName + " = " + referencedTableName + "." + referencedColumnName;
-//            Object[] relationship = {referencedTableName, join};
-//            listObjects.add(relationship);
-//        }
-//
-//        conexao.desconectar();
-//        return listObjects;
-//    }
+    public Map<String, String[]> getTablesAndColumns() throws Exception {
+        conexao = new ConexaoMySql();
+        conexao.conectar();
+
+        Connection connection = conexao.getIdConexao();
+        Map<String, String[]> tablesAndColumns = new HashMap<>();
+
+        DatabaseMetaData metaData = connection.getMetaData();
+
+        ResultSet tables = metaData.getTables("db_gerador_relatorio", null, "%", new String[]{"TABLE"});
+
+        while (tables.next()) {
+            String tableName = tables.getString("TABLE_NAME");
+
+            ResultSet columns = metaData.getColumns(null, null, tableName, "%");
+            ArrayList<String> columnNames = new ArrayList<>();
+            while (columns.next()) {
+                String columnName = columns.getString("COLUMN_NAME");
+                if (columnName != null) {
+                    columnNames.add(columnName);
+                }
+            }
+            tablesAndColumns.put(tableName, columnNames.toArray(new String[0]));
+        }
+
+        return tablesAndColumns;
+    }
+
+    public ArrayList<Object> getRelationship() throws SQLException, ClassNotFoundException {
+        conexao = new ConexaoMySql();
+        conexao.conectar();
+
+        String sql = "SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME " +
+                "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
+                "WHERE REFERENCED_TABLE_NAME IS NOT NULL";
+
+        PreparedStatement comando = conexao.getIdConexao().prepareStatement(sql);
+        ResultSet dados = comando.executeQuery();
+
+        ArrayList<Object> listObjects = new ArrayList<>();
+
+        Map<String, String[]> relationships = new HashMap<>();
+        while (dados.next()) {
+            String tableName = dados.getString("TABLE_NAME");
+            String columnName = dados.getString("COLUMN_NAME");
+            String constraintName = dados.getString("CONSTRAINT_NAME");
+            String referencedTableName = dados.getString("REFERENCED_TABLE_NAME");
+            String referencedColumnName = dados.getString("REFERENCED_COLUMN_NAME");
+
+            String tableAndReferencedTable = tableName + " e " + referencedTableName;
+            String join = "INNER JOIN " + referencedTableName + " ON " + tableName + "." + columnName + " = " + referencedTableName + "." + referencedColumnName;
+            Object[] relationship = {tableAndReferencedTable, join};
+            listObjects.add(relationship);
+        }
+
+        conexao.desconectar();
+        return listObjects;
+    }
+}

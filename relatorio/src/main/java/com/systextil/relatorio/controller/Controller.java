@@ -13,7 +13,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("procurar")
@@ -38,10 +40,12 @@ public class Controller {
         return clientesEncontrados;
     }
 
+
+
     @GetMapping("table")
     public ResponseEntity<Resource> getTablesAndColumns() throws IOException {
 
-        Path filePath = Paths.get("relatorio/src/main/resources/listaBD.json");
+        Path filePath = Paths.get("src/main/resources/listaBD.json");
         Resource resource = new UrlResource(filePath.toUri());
 
         if (resource.exists() && resource.isReadable()) {
@@ -56,7 +60,7 @@ public class Controller {
     @GetMapping("relationship")
     public ResponseEntity<Resource> getRelationships() throws IOException {
 
-        Path filePath = Paths.get("relatorio/src/main/resources/relationships.json");
+        Path filePath = Paths.get("src/main/resources/relationships.json");
         Resource resource = new UrlResource(filePath.toUri());
 
         if (resource.exists() && resource.isReadable()) {
@@ -67,15 +71,16 @@ public class Controller {
             throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath.toString());
         }
     }
-}
-//@GetMapping("tabela")
-//    public Map<String, String[]> getTablesAndColumns() throws Exception {
+
+//    @GetMapping("tabela")
+//    public Map<String, String[]> gettTablesAndColumns() throws Exception {
 //        RepositoryImpl repository = new RepositoryImpl();
 //        return repository.getTablesAndColumns();
 //    }
 //
-//    @GetMapping("relacionamento/{tabela}")
-//    public ArrayList<Object> getRelationship(@PathVariable String tabela) throws Exception {
+//    @GetMapping("relacionamento")
+//    public ArrayList<Object> gettRelationship() throws Exception {
 //        RepositoryImpl repository = new RepositoryImpl();
-//        return repository.getRelationship(tabela);
+//        return repository.getRelationship();
 //    }
+}
