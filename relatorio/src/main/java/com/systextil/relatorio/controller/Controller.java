@@ -1,65 +1,81 @@
 package com.systextil.relatorio.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.systextil.relatorio.cliente.ClienteRepository;
 import com.systextil.relatorio.entity.Tabela;
 import com.systextil.relatorio.object.RepositoryImpl;
-import com.systextil.relatorio.notaFiscal.NotaFiscalRepository;
-import com.systextil.relatorio.service.Conversor;
+import com.systextil.relatorio.service.SQLGenerator;
 import com.systextil.relatorio.service.ConvertJson;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.io.File;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("procurar")
 public class Controller {
 
-    @Autowired
-    private ClienteRepository clienteRepository;
-
-    @Autowired
-    private NotaFiscalRepository notaFiscalRepository;
-
     @GetMapping
-    public List<Object[]> retornaCliente() throws IOException {
+    public List<Object[]> queryReturn(@RequestBody String json) throws IOException {
 
         ConvertJson convertJson = new ConvertJson();
 
-        Tabela tabela = convertJson.convertJson();
+        Tabela tabela = convertJson.convertJson(json);
 
-        String sql = Conversor.finalQuery(tabela.getNome(), tabela.getColunas(), tabela.getCondicoes(), tabela.getOrderBy(), "");
+        String sql = SQLGenerator.finalQuery(tabela.getNome(), tabela.getColunas(), tabela.getCondicoes(), tabela.getOrderBy(), tabela.getJoin());
 
         RepositoryImpl repository = new RepositoryImpl();
         List<Object[]> clientesEncontrados = null;
         try {
-            clientesEncontrados = repository.findObjectByColumns(sql);
+            clientesEncontrados = repository.findObjectsByQuery(sql);
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
         return clientesEncontrados;
     }
 
-    @GetMapping("tabela")
-    public Map<String, String[]> getTablesAndColumns() throws Exception {
-        RepositoryImpl repository = new RepositoryImpl();
-        return repository.getTablesAndColumns();
+    @GetMapping("table")
+    public ResponseEntity<Resource> getTablesAndColumns() throws IOException {
+
+        Path filePath = Paths.get("relatorio/src/main/resources/listaBD.json");
+        Resource resource = new UrlResource(filePath.toUri());
+
+        if (resource.exists() && resource.isReadable()) {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(resource);
+        } else {
+            throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath.toString());
+        }
     }
 
-    @GetMapping("relacionamento/{tabela}")
-    public ArrayList<Object> getRelationship(@PathVariable String tabela) throws Exception {
-        RepositoryImpl repository = new RepositoryImpl();
-        return repository.getRelationship(tabela);
+    @GetMapping("relationship")
+    public ResponseEntity<Resource> getRelationships() throws IOException {
+
+        Path filePath = Paths.get("relatorio/src/main/resources/relationships.json");
+        Resource resource = new UrlResource(filePath.toUri());
+
+        if (resource.exists() && resource.isReadable()) {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(resource);
+        } else {
+            throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath.toString());
+        }
     }
 }
+//@GetMapping("tabela")
+//    public Map<String, String[]> getTablesAndColumns() throws Exception {
+//        RepositoryImpl repository = new RepositoryImpl();
+//        return repository.getTablesAndColumns();
+//    }
+//
+//    @GetMapping("relacionamento/{tabela}")
+//    public ArrayList<Object> getRelationship(@PathVariable String tabela) throws Exception {
+//        RepositoryImpl repository = new RepositoryImpl();
+//        return repository.getRelationship(tabela);
+//    }

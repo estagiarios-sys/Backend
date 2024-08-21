@@ -1,0 +1,8 @@
+{
+  "joins": [
+    {
+      "table": "cliente",
+      "join_statement": "INNER JOIN cliente ON nota_fiscal.CPF_CLIENTE = cliente.CPF"
+    }
+  ]
+}

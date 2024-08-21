@@ -1,0 +1,14 @@
+{
+  "cliente": [
+    "CPF",
+    "NOME",
+    "CEP",
+    "DATA_NASCIMENTO"
+  ],
+  "nota_fiscal": [
+    "NUMERO",
+    "DATA_EMISSAO",
+    "VALOR",
+    "CPF_CLIENTE"
+  ]
+}
