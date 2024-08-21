@@ -1,9 +1,9 @@
 {
   "nome": "cliente",
   "colunas": [
-    "cpf",
-    "nome"
+    "cpf"
   ],
-  "condicoes": ["data_nascimento > '2003-01-01'"],
+  "condicoes": ["data_nascimento > '2003-01-01'",
+    "cpf != '444.444.444-44'"],
   "orderBy": "nome"
 }
