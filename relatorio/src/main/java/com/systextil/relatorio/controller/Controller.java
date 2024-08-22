@@ -104,11 +104,12 @@ public class Controller {
     }
 
     @PostMapping("save")
-    public void saveSQL(@RequestBody String json) {
+    public ResponseEntity<Void> saveSQL(@RequestBody String json) {
 
         JsonConverter convertJson = new JsonConverter();
-
         consultaSalvaRepository.save(convertJson.jsonSavedQuery(json));
+
+        return ResponseEntity.created(null).build();
     }
 
 //    @GetMapping("tabela")
