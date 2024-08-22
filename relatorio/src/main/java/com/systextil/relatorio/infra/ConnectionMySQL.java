@@ -6,9 +6,9 @@ import java.sql.SQLException;
 
 public class ConnectionMySQL {
 
-    private String user = "root";
-    private String password = "root";
-    private String url = "jdbc:mysql://localhost:3306/db_gerador_relatorio";
+    private final String user = "root";
+    private final String password = "root";
+    private final String url = "jdbc:mysql://localhost:3306/db_gerador_relatorio";
     private Connection idConnection;
 
     public void connect() throws ClassNotFoundException, SQLException {

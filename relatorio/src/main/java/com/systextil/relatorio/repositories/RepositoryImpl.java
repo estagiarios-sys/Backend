@@ -4,8 +4,6 @@ import com.systextil.relatorio.infra.ConnectionMySQL;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class RepositoryImpl {
 

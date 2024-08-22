@@ -29,7 +29,7 @@ public class TableData {
         return orderBy;
     }
 
-    public ArrayList<String> getJoin() {
+    public ArrayList<String> getJoins() {
         return joins;
     }
 }

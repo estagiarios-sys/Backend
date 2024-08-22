@@ -1,13 +1,14 @@
 package com.systextil.relatorio.controller;
 
 import com.systextil.relatorio.entity.TableData;
-import com.systextil.relatorio.repositories.ConsultaSalvaRepository;
+import com.systextil.relatorio.repositories.SavedQueryRepository;
 import com.systextil.relatorio.repositories.RepositoryImpl;
 import com.systextil.relatorio.service.SQLGenerator;
-import com.systextil.relatorio.service.ConvertJson;
+import com.systextil.relatorio.service.JsonConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,25 +16,28 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 public class Controller {
 
     @Autowired
-    private ConsultaSalvaRepository consultaSalvaRepository;
+    private SavedQueryRepository consultaSalvaRepository;
+
+    private RepositoryImpl repository;
 
     @GetMapping("find")
-    public Object[] queryReturn(@RequestBody String json) throws IOException {
+    public Object[] queryReturn(@RequestBody String json) throws RuntimeException {
 
-        ConvertJson convertJson = new ConvertJson();
+        JsonConverter convertJson = new JsonConverter();
 
         TableData tabela = convertJson.jsonTable(json);
 
-        String sql = SQLGenerator.finalQuery(tabela.getName(), tabela.getColumns(), tabela.getConditions(), tabela.getOrderBy(), tabela.getJoin());
+        String sql = SQLGenerator.finalQuery(tabela.getName(), tabela.getColumns(), tabela.getConditions(), tabela.getOrderBy(), tabela.getJoins());
 
-        RepositoryImpl repository = new RepositoryImpl();
-        List<Object[]> objectsFind = null;
+        repository = new RepositoryImpl();
+        List<Object[]> objectsFind;
         try {
             objectsFind = repository.findObjectsByQuery(sql);
         } catch (SQLException | ClassNotFoundException e) {
@@ -54,7 +58,7 @@ public class Controller {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(resource);
         } else {
-            throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath.toString());
+            throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath);
         }
     }
 
@@ -69,16 +73,42 @@ public class Controller {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(resource);
         } else {
-            throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath.toString());
+            throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath);
+        }
+    }
+
+    @GetMapping("find/table/{tableName}")
+    public ResponseEntity<Object> getTableData(
+            @PathVariable String tableName,
+            @RequestParam(required = false) List<String> columns,
+            @RequestParam(required = false) List<String> conditions,
+            @RequestParam(required = false) String orderBy,
+            @RequestParam(required = false) List<String> joins
+    ) {
+
+        repository = new RepositoryImpl();
+
+        try {
+            ArrayList<String> colList = columns != null && !columns.isEmpty() ? new ArrayList<>(columns) : new ArrayList<>(List.of("*"));
+            ArrayList<String> condList = conditions != null ? new ArrayList<>(conditions) : new ArrayList<>();
+            ArrayList<String> joinList = joins != null ? new ArrayList<>(joins) : new ArrayList<>();
+            String order = orderBy != null ? orderBy : "";
+
+            String sqlQuery = SQLGenerator.finalQuery(tableName, colList, condList, order, joinList);
+
+            List<Object[]> tableData = repository.findObjectsByQuery(sqlQuery);
+            return ResponseEntity.ok(tableData);
+        } catch (SQLException | ClassNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao buscar os dados: " + e.getMessage());
         }
     }
 
     @PostMapping("save")
-    public void saveSQL(@RequestBody String json) throws IOException {
+    public void saveSQL(@RequestBody String json) {
 
-        ConvertJson convertJson = new ConvertJson();
+        JsonConverter convertJson = new JsonConverter();
 
-        consultaSalvaRepository.save(convertJson.jsonConsultaSalva(json));
+        consultaSalvaRepository.save(convertJson.jsonSavedQuery(json));
     }
 
 //    @GetMapping("tabela")

@@ -40,7 +40,7 @@ public class SQLGenerator {
     private static String listToQueryConditions(ArrayList<String> conditions) {
         String query = "";
         for (String condition : conditions) {
-            if (!condition.equals(conditions.get(0))) {
+            if (!condition.equals(conditions.getFirst())) {
                 query = query.concat(" AND ");
             }
             query = query.concat(condition);
@@ -51,7 +51,7 @@ public class SQLGenerator {
     private static String listToQueryJoin(ArrayList<String> joins) {
         String query = "";
         for (String join : joins) {
-            if (!join.equals(joins.get(0))) {
+            if (!join.equals(joins.getFirst())) {
                 query = query.concat(" ");
             }
             query = query.concat(join);

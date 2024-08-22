@@ -1,11 +1,11 @@
 package com.systextil.relatorio.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.systextil.relatorio.entity.SaveQuery;
+import com.systextil.relatorio.entity.SavedQuery;
 import com.systextil.relatorio.entity.TableData;
 import java.io.IOException;
 
-public class ConvertJson {
+public class JsonConverter {
 
     public TableData jsonTable(String json) {
         try {
@@ -18,11 +18,11 @@ public class ConvertJson {
         }
     }
 
-    public SaveQuery jsonConsultaSalva(String json) {
+    public SavedQuery jsonSavedQuery(String json) {
         try {
 
             ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.readValue(json, SaveQuery.class);
+            return objectMapper.readValue(json, SavedQuery.class);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
