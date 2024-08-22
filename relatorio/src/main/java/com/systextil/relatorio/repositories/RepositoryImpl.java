@@ -1,4 +1,4 @@
-package com.systextil.relatorio.object;
+package com.systextil.relatorio.repositories;
 
 import com.systextil.relatorio.infra.ConexaoMySql;
 

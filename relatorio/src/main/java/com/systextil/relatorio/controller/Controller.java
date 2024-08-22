@@ -1,7 +1,7 @@
 package com.systextil.relatorio.controller;
 
 import com.systextil.relatorio.entity.Tabela;
-import com.systextil.relatorio.object.RepositoryImpl;
+import com.systextil.relatorio.repositories.RepositoryImpl;
 import com.systextil.relatorio.service.SQLGenerator;
 import com.systextil.relatorio.service.ConvertJson;
 import org.springframework.core.io.Resource;
@@ -13,9 +13,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("procurar")
