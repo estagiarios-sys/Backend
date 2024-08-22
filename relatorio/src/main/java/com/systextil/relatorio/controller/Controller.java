@@ -1,5 +1,7 @@
 package com.systextil.relatorio.controller;
 
+import com.systextil.relatorio.record.ListagemSavedQuery;
+import com.systextil.relatorio.entity.SavedQuery;
 import com.systextil.relatorio.entity.TableData;
 import com.systextil.relatorio.repositories.SavedQueryRepository;
 import com.systextil.relatorio.repositories.RepositoryImpl;
@@ -23,7 +25,7 @@ import java.util.List;
 public class Controller {
 
     @Autowired
-    private SavedQueryRepository consultaSalvaRepository;
+    private SavedQueryRepository savedQueryRepository;
 
     private RepositoryImpl repository;
 
@@ -34,7 +36,7 @@ public class Controller {
 
         TableData tabela = convertJson.jsonTable(json);
 
-        String sql = SQLGenerator.finalQuery(tabela.getName(), tabela.getColumns(), tabela.getConditions(), tabela.getOrderBy(), tabela.getJoins());
+        String sql = SQLGenerator.finalQuery(tabela.name(), tabela.columns(), tabela.conditions(), tabela.orderBy(), tabela.joins());
 
         repository = new RepositoryImpl();
         List<Object[]> objectsFind;
@@ -103,11 +105,20 @@ public class Controller {
         }
     }
 
+    @GetMapping("find/saved-query")
+    public List<ListagemSavedQuery> getSQL() {
+        List<SavedQuery> queriesList = savedQueryRepository.findAll();
+
+        return queriesList.stream()
+                .map(ListagemSavedQuery::new)
+                .toList();
+    }
+
     @PostMapping("save")
     public ResponseEntity<Void> saveSQL(@RequestBody String json) {
 
         JsonConverter convertJson = new JsonConverter();
-        consultaSalvaRepository.save(convertJson.jsonSavedQuery(json));
+        savedQueryRepository.save(convertJson.jsonSavedQuery(json));
 
         return ResponseEntity.created(null).build();
     }
