@@ -1,9 +1,11 @@
 package com.systextil.relatorio.controller;
 
-import com.systextil.relatorio.entity.Tabela;
+import com.systextil.relatorio.entity.TableData;
+import com.systextil.relatorio.repositories.ConsultaSalvaRepository;
 import com.systextil.relatorio.repositories.RepositoryImpl;
 import com.systextil.relatorio.service.SQLGenerator;
 import com.systextil.relatorio.service.ConvertJson;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;
@@ -16,31 +18,32 @@ import java.sql.SQLException;
 import java.util.List;
 
 @RestController
-@RequestMapping("procurar")
 public class Controller {
 
-    @GetMapping
-    public List<Object[]> queryReturn(@RequestBody String json) throws IOException {
+    @Autowired
+    private ConsultaSalvaRepository consultaSalvaRepository;
+
+    @GetMapping("find")
+    public Object[] queryReturn(@RequestBody String json) throws IOException {
 
         ConvertJson convertJson = new ConvertJson();
 
-        Tabela tabela = convertJson.convertJson(json);
+        TableData tabela = convertJson.jsonTable(json);
 
-        String sql = SQLGenerator.finalQuery(tabela.getNome(), tabela.getColunas(), tabela.getCondicoes(), tabela.getOrderBy(), tabela.getJoin());
+        String sql = SQLGenerator.finalQuery(tabela.getName(), tabela.getColumns(), tabela.getConditions(), tabela.getOrderBy(), tabela.getJoin());
 
         RepositoryImpl repository = new RepositoryImpl();
-        List<Object[]> clientesEncontrados = null;
+        List<Object[]> objectsFind = null;
         try {
-            clientesEncontrados = repository.findObjectsByQuery(sql);
+            objectsFind = repository.findObjectsByQuery(sql);
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-        return clientesEncontrados;
+
+        return new Object[]{sql, objectsFind};
     }
 
-
-
-    @GetMapping("table")
+    @GetMapping("find/table")
     public ResponseEntity<Resource> getTablesAndColumns() throws IOException {
 
         Path filePath = Paths.get("src/main/resources/listaBD.json");
@@ -55,7 +58,7 @@ public class Controller {
         }
     }
 
-    @GetMapping("relationship")
+    @GetMapping("find/relationship")
     public ResponseEntity<Resource> getRelationships() throws IOException {
 
         Path filePath = Paths.get("src/main/resources/relationships.json");
@@ -68,6 +71,14 @@ public class Controller {
         } else {
             throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath.toString());
         }
+    }
+
+    @PostMapping("save")
+    public void saveSQL(@RequestBody String json) throws IOException {
+
+        ConvertJson convertJson = new ConvertJson();
+
+        consultaSalvaRepository.save(convertJson.jsonConsultaSalva(json));
     }
 
 //    @GetMapping("tabela")
