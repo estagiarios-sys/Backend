@@ -2,7 +2,7 @@ package com.systextil.relatorio.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.systextil.relatorio.entity.SavedQuery;
-import com.systextil.relatorio.entity.TableData;
+import com.systextil.relatorio.record.TableData;
 import java.io.IOException;
 
 public class JsonConverter {

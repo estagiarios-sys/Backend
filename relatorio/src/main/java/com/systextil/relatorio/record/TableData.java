@@ -1,4 +1,4 @@
-package com.systextil.relatorio.entity;
+package com.systextil.relatorio.record;
 
 import java.util.ArrayList;
 
