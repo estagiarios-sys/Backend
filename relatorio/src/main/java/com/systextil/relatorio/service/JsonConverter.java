@@ -2,16 +2,16 @@ package com.systextil.relatorio.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.systextil.relatorio.entity.SavedQuery;
-import com.systextil.relatorio.record.TableData;
+import com.systextil.relatorio.record.QueryData;
 import java.io.IOException;
 
 public class JsonConverter {
 
-    public TableData jsonTable(String json) {
+    public QueryData jsonTable(String json) {
         try {
 
             ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.readValue(json, TableData.class);
+            return objectMapper.readValue(json, QueryData.class);
 
         } catch (IOException e) {
             throw new RuntimeException(e);

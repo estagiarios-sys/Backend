@@ -1,8 +1,8 @@
 package com.systextil.relatorio.controller;
 
-import com.systextil.relatorio.record.ListagemSavedQuery;
+import com.systextil.relatorio.record.SavedQueryListing;
 import com.systextil.relatorio.entity.SavedQuery;
-import com.systextil.relatorio.record.TableData;
+import com.systextil.relatorio.record.QueryData;
 import com.systextil.relatorio.repositories.SavedQueryRepository;
 import com.systextil.relatorio.repositories.MainRepository;
 import com.systextil.relatorio.service.SQLGenerator;
@@ -34,7 +34,7 @@ public class Controller {
     public Object[] queryReturn(@RequestBody String json) throws RuntimeException {
         JsonConverter convertJson = new JsonConverter();
         mainRepository = new MainRepository();
-        TableData tabela = convertJson.jsonTable(json);
+        QueryData tabela = convertJson.jsonTable(json);
         String sql = SQLGenerator.finalQuery(tabela.name(), tabela.columns(), tabela.conditions(), tabela.orderBy(), tabela.joins());
         List<Object[]> objectsFind;
 
@@ -100,11 +100,11 @@ public class Controller {
     }
 
     @GetMapping("find/saved-query")
-    public List<ListagemSavedQuery> getSQL() {
+    public List<SavedQueryListing> getSQL() {
         List<SavedQuery> queriesList = savedQueryRepository.findAll();
 
         return queriesList.stream()
-                .map(ListagemSavedQuery::new)
+                .map(SavedQueryListing::new)
                 .toList();
     }
 
@@ -117,6 +117,7 @@ public class Controller {
     }
 
     /** Método privado que será usado periodicamente */
+    @SuppressWarnings("unused")
     private Map<String, String[]> getTablesAndColumnsFromDatabase() throws Exception {
         mainRepository = new MainRepository();
 
@@ -124,6 +125,7 @@ public class Controller {
     }
 
     /** Método privado que será usado periodicamente */
+    @SuppressWarnings("unused")
     private ArrayList<Object> getRelationshipsFromDatabase() throws SQLException, ClassNotFoundException {
         mainRepository = new MainRepository();
 
