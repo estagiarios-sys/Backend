@@ -1,39 +1,19 @@
-//Query sem join
-{
-  "nome": "cliente",
-  "colunas": [
-    "cpf"
-  ],
-  "condicoes": ["data_nascimento > '2003-01-01'",
-    "cpf != '444.444.444-44'"],
-  "orderBy": "nome",
-}
+    {"table":"materia_prima",
+     "columns":["materia_prima.id"],
+     "conditions":[],
+     "orderBy":"",
+     "joins":[]
+    }
 
-//Query com join
 {
-  "nome": "nota_fiscal",
-  "colunas": [
+  "table": "nota_fiscal",
+  "columns": [
     "cpf",
 		"data_nascimento",
 		"valor"
   ],
-  "condicoes": ["data_nascimento > '2003-01-01'",
+  "conditions": ["data_nascimento > '2003-01-01'",
     "cpf != '444.444.444-44'"],
   "orderBy": "nome",
-  "join": ["INNER JOIN cliente ON nota_fiscal.CPF_CLIENTE = cliente.CPF"]
-}
-
-//arquivo join para salvar no banco
-{
-  "nome": "nota_fiscal",
-  "colunas": [
-    "cpf",
-		"data_nascimento",
-		"valor"
-  ],
-  "condicoes": ["data_nascimento > '2003-01-01'",
-    "cpf != '444.444.444-44'"],
-  "orderBy": "nome",
-  "join": ["INNER JOIN cliente ON nota_fiscal.CPF_CLIENTE = cliente.CPF"],
-  "nome_consulta": "consulta1"
+  "joins": ["INNER JOIN cliente ON nota_fiscal.CPF_CLIENTE = cliente.CPF"]
 }

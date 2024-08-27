@@ -30,12 +30,12 @@ public class Controller {
 
     private MainRepository mainRepository;
 
-    @GetMapping("find")
+    @PostMapping("find")
     public Object[] queryReturn(@RequestBody String json) throws RuntimeException {
         JsonConverter convertJson = new JsonConverter();
         mainRepository = new MainRepository();
         QueryData tabela = convertJson.jsonTable(json);
-        String sql = SQLGenerator.finalQuery(tabela.name(), tabela.columns(), tabela.conditions(), tabela.orderBy(), tabela.joins());
+        String sql = SQLGenerator.finalQuery(tabela.table(), tabela.columns(), tabela.conditions(), tabela.orderBy(), tabela.joins());
         List<Object[]> objectsFind;
 
         try {
@@ -49,7 +49,7 @@ public class Controller {
 
     @GetMapping("find/table")
     public ResponseEntity<Resource> getTablesAndColumns() throws IOException {
-        Path filePath = Paths.get("src/main/resources/listaBD.json");
+        Path filePath = Paths.get("relatorio/src/main/resources/listaBD.json");
         Resource resource = new UrlResource(filePath.toUri());
 
         if (resource.exists() && resource.isReadable()) {
@@ -63,7 +63,7 @@ public class Controller {
 
     @GetMapping("find/relationship")
     public ResponseEntity<Resource> getRelationships() throws IOException {
-        Path filePath = Paths.get("src/main/resources/relationships.json");
+        Path filePath = Paths.get("relatorio/src/main/resources/relationships.json");
         Resource resource = new UrlResource(filePath.toUri());
 
         if (resource.exists() && resource.isReadable()) {
