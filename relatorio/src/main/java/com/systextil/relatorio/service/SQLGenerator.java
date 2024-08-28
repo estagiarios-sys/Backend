@@ -5,18 +5,18 @@ import java.util.List;
 
 public class SQLGenerator {
 
-    public static String finalQuery(String nome, ArrayList<String> colunas, ArrayList<String> condicoes, String orderBy,  ArrayList<String> join) {
+    public static String finalQuery(String table, ArrayList<String> columns, String conditions, String orderBy,  ArrayList<String> joins) {
         String query = "SELECT ";
-        query = query.concat(listToQuery(colunas));
+        query = query.concat(listToQuery(columns));
         query = query.concat(" FROM ");
-        query = query.concat(nome);
-        if (!join.isEmpty()) {
+        query = query.concat(table);
+        if (!joins.isEmpty()) {
             query = query.concat(" ");
-            query = query.concat(listToQueryJoin(join));
+            query = query.concat(listToQueryJoin(joins));
         }
-        if (!condicoes.isEmpty()) {
+        if (!conditions.isBlank()) {
             query = query.concat(" WHERE ");
-            query = query.concat(listToQueryConditions(condicoes));
+            query = query.concat(conditions);
         }
         if (!orderBy.isEmpty()) {
             query = query.concat(" ORDER BY ");
@@ -33,17 +33,6 @@ public class SQLGenerator {
                 query = query.concat(", ");
             }
             query = query.concat(coluna);
-        }
-        return query;
-    }
-
-    private static String listToQueryConditions(ArrayList<String> conditions) {
-        String query = "";
-        for (String condition : conditions) {
-            if (!condition.equals(conditions.getFirst())) {
-                query = query.concat(" AND ");
-            }
-            query = query.concat(condition);
         }
         return query;
     }

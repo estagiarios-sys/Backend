@@ -7,6 +7,7 @@ import com.systextil.relatorio.repositories.SavedQueryRepository;
 import com.systextil.relatorio.repositories.MainRepository;
 import com.systextil.relatorio.service.SQLGenerator;
 import com.systextil.relatorio.service.JsonConverter;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -31,11 +32,9 @@ public class Controller {
     private MainRepository mainRepository;
 
     @PostMapping("find")
-    public Object[] queryReturn(@RequestBody String json) throws RuntimeException {
-        JsonConverter convertJson = new JsonConverter();
+    public Object[] queryReturn(@RequestBody @Valid QueryData queryData) throws RuntimeException {
         mainRepository = new MainRepository();
-        QueryData tabela = convertJson.jsonTable(json);
-        String sql = SQLGenerator.finalQuery(tabela.table(), tabela.columns(), tabela.conditions(), tabela.orderBy(), tabela.joins());
+        String sql = SQLGenerator.finalQuery(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
         List<Object[]> objectsFind;
 
         try {
@@ -79,7 +78,7 @@ public class Controller {
     public ResponseEntity<Object> getTableData(
             @PathVariable String tableName,
             @RequestParam(required = false) List<String> columns,
-            @RequestParam(required = false) List<String> conditions,
+            @RequestParam(required = false) String conditions,
             @RequestParam(required = false) String orderBy,
             @RequestParam(required = false) List<String> joins
     ) {
@@ -87,7 +86,7 @@ public class Controller {
 
         try {
             ArrayList<String> colList = columns != null && !columns.isEmpty() ? new ArrayList<>(columns) : new ArrayList<>(List.of("*"));
-            ArrayList<String> condList = conditions != null ? new ArrayList<>(conditions) : new ArrayList<>();
+            String condList = conditions != null ? conditions : "";
             ArrayList<String> joinList = joins != null ? new ArrayList<>(joins) : new ArrayList<>();
             String order = orderBy != null ? orderBy : "";
             String sqlQuery = SQLGenerator.finalQuery(tableName, colList, condList, order, joinList);
