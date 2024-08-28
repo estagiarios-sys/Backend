@@ -74,7 +74,6 @@ public class MainRepository {
 
         ArrayList<Object> listObjects = new ArrayList<>();
 
-        Map<String, String[]> relationships = new HashMap<>();
         while (dados.next()) {
             String tableName = dados.getString("TABLE_NAME");
             String columnName = dados.getString("COLUMN_NAME");
