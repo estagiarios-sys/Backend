@@ -32,10 +32,8 @@ public class Controller {
     private MainRepository mainRepository;
 
     @PostMapping("find")
-    public Object[] queryReturn(@RequestBody @Valid String json) throws RuntimeException {
-        JsonConverter convertJson = new JsonConverter();
+    public Object[] queryReturn(@RequestBody @Valid QueryData queryData) throws RuntimeException {
         mainRepository = new MainRepository();
-        QueryData queryData = convertJson.jsonQueryData(json);
         String sql = SQLGenerator.finalQuery(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
         List<Object[]> objectsFind;
 
