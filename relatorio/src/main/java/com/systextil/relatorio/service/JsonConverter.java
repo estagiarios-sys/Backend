@@ -7,7 +7,7 @@ import java.io.IOException;
 
 public class JsonConverter {
 
-    public QueryData jsonTable(String json) {
+    public QueryData jsonQueryData(String json) {
         try {
 
             ObjectMapper objectMapper = new ObjectMapper();
