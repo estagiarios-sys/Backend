@@ -1,15 +1,13 @@
-package com.systextil.relatorio.record;
+package com.systextil.relatorio.dataBaseData;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
 import java.util.ArrayList;
 
-public record QueryData(
-
+record QueryData(
     @NotBlank
     String table,
-
     @NotEmpty
     ArrayList<String> columns,
     String conditions,

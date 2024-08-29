@@ -1,14 +1,7 @@
-package com.systextil.relatorio.controller;
+package com.systextil.relatorio.dataBaseData;
 
-import com.systextil.relatorio.record.SavedQueryListing;
-import com.systextil.relatorio.entity.SavedQuery;
-import com.systextil.relatorio.record.QueryData;
-import com.systextil.relatorio.repositories.SavedQueryRepository;
-import com.systextil.relatorio.repositories.MainRepository;
 import com.systextil.relatorio.service.SQLGenerator;
-import com.systextil.relatorio.service.JsonConverter;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
@@ -24,31 +17,23 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-public class Controller {
+@RequestMapping("find")
+public class DataBaseDataController {
 
-    @Autowired
-    private SavedQueryRepository savedQueryRepository;
+    private DataBaseDataRepository dataBaseDataRepository;
 
-    private MainRepository mainRepository;
-
-    @PostMapping("find")
-    public Object[] queryReturn(@RequestBody @Valid QueryData queryData) throws RuntimeException {
-        mainRepository = new MainRepository();
+    @PostMapping
+    public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws RuntimeException {
         String sql = SQLGenerator.finalQuery(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
         List<Object[]> objectsFind;
-
-        try {
-            objectsFind = mainRepository.findObjectsByQuery(sql);
-        } catch (SQLException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        objectsFind = loadQuery(sql);
 
         return new Object[]{sql, objectsFind};
     }
 
-    @GetMapping("find/table")
+    @GetMapping("table")
     public ResponseEntity<Resource> getTablesAndColumns() throws IOException {
-        Path filePath = Paths.get("relatorio/src/main/resources/listaBD.json");
+        Path filePath = Paths.get("src/main/resources/listaBD.json");
         Resource resource = new UrlResource(filePath.toUri());
 
         if (resource.exists() && resource.isReadable()) {
@@ -60,9 +45,9 @@ public class Controller {
         }
     }
 
-    @GetMapping("find/relationship")
+    @GetMapping("relationship")
     public ResponseEntity<Resource> getRelationships() throws IOException {
-        Path filePath = Paths.get("relatorio/src/main/resources/relationships.json");
+        Path filePath = Paths.get("src/main/resources/relationships.json");
         Resource resource = new UrlResource(filePath.toUri());
 
         if (resource.exists() && resource.isReadable()) {
@@ -74,7 +59,7 @@ public class Controller {
         }
     }
 
-    @GetMapping("find/table/{tableName}")
+    @GetMapping("table/{tableName}")
     public ResponseEntity<Object> getTableData(
             @PathVariable String tableName,
             @RequestParam(required = false) List<String> columns,
@@ -82,7 +67,7 @@ public class Controller {
             @RequestParam(required = false) String orderBy,
             @RequestParam(required = false) List<String> joins
     ) {
-        mainRepository = new MainRepository();
+        dataBaseDataRepository = new DataBaseDataRepository();
 
         try {
             ArrayList<String> colList = columns != null && !columns.isEmpty() ? new ArrayList<>(columns) : new ArrayList<>(List.of("*"));
@@ -90,44 +75,41 @@ public class Controller {
             ArrayList<String> joinList = joins != null ? new ArrayList<>(joins) : new ArrayList<>();
             String order = orderBy != null ? orderBy : "";
             String sqlQuery = SQLGenerator.finalQuery(tableName, colList, condList, order, joinList);
-            List<Object[]> tableData = mainRepository.findObjectsByQuery(sqlQuery);
+            List<Object[]> tableData = dataBaseDataRepository.findDataByQuery(sqlQuery);
 
             return ResponseEntity.ok(tableData);
         } catch (SQLException | ClassNotFoundException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao buscar os dados: " + e.getMessage());
         }
     }
+    
+    @PostMapping("loadedQuery")
+    public List<Object[]> loadQuery(@RequestBody String sql) throws RuntimeException {
+        dataBaseDataRepository = new DataBaseDataRepository();
+        List<Object[]> objectsFind;
 
-    @GetMapping("find/saved-query")
-    public List<SavedQueryListing> getSQL() {
-        List<SavedQuery> queriesList = savedQueryRepository.findAll();
+        try {
+            objectsFind = dataBaseDataRepository.findDataByQuery(sql);
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
 
-        return queriesList.stream()
-                .map(SavedQueryListing::new)
-                .toList();
-    }
-
-    @PostMapping("save")
-    public ResponseEntity<Void> saveSQL(@RequestBody String json) {
-        JsonConverter convertJson = new JsonConverter();
-        savedQueryRepository.save(convertJson.jsonSavedQuery(json));
-
-        return ResponseEntity.created(null).build();
+        return objectsFind;
     }
 
     /** Método privado que será usado periodicamente */
     @SuppressWarnings("unused")
     private Map<String, String[]> getTablesAndColumnsFromDatabase() throws Exception {
-        mainRepository = new MainRepository();
+        dataBaseDataRepository = new DataBaseDataRepository();
 
-        return mainRepository.getTablesAndColumns();
+        return dataBaseDataRepository.getTablesAndColumns();
     }
 
     /** Método privado que será usado periodicamente */
     @SuppressWarnings("unused")
     private ArrayList<Object> getRelationshipsFromDatabase() throws SQLException, ClassNotFoundException {
-        mainRepository = new MainRepository();
+        dataBaseDataRepository = new DataBaseDataRepository();
 
-        return mainRepository.getRelationship();
+        return dataBaseDataRepository.getRelationships();
     }
 }

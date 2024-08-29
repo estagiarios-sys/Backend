@@ -1,4 +1,4 @@
-package com.systextil.relatorio.repositories;
+package com.systextil.relatorio.dataBaseData;
 
 import com.systextil.relatorio.infra.ConnectionMySQL;
 
@@ -7,15 +7,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MainRepository {
+class DataBaseDataRepository {
 
     private ConnectionMySQL connection;
 
-    public ArrayList<Object[]> findObjectsByQuery(String sql) throws SQLException, ClassNotFoundException {
-
+    ArrayList<Object[]> findDataByQuery(String sql) throws SQLException, ClassNotFoundException {
         connection = new ConnectionMySQL();
         connection.connect();
-
         PreparedStatement command = connection.getIdConnection().prepareStatement(sql);
         ResultSet data = command.executeQuery();
         ArrayList<Object[]> listObjects = new ArrayList<>();
@@ -28,20 +26,17 @@ public class MainRepository {
             }
             listObjects.add(object);
         }
-
         connection.disconnect();
+        
         return listObjects;
     }
 
-    public Map<String, String[]> getTablesAndColumns() throws Exception {
+    Map<String, String[]> getTablesAndColumns() throws Exception {
         connection = new ConnectionMySQL();
         connection.connect();
-
         Connection connection = this.connection.getIdConnection();
         Map<String, String[]> tablesAndColumns = new HashMap<>();
-
         DatabaseMetaData metaData = connection.getMetaData();
-
         ResultSet tables = metaData.getTables("db_gerador_relatorio", null, "%", new String[]{"TABLE"});
 
         while (tables.next()) {
@@ -61,17 +56,14 @@ public class MainRepository {
         return tablesAndColumns;
     }
 
-    public ArrayList<Object> getRelationship() throws SQLException, ClassNotFoundException {
+    ArrayList<Object> getRelationships() throws SQLException, ClassNotFoundException {
         connection = new ConnectionMySQL();
         connection.connect();
-
         String sql = "SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME " +
                 "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
                 "WHERE REFERENCED_TABLE_NAME IS NOT NULL";
-
         PreparedStatement comando = connection.getIdConnection().prepareStatement(sql);
         ResultSet dados = comando.executeQuery();
-
         ArrayList<Object> listObjects = new ArrayList<>();
 
         while (dados.next()) {
@@ -85,6 +77,7 @@ public class MainRepository {
             listObjects.add(relationship);
         }
         connection.disconnect();
+        
         return listObjects;
     }
 }
