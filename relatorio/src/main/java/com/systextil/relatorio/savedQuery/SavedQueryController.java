@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 import java.util.List;
 
 @RestController
@@ -25,10 +27,11 @@ public class SavedQueryController {
     }
 
     @PostMapping("save")
-    public ResponseEntity<SavedQuery> saveSQL(@RequestBody SavedQuery savedQuery) {
-        SavedQuery returnedSavedQuery = savedQueryRepository.save(savedQuery);
+    public ResponseEntity<SavedQuery> saveSQL(@RequestBody @Valid SavedQuerySaving savedQuerySaving) {
+    	SavedQuery savedQuery = new SavedQuery(savedQuerySaving);
+        savedQueryRepository.save(savedQuery);
 
-        return ResponseEntity.created(null).body(returnedSavedQuery);
+        return ResponseEntity.created(null).body(savedQuery);
     }
 
 }

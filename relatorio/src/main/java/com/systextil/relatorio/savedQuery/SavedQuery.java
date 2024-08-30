@@ -13,6 +13,11 @@ public class SavedQuery {
 
     public SavedQuery() {
     }
+    
+    public SavedQuery(SavedQuerySaving savedQuerySaving) {
+    	this.queryName = savedQuerySaving.queryName();
+    	this.query = savedQuerySaving.query();
+    }
 
     public Long getId() {
         return id;
