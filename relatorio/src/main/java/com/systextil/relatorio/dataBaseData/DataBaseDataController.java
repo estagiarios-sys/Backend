@@ -1,5 +1,6 @@
 package com.systextil.relatorio.dataBaseData;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.systextil.relatorio.service.SQLGenerator;
 import jakarta.validation.Valid;
 
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
@@ -35,19 +37,13 @@ public class DataBaseDataController {
     @PostMapping
     public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws RuntimeException {
         String sql = SQLGenerator.finalQuery(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
-        List<Object[]> foundObjects;
-        foundObjects = loadQuery(sql)[1];
+        List<Object[]> foundObjects = loadQuery(sql).foundObjects();
 
         return new Object[]{sql, foundObjects};
     }
 
     @GetMapping("table")
     public ResponseEntity<Resource> getTablesAndColumns() throws IOException {
-    	try {
-			setTablesAndColumnsFromDatabaseIntoJson();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
     	Path filePath = Paths.get(tablesJsonFilePath);
         Resource resource = new UrlResource(filePath.toUri());
 
@@ -99,7 +95,7 @@ public class DataBaseDataController {
     }
     
     @PostMapping("loadedQuery")
-    public Object[] loadQuery(@RequestBody String sql) throws RuntimeException {
+    public LoadedQueryData loadQuery(@RequestBody String sql) throws RuntimeException {
         dataBaseDataRepository = new DataBaseDataRepository();
         LoadedQueryData loadedQueryData;
         
@@ -109,19 +105,22 @@ public class DataBaseDataController {
             throw new RuntimeException(e);
         }
         
-        return new Object[] {loadedQueryData.columns(), loadedQueryData.foundObjects()};
+        return loadedQueryData;
     }
 
     /** Método privado que será usado periodicamente */
     @SuppressWarnings("unused")
     private void setTablesAndColumnsFromDatabaseIntoJson() throws Exception {
-        dataBaseDataRepository = new DataBaseDataRepository();
-        Map<String, String[]> tablesAndColumns = dataBaseDataRepository.getTablesAndColumns();
         Path filePath = Paths.get(tablesJsonFilePath);
         Resource resource = new UrlResource(filePath.toUri());
+        
         if (resource.isReadable() && resource.exists()) {
+        	dataBaseDataRepository = new DataBaseDataRepository();
+            Map<String, String[]> tablesAndColumns = dataBaseDataRepository.getTablesAndColumns();
+            ObjectMapper objectMapper = new ObjectMapper();
+            String json = objectMapper.writeValueAsString(tablesAndColumns);
         	FileWriter fileWriter = new FileWriter(resource.getFile());
-        	fileWriter.write(tablesAndColumns.toString());
+        	fileWriter.write(String.valueOf(json));
         	fileWriter.close();
         } else {
         	throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath);
@@ -130,8 +129,13 @@ public class DataBaseDataController {
 
     /** Método privado que será usado periodicamente */
     @SuppressWarnings("unused")
-    private void setRelationshipsFromDatabaseIntoJson() throws SQLException, ClassNotFoundException {
-        dataBaseDataRepository = new DataBaseDataRepository();
-        ArrayList<Object> relationships = dataBaseDataRepository.getRelationships();
+    private void setRelationshipsFromDatabaseIntoJson() throws SQLException, ClassNotFoundException, MalformedURLException {
+        Path filePath = Paths.get(relationshipsJsonFilePath);
+        Resource resource = new UrlResource(filePath.toUri());
+        
+        if (resource.isReadable() && resource.exists()) {
+        	dataBaseDataRepository = new DataBaseDataRepository();
+        	Map<S>
+        }
     }
 }
