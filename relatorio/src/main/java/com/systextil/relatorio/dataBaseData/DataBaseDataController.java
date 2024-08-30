@@ -25,10 +25,10 @@ public class DataBaseDataController {
     @PostMapping
     public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws RuntimeException {
         String sql = SQLGenerator.finalQuery(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
-        List<Object[]> objectsFind;
-        objectsFind = loadQuery(sql);
+        List<Object[]> foundObjects;
+        foundObjects = loadQuery(sql).foundObjects();
 
-        return new Object[]{sql, objectsFind};
+        return new Object[]{sql, foundObjects};
     }
 
     @GetMapping("table")
@@ -75,7 +75,7 @@ public class DataBaseDataController {
             ArrayList<String> joinList = joins != null ? new ArrayList<>(joins) : new ArrayList<>();
             String order = orderBy != null ? orderBy : "";
             String sqlQuery = SQLGenerator.finalQuery(tableName, colList, condList, order, joinList);
-            List<Object[]> tableData = dataBaseDataRepository.findDataByQuery(sqlQuery);
+            List<Object[]> tableData = dataBaseDataRepository.findDataByQuery(sqlQuery).foundObjects();
 
             return ResponseEntity.ok(tableData);
         } catch (SQLException | ClassNotFoundException e) {
@@ -84,17 +84,17 @@ public class DataBaseDataController {
     }
     
     @PostMapping("loadedQuery")
-    public List<Object[]> loadQuery(@RequestBody String sql) throws RuntimeException {
+    public LoadedQueryData loadQuery(@RequestBody String sql) throws RuntimeException {
         dataBaseDataRepository = new DataBaseDataRepository();
-        List<Object[]> objectsFind;
-
+        LoadedQueryData loadedQueryData;
+        
         try {
-            objectsFind = dataBaseDataRepository.findDataByQuery(sql);
+            loadedQueryData = dataBaseDataRepository.findDataByQuery(sql);
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
 
-        return objectsFind;
+        return loadedQueryData;
     }
 
     /** Método privado que será usado periodicamente */

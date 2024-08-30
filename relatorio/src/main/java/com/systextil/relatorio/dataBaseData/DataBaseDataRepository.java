@@ -11,13 +11,21 @@ class DataBaseDataRepository {
 
     private ConnectionMySQL connection;
 
-    ArrayList<Object[]> findDataByQuery(String sql) throws SQLException, ClassNotFoundException {
+    LoadedQueryData findDataByQuery(String sql) throws SQLException, ClassNotFoundException {
         connection = new ConnectionMySQL();
         connection.connect();
         PreparedStatement command = connection.getIdConnection().prepareStatement(sql);
         ResultSet data = command.executeQuery();
         ArrayList<Object[]> listObjects = new ArrayList<>();
         int columnsNumber = data.getMetaData().getColumnCount();
+        ArrayList<String> columnsName = new ArrayList<String>();
+        
+        for (int i = 1; i <= columnsNumber; i++) {
+        	String columnTableName = data.getMetaData().getTableName(i);
+        	String columnName = data.getMetaData().getColumnName(i);
+        	
+        	columnsName.add(columnTableName + "." + columnName);
+        }
 
         while (data.next()) {
             Object[] object = new Object[columnsNumber];
@@ -27,8 +35,9 @@ class DataBaseDataRepository {
             listObjects.add(object);
         }
         connection.disconnect();
+        LoadedQueryData loadedQueryData = new LoadedQueryData(columnsName, listObjects);
         
-        return listObjects;
+        return loadedQueryData;
     }
 
     Map<String, String[]> getTablesAndColumns() throws Exception {
