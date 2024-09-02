@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
@@ -116,11 +115,11 @@ public class DataBaseDataController {
         
         if (resource.isReadable() && resource.exists()) {
         	dataBaseDataRepository = new DataBaseDataRepository();
-            Map<String, String[]> tablesAndColumns = dataBaseDataRepository.getTablesAndColumns();
-            ObjectMapper objectMapper = new ObjectMapper();
-            String json = objectMapper.writeValueAsString(tablesAndColumns);
+        	ObjectMapper objectMapper = new ObjectMapper();
         	FileWriter fileWriter = new FileWriter(resource.getFile());
-        	fileWriter.write(String.valueOf(json));
+            Map<String, String[]> tablesAndColumns = dataBaseDataRepository.getTablesAndColumns();
+            String json = objectMapper.writeValueAsString(tablesAndColumns);
+        	fileWriter.write(json);
         	fileWriter.close();
         } else {
         	throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath);
@@ -129,13 +128,20 @@ public class DataBaseDataController {
 
     /** Método privado que será usado periodicamente */
     @SuppressWarnings("unused")
-    private void setRelationshipsFromDatabaseIntoJson() throws SQLException, ClassNotFoundException, MalformedURLException {
+    private void setRelationshipsFromDatabaseIntoJson() throws SQLException, ClassNotFoundException, IOException {
         Path filePath = Paths.get(relationshipsJsonFilePath);
         Resource resource = new UrlResource(filePath.toUri());
         
         if (resource.isReadable() && resource.exists()) {
         	dataBaseDataRepository = new DataBaseDataRepository();
-        	Map<S>
+        	ObjectMapper objectMapper = new ObjectMapper();
+        	FileWriter fileWriter = new FileWriter(resource.getFile());
+        	ArrayList<Object> relationships = dataBaseDataRepository.getRelationships();
+        	String json = objectMapper.writeValueAsString(relationships);
+        	fileWriter.write(json);
+        	fileWriter.close();
+        } else {
+        	throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath);
         }
     }
 }
