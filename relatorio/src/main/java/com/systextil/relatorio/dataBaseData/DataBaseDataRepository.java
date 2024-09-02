@@ -65,7 +65,7 @@ class DataBaseDataRepository {
         return tablesAndColumns;
     }
 
-    ArrayList<Object> getRelationships() throws SQLException, ClassNotFoundException {
+    ArrayList<RelationshipData> getRelationships() throws SQLException, ClassNotFoundException {
         connection = new ConnectionMySQL();
         connection.connect();
         String sql = "SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME " +
@@ -73,7 +73,7 @@ class DataBaseDataRepository {
                 "WHERE REFERENCED_TABLE_NAME IS NOT NULL";
         PreparedStatement comando = connection.getIdConnection().prepareStatement(sql);
         ResultSet dados = comando.executeQuery();
-        ArrayList<Object> listObjects = new ArrayList<>();
+        ArrayList<RelationshipData> listRelationshipData = new ArrayList<>();
 
         while (dados.next()) {
             String tableName = dados.getString("TABLE_NAME");
@@ -82,11 +82,11 @@ class DataBaseDataRepository {
             String referencedColumnName = dados.getString("REFERENCED_COLUMN_NAME");
             String tableAndReferencedTable = tableName + " e " + referencedTableName;
             String join = "INNER JOIN " + referencedTableName + " ON " + tableName + "." + columnName + " = " + referencedTableName + "." + referencedColumnName;
-            Object[] relationship = {tableAndReferencedTable, join};
-            listObjects.add(relationship);
+            RelationshipData relationshipData = new RelationshipData(tableAndReferencedTable, join);
+            listRelationshipData.add(relationshipData);
         }
         connection.disconnect();
         
-        return listObjects;
+        return listRelationshipData;
     }
 }

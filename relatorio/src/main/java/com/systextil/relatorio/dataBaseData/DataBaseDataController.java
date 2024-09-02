@@ -57,6 +57,12 @@ public class DataBaseDataController {
 
     @GetMapping("relationship")
     public ResponseEntity<Resource> getRelationships() throws IOException {
+    	try {
+			setRelationshipsFromDatabaseIntoJson();
+		} catch (ClassNotFoundException | SQLException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         Path filePath = Paths.get(relationshipsJsonFilePath);
         Resource resource = new UrlResource(filePath.toUri());
 
@@ -136,7 +142,7 @@ public class DataBaseDataController {
         	dataBaseDataRepository = new DataBaseDataRepository();
         	ObjectMapper objectMapper = new ObjectMapper();
         	FileWriter fileWriter = new FileWriter(resource.getFile());
-        	ArrayList<Object> relationships = dataBaseDataRepository.getRelationships();
+        	ArrayList<RelationshipData> relationships = dataBaseDataRepository.getRelationships();
         	String json = objectMapper.writeValueAsString(relationships);
         	fileWriter.write(json);
         	fileWriter.close();
