@@ -40,7 +40,7 @@ public class DataBaseDataController {
         ArrayList<Object[]> foundObjects = loadQuery(sql).foundObjects();
         
 
-        return new Object[]{sql, foundObjects};
+        return new Object[]{sql, columnsNickName, foundObjects};
     }
 
     @GetMapping("table")
