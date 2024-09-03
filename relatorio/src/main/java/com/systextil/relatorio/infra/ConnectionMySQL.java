@@ -8,7 +8,7 @@ public class ConnectionMySQL {
 
     private final String user = "user";
     private final String password = "sysestg";
-    private final String url = "jdbc:mysql://localhost:3306/db_gerador_relatorio";
+    private final String url = "jdbc:mysql://192.168.33.104:3306/db_gerador_relatorio";
     private Connection idConnection;
 
     public void connect() throws ClassNotFoundException, SQLException {

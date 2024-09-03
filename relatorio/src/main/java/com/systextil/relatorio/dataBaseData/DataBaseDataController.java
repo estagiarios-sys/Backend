@@ -59,12 +59,6 @@ public class DataBaseDataController {
 
     @GetMapping("relationship")
     public ResponseEntity<Resource> getRelationships() throws IOException {
-    	try {
-			setRelationshipsFromDatabaseIntoJson();
-		} catch (ClassNotFoundException | SQLException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
         Path filePath = Paths.get(relationshipsJsonFilePath);
         Resource resource = new UrlResource(filePath.toUri());
 
@@ -115,8 +109,7 @@ public class DataBaseDataController {
         return loadedQueryData;
     }
 
-    /** Método privado que será usado periodicamente */
-    @SuppressWarnings("unused")
+    @PutMapping("update/table")
     private void setTablesAndColumnsFromDatabaseIntoJson() throws Exception {
         Path filePath = Paths.get(tablesJsonFilePath);
         Resource resource = new UrlResource(filePath.toUri());
@@ -134,8 +127,7 @@ public class DataBaseDataController {
         }
     }
 
-    /** Método privado que será usado periodicamente */
-    @SuppressWarnings("unused")
+    @PutMapping("update/relationship")
     private void setRelationshipsFromDatabaseIntoJson() throws SQLException, ClassNotFoundException, IOException {
         Path filePath = Paths.get(relationshipsJsonFilePath);
         Resource resource = new UrlResource(filePath.toUri());

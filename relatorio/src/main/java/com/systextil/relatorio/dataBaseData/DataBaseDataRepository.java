@@ -89,6 +89,11 @@ class DataBaseDataRepository {
             String join = "INNER JOIN " + referencedTableName + " ON " + tableName + "." + columnName + " = " + referencedTableName + "." + referencedColumnName;
             RelationshipData relationshipData = new RelationshipData(tableAndReferencedTable, join);
             listRelationshipData.add(relationshipData);
+            String tableAndReferencedTableReversed = referencedTableName + " e " + tableName;
+            String joinReversed = "INNER JOIN " + tableName + " ON " + referencedTableName + "." + referencedColumnName + " = " + tableName + "." + columnName;
+            RelationshipData relationshipDataReversed = new RelationshipData(tableAndReferencedTableReversed, joinReversed);
+            listRelationshipData.add(relationshipDataReversed);
+  
         }
         connection.disconnect();
         
