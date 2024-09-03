@@ -12,19 +12,24 @@ class DataBaseDataRepository {
     private ConnectionMySQL connection;
 
     LoadedQueryData findDataByQuery(String sql) throws SQLException, ClassNotFoundException {
-        connection = new ConnectionMySQL();
+    	connection = new ConnectionMySQL();
+        ArrayList<Object[]> listObjects = new ArrayList<>();
+        ArrayList<String> columnsNickName = new ArrayList<>();
         connection.connect();
         PreparedStatement command = connection.getIdConnection().prepareStatement(sql);
         ResultSet data = command.executeQuery();
-        ArrayList<Object[]> listObjects = new ArrayList<>();
-        int columnsNumber = data.getMetaData().getColumnCount();
-        ArrayList<String> columnsName = new ArrayList<String>();
+        ResultSetMetaData metaData = data.getMetaData();
+        int columnsNumber = metaData.getColumnCount();
         
         for (int i = 1; i <= columnsNumber; i++) {
-        	String columnTableName = data.getMetaData().getTableName(i);
-        	String columnName = data.getMetaData().getColumnName(i);
-        	
-        	columnsName.add(columnTableName + "." + columnName);
+        	String columnNickName = metaData.getColumnLabel(i);
+        	String columnTableName = metaData.getTableName(i);
+        	String columnName = metaData.getColumnName(i);
+        	if (columnNickName.equals(columnName)) {
+        		columnsNickName.add(columnTableName + "." + columnName);
+        	} else {
+        		columnsNickName.add(columnNickName);
+        	}
         }
 
         while (data.next()) {
@@ -35,7 +40,7 @@ class DataBaseDataRepository {
             listObjects.add(object);
         }
         connection.disconnect();
-        LoadedQueryData loadedQueryData = new LoadedQueryData(columnsName, listObjects);
+        LoadedQueryData loadedQueryData = new LoadedQueryData(columnsNickName, listObjects);
         
         return loadedQueryData;
     }

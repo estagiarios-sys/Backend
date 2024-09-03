@@ -6,8 +6,8 @@ import java.sql.SQLException;
 
 public class ConnectionMySQL {
 
-    private final String user = "root";
-    private final String password = "root";
+    private final String user = "user";
+    private final String password = "sysestg";
     private final String url = "jdbc:mysql://localhost:3306/db_gerador_relatorio";
     private Connection idConnection;
 

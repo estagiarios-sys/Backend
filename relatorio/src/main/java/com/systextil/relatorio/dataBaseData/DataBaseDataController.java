@@ -36,7 +36,9 @@ public class DataBaseDataController {
     @PostMapping
     public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws RuntimeException {
         String sql = SQLGenerator.finalQuery(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
-        List<Object[]> foundObjects = loadQuery(sql).foundObjects();
+        ArrayList<String> columnsNickName = loadQuery(sql).columnsNickName();
+        ArrayList<Object[]> foundObjects = loadQuery(sql).foundObjects();
+        
 
         return new Object[]{sql, foundObjects};
     }
