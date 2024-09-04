@@ -30,4 +30,9 @@ public class SavedQuery {
     public String getQuery() {
         return query;
     }
+    
+    public void updateData(SavedQuerySaving savedQuerySaving) {
+    	this.queryName = savedQuerySaving.queryName();
+    	this.query = savedQuerySaving.query();
+    }
 }
