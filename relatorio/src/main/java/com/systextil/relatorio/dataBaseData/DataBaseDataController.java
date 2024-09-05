@@ -136,7 +136,7 @@ public class DataBaseDataController {
         	dataBaseDataRepository = new DataBaseDataRepository();
         	ObjectMapper objectMapper = new ObjectMapper();
         	FileWriter fileWriter = new FileWriter(resource.getFile());
-        	ArrayList<RelationshipData> relationships = dataBaseDataRepository.getRelationships();
+        	ArrayList<RelationshipData> relationships = dataBaseDataRepository.getRelationshipsFromOracleDatabase();
         	String json = objectMapper.writeValueAsString(relationships);
         	fileWriter.write(json);
         	fileWriter.close();

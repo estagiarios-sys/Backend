@@ -14,11 +14,11 @@ class DataBaseDataRepository {
     private ConnectionOracle connectionOracle;
 
     LoadedQueryData findDataByQuery(String sql) throws SQLException, ClassNotFoundException {
-    	connectionMySQL = new ConnectionMySQL();
+    	connectionOracle = new ConnectionOracle();
         ArrayList<Object[]> listObjects = new ArrayList<>();
         ArrayList<String> columnsNickName = new ArrayList<>();
-        connectionMySQL.connect();
-        PreparedStatement command = connectionMySQL.getIdConnection().prepareStatement(sql);
+        connectionOracle.connect();
+        PreparedStatement command = connectionOracle.getIdConnection().prepareStatement(sql);
         ResultSet data = command.executeQuery();
         ResultSetMetaData metaData = data.getMetaData();
         int columnsNumber = metaData.getColumnCount();
@@ -41,19 +41,19 @@ class DataBaseDataRepository {
             }
             listObjects.add(object);
         }
-        connectionMySQL.disconnect();
+        connectionOracle.disconnect();
         LoadedQueryData loadedQueryData = new LoadedQueryData(columnsNickName, listObjects);
         
         return loadedQueryData;
     }
 
     Map<String, String[]> getTablesAndColumns() throws Exception {
-        connectionMySQL = new ConnectionMySQL();
-        connectionMySQL.connect();
-        Connection connection = this.connectionMySQL.getIdConnection();
+        connectionOracle = new ConnectionOracle();
+        connectionOracle.connect();
+        Connection connection = this.connectionOracle.getIdConnection();
         Map<String, String[]> tablesAndColumns = new HashMap<>();
         DatabaseMetaData metaData = connection.getMetaData();
-        ResultSet tables = metaData.getTables("db_gerador_relatorio", null, "%", new String[]{"TABLE"});
+        ResultSet tables = metaData.getTables("deVS", null, "BASI%", new String[]{"TABLE"});
 
         while (tables.next()) {
             String tableName = tables.getString("TABLE_NAME");
@@ -72,7 +72,52 @@ class DataBaseDataRepository {
         return tablesAndColumns;
     }
 
-    ArrayList<RelationshipData> getRelationships() throws SQLException, ClassNotFoundException {
+    ArrayList<RelationshipData> getRelationshipsFromOracleDatabase() throws SQLException, ClassNotFoundException {
+        connectionOracle = new ConnectionOracle();
+        connectionOracle.connect();
+        String sql = "SELECT " +
+                "  uc.TABLE_NAME, " +
+                "  uc.COLUMN_NAME, " +
+                "  uc.CONSTRAINT_NAME, " +
+                "  rc.TABLE_NAME AS REFERENCED_TABLE_NAME, " +
+                "  rc.COLUMN_NAME AS REFERENCED_COLUMN_NAME " +
+                "FROM " +
+                "  USER_CONS_COLUMNS uc " +
+                "JOIN " +
+                "  USER_CONSTRAINTS c ON uc.CONSTRAINT_NAME = c.CONSTRAINT_NAME " +
+                "JOIN " +
+                "  USER_CONS_COLUMNS rc ON c.R_CONSTRAINT_NAME = rc.CONSTRAINT_NAME " +
+                "WHERE " +
+                "  c.CONSTRAINT_TYPE = 'R' " +
+                "AND uc.TABLE_NAME LIKE 'BASI%' " +
+                "AND rc.TABLE_NAME LIKE 'BASI%' " +
+                "ORDER BY " +
+                "  uc.TABLE_NAME, uc.COLUMN_NAME";
+        PreparedStatement comando = connectionOracle.getIdConnection().prepareStatement(sql);
+        ResultSet dados = comando.executeQuery();
+        ArrayList<RelationshipData> listRelationshipData = new ArrayList<>();
+
+        while (dados.next()) {
+            String tableName = dados.getString("TABLE_NAME");
+            String columnName = dados.getString("COLUMN_NAME");
+            String referencedTableName = dados.getString("REFERENCED_TABLE_NAME");
+            String referencedColumnName = dados.getString("REFERENCED_COLUMN_NAME");
+            String tableAndReferencedTable = tableName + " e " + referencedTableName;
+            String join = "INNER JOIN " + referencedTableName + " ON " + tableName + "." + columnName + " = " + referencedTableName + "." + referencedColumnName;
+            RelationshipData relationshipData = new RelationshipData(tableAndReferencedTable, join);
+            listRelationshipData.add(relationshipData);
+            String tableAndReferencedTableReversed = referencedTableName + " e " + tableName;
+            String joinReversed = "INNER JOIN " + tableName + " ON " + referencedTableName + "." + referencedColumnName + " = " + tableName + "." + columnName;
+            RelationshipData relationshipDataReversed = new RelationshipData(tableAndReferencedTableReversed, joinReversed);
+            listRelationshipData.add(relationshipDataReversed);
+  
+        }
+        connectionOracle.disconnect();
+        
+        return listRelationshipData;
+    }
+    
+    ArrayList<RelationshipData> getRelationshipsFromMySQLDatabase() throws SQLException, ClassNotFoundException {
         connectionMySQL = new ConnectionMySQL();
         connectionMySQL.connect();
         String sql = "SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME " +
