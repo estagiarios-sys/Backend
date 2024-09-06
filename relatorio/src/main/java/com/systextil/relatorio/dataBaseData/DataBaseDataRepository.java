@@ -1,7 +1,7 @@
 package com.systextil.relatorio.dataBaseData;
 
-import com.systextil.relatorio.infra.ConnectionMySQL;
-import com.systextil.relatorio.infra.ConnectionOracle;
+import com.systextil.relatorio.infra.dataBaseConnection.ConnectionMySQL;
+import com.systextil.relatorio.infra.dataBaseConnection.ConnectionOracle;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -13,63 +13,40 @@ class DataBaseDataRepository {
     private ConnectionMySQL connectionMySQL;
     private ConnectionOracle connectionOracle;
 
-    LoadedQueryData findDataByQuery(String sql) throws SQLException, ClassNotFoundException {
+    LoadedQueryData findDataByQueryFromOracleDatabase(String sql) throws ClassNotFoundException, SQLException {
     	connectionOracle = new ConnectionOracle();
-        ArrayList<Object[]> listObjects = new ArrayList<>();
-        ArrayList<String> columnsNickName = new ArrayList<>();
-        connectionOracle.connect();
-        PreparedStatement command = connectionOracle.getIdConnection().prepareStatement(sql);
-        ResultSet data = command.executeQuery();
-        ResultSetMetaData metaData = data.getMetaData();
-        int columnsNumber = metaData.getColumnCount();
-        
-        for (int i = 1; i <= columnsNumber; i++) {
-        	String columnNickName = metaData.getColumnLabel(i);
-        	String columnTableName = metaData.getTableName(i);
-        	String columnName = metaData.getColumnName(i);
-        	if (columnNickName.equals(columnName)) {
-        		columnsNickName.add(columnTableName + "." + columnName);
-        	} else {
-        		columnsNickName.add(columnNickName);
-        	}
-        }
-
-        while (data.next()) {
-            Object[] object = new Object[columnsNumber];
-            for (int i = 1; i <= columnsNumber; i++) {
-                object[i - 1] = data.getString(i);
-            }
-            listObjects.add(object);
-        }
-        connectionOracle.disconnect();
-        LoadedQueryData loadedQueryData = new LoadedQueryData(columnsNickName, listObjects);
-        
-        return loadedQueryData;
+    	connectionOracle.connect();
+    	LoadedQueryData loadedQueryData = findDataByQuery(connectionOracle.getIdConnection(), sql);
+    	connectionOracle.disconnect();
+    	
+    	return loadedQueryData;
+    }
+    
+    LoadedQueryData findDataByQueryFromMySQLDatabase(String sql) throws ClassNotFoundException, SQLException {
+    	connectionMySQL = new ConnectionMySQL();
+    	connectionMySQL.connect();
+    	LoadedQueryData loadedQueryData = findDataByQuery(connectionMySQL.getIdConnection(), sql);
+    	connectionMySQL.disconnect();
+    	
+    	return loadedQueryData;
     }
 
-    Map<String, String[]> getTablesAndColumns() throws Exception {
+    Map<String, String[]> getTablesAndColumnsFromOracleDatabase() throws ClassNotFoundException, SQLException {
         connectionOracle = new ConnectionOracle();
         connectionOracle.connect();
-        Connection connection = this.connectionOracle.getIdConnection();
-        Map<String, String[]> tablesAndColumns = new HashMap<>();
-        DatabaseMetaData metaData = connection.getMetaData();
-        ResultSet tables = metaData.getTables("deVS", null, "BASI%", new String[]{"TABLE"});
-
-        while (tables.next()) {
-            String tableName = tables.getString("TABLE_NAME");
-
-            ResultSet columns = metaData.getColumns(null, null, tableName, "%");
-            ArrayList<String> columnNames = new ArrayList<>();
-            while (columns.next()) {
-                String columnName = columns.getString("COLUMN_NAME");
-                if (columnName != null) {
-                    columnNames.add(columnName);
-                }
-            }
-            tablesAndColumns.put(tableName, columnNames.toArray(new String[0]));
-        }
-
+        Map<String, String[]> tablesAndColumns = getTablesAndColumnsFromDatabase(connectionOracle.getIdConnection(), "deVS", "BASI%");
+        connectionOracle.disconnect();
+        
         return tablesAndColumns;
+    }
+    
+    Map<String, String[]> getTablesAndColumnsFromMySQLDatabase() throws ClassNotFoundException, SQLException {
+    	connectionMySQL = new ConnectionMySQL();
+    	connectionMySQL.connect();
+    	Map<String, String[]> tablesAndColumns = getTablesAndColumnsFromDatabase(connectionMySQL.getIdConnection(), "db_gerador_relatorio", "%");
+    	connectionMySQL.disconnect();
+    	
+    	return tablesAndColumns;
     }
 
     ArrayList<RelationshipData> getRelationshipsFromOracleDatabase() throws SQLException, ClassNotFoundException {
@@ -93,25 +70,7 @@ class DataBaseDataRepository {
                 "AND rc.TABLE_NAME LIKE 'BASI%' " +
                 "ORDER BY " +
                 "  uc.TABLE_NAME, uc.COLUMN_NAME";
-        PreparedStatement comando = connectionOracle.getIdConnection().prepareStatement(sql);
-        ResultSet dados = comando.executeQuery();
-        ArrayList<RelationshipData> listRelationshipData = new ArrayList<>();
-
-        while (dados.next()) {
-            String tableName = dados.getString("TABLE_NAME");
-            String columnName = dados.getString("COLUMN_NAME");
-            String referencedTableName = dados.getString("REFERENCED_TABLE_NAME");
-            String referencedColumnName = dados.getString("REFERENCED_COLUMN_NAME");
-            String tableAndReferencedTable = tableName + " e " + referencedTableName;
-            String join = "INNER JOIN " + referencedTableName + " ON " + tableName + "." + columnName + " = " + referencedTableName + "." + referencedColumnName;
-            RelationshipData relationshipData = new RelationshipData(tableAndReferencedTable, join);
-            listRelationshipData.add(relationshipData);
-            String tableAndReferencedTableReversed = referencedTableName + " e " + tableName;
-            String joinReversed = "INNER JOIN " + tableName + " ON " + referencedTableName + "." + referencedColumnName + " = " + tableName + "." + columnName;
-            RelationshipData relationshipDataReversed = new RelationshipData(tableAndReferencedTableReversed, joinReversed);
-            listRelationshipData.add(relationshipDataReversed);
-  
-        }
+        ArrayList<RelationshipData> listRelationshipData = getRelationshipsFromDatabase(connectionOracle.getIdConnection(), sql);
         connectionOracle.disconnect();
         
         return listRelationshipData;
@@ -123,7 +82,67 @@ class DataBaseDataRepository {
         String sql = "SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME " +
                 "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
                 "WHERE REFERENCED_TABLE_NAME IS NOT NULL";
-        PreparedStatement comando = connectionMySQL.getIdConnection().prepareStatement(sql);
+        ArrayList<RelationshipData> listRelationshipData = getRelationshipsFromDatabase(connectionMySQL.getIdConnection(), sql);
+        connectionMySQL.disconnect();
+        
+        return listRelationshipData;
+    }
+    
+    private LoadedQueryData findDataByQuery(Connection idConnection, String sql) throws SQLException, ClassNotFoundException {
+        ArrayList<Object[]> listObjects = new ArrayList<>();
+        ArrayList<String> columnsNickName = new ArrayList<>();
+        PreparedStatement command = idConnection.prepareStatement(sql);
+        ResultSet data = command.executeQuery();
+        ResultSetMetaData metaData = data.getMetaData();
+        int columnsNumber = metaData.getColumnCount();
+        
+        for (int i = 1; i <= columnsNumber; i++) {
+        	String columnNickName = metaData.getColumnLabel(i);
+        	String columnTableName = metaData.getTableName(i);
+        	String columnName = metaData.getColumnName(i);
+        	if (columnNickName.equals(columnName)) {
+        		columnsNickName.add(columnTableName + "." + columnName);
+        	} else {
+        		columnsNickName.add(columnNickName);
+        	}
+        }
+
+        while (data.next()) {
+            Object[] object = new Object[columnsNumber];
+            for (int i = 1; i <= columnsNumber; i++) {
+                object[i - 1] = data.getString(i);
+            }
+            listObjects.add(object);
+        }
+        LoadedQueryData loadedQueryData = new LoadedQueryData(columnsNickName, listObjects);
+        
+        return loadedQueryData;
+    }
+    
+    private Map<String, String[]> getTablesAndColumnsFromDatabase(Connection idConnection, String catalog, String tableNamePattern) throws SQLException {
+        Map<String, String[]> tablesAndColumns = new HashMap<>();
+        DatabaseMetaData metaData = idConnection.getMetaData();
+        ResultSet tables = metaData.getTables(catalog, null, tableNamePattern, new String[]{"TABLE"});
+
+        while (tables.next()) {
+            String tableName = tables.getString("TABLE_NAME");
+
+            ResultSet columns = metaData.getColumns(null, null, tableName, "%");
+            ArrayList<String> columnNames = new ArrayList<>();
+            while (columns.next()) {
+                String columnName = columns.getString("COLUMN_NAME");
+                if (columnName != null) {
+                    columnNames.add(columnName);
+                }
+            }
+            tablesAndColumns.put(tableName, columnNames.toArray(new String[0]));
+        }
+
+        return tablesAndColumns;
+    }
+    
+    private ArrayList<RelationshipData> getRelationshipsFromDatabase(Connection idConnection, String sql) throws SQLException {
+    	PreparedStatement comando = idConnection.prepareStatement(sql);
         ResultSet dados = comando.executeQuery();
         ArrayList<RelationshipData> listRelationshipData = new ArrayList<>();
 
@@ -140,9 +159,7 @@ class DataBaseDataRepository {
             String joinReversed = "INNER JOIN " + tableName + " ON " + referencedTableName + "." + referencedColumnName + " = " + tableName + "." + columnName;
             RelationshipData relationshipDataReversed = new RelationshipData(tableAndReferencedTableReversed, joinReversed);
             listRelationshipData.add(relationshipDataReversed);
-  
         }
-        connectionMySQL.disconnect();
         
         return listRelationshipData;
     }

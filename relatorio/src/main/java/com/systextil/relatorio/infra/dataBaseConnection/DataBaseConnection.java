@@ -1,4 +1,4 @@
-package com.systextil.relatorio.infra;
+package com.systextil.relatorio.infra.dataBaseConnection;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

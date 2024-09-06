@@ -7,7 +7,6 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +17,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -38,7 +36,6 @@ public class DataBaseDataController {
         String sql = SQLGenerator.finalQuery(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
         ArrayList<String> columnsNickName = loadQuery(sql).columnsNickName();
         ArrayList<Object[]> foundObjects = loadQuery(sql).foundObjects();
-        
 
         return new Object[]{sql, columnsNickName, foundObjects};
     }
@@ -70,30 +67,6 @@ public class DataBaseDataController {
             throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath);
         }
     }
-
-    @GetMapping("table/{tableName}")
-    public ResponseEntity<Object> getTableData(
-            @PathVariable String tableName,
-            @RequestParam(required = false) List<String> columns,
-            @RequestParam(required = false) String conditions,
-            @RequestParam(required = false) String orderBy,
-            @RequestParam(required = false) List<String> joins
-    ) {
-        dataBaseDataRepository = new DataBaseDataRepository();
-
-        try {
-            ArrayList<String> colList = columns != null && !columns.isEmpty() ? new ArrayList<>(columns) : new ArrayList<>(List.of("*"));
-            String condList = conditions != null ? conditions : "";
-            ArrayList<String> joinList = joins != null ? new ArrayList<>(joins) : new ArrayList<>();
-            String order = orderBy != null ? orderBy : "";
-            String sqlQuery = SQLGenerator.finalQuery(tableName, colList, condList, order, joinList);
-            List<Object[]> tableData = dataBaseDataRepository.findDataByQuery(sqlQuery).foundObjects();
-
-            return ResponseEntity.ok(tableData);
-        } catch (SQLException | ClassNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao buscar os dados: " + e.getMessage());
-        }
-    }
     
     @PostMapping("loadedQuery")
     public LoadedQueryData loadQuery(@RequestBody String sql) throws RuntimeException {
@@ -101,16 +74,16 @@ public class DataBaseDataController {
         LoadedQueryData loadedQueryData;
         
         try {
-            loadedQueryData = dataBaseDataRepository.findDataByQuery(sql);
+            loadedQueryData = dataBaseDataRepository.findDataByQueryFromMySQLDatabase(sql);
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
         
         return loadedQueryData;
     }
-
+    
     @PutMapping("update/table")
-    private void setTablesAndColumnsFromDatabaseIntoJson() throws Exception {
+    public void setTablesAndColumnsFromDatabaseIntoJson() throws Exception {
         Path filePath = Paths.get(tablesJsonFilePath);
         Resource resource = new UrlResource(filePath.toUri());
         
@@ -118,7 +91,7 @@ public class DataBaseDataController {
         	dataBaseDataRepository = new DataBaseDataRepository();
         	ObjectMapper objectMapper = new ObjectMapper();
         	FileWriter fileWriter = new FileWriter(resource.getFile());
-            Map<String, String[]> tablesAndColumns = dataBaseDataRepository.getTablesAndColumns();
+            Map<String, String[]> tablesAndColumns = dataBaseDataRepository.getTablesAndColumnsFromMySQLDatabase();
             String json = objectMapper.writeValueAsString(tablesAndColumns);
         	fileWriter.write(json);
         	fileWriter.close();
@@ -128,7 +101,7 @@ public class DataBaseDataController {
     }
 
     @PutMapping("update/relationship")
-    private void setRelationshipsFromDatabaseIntoJson() throws SQLException, ClassNotFoundException, IOException {
+    public void setRelationshipsFromDatabaseIntoJson() throws SQLException, ClassNotFoundException, IOException {
         Path filePath = Paths.get(relationshipsJsonFilePath);
         Resource resource = new UrlResource(filePath.toUri());
         
@@ -136,7 +109,7 @@ public class DataBaseDataController {
         	dataBaseDataRepository = new DataBaseDataRepository();
         	ObjectMapper objectMapper = new ObjectMapper();
         	FileWriter fileWriter = new FileWriter(resource.getFile());
-        	ArrayList<RelationshipData> relationships = dataBaseDataRepository.getRelationshipsFromOracleDatabase();
+        	ArrayList<RelationshipData> relationships = dataBaseDataRepository.getRelationshipsFromMySQLDatabase();
         	String json = objectMapper.writeValueAsString(relationships);
         	fileWriter.write(json);
         	fileWriter.close();

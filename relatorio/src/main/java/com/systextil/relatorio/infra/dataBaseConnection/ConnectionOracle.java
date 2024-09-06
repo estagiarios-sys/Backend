@@ -1,4 +1,4 @@
-package com.systextil.relatorio.infra;
+package com.systextil.relatorio.infra.dataBaseConnection;
 
 public class ConnectionOracle extends DataBaseConnection {
 
