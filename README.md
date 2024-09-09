@@ -9,6 +9,7 @@ Esta API Java é o back-end do projeto gerador de relatório, feito pelos estagi
 
 - `Tratamento de JSON`: Ela trata os JSON's recebidos do front-end, transformando em classes entity.
 - `Consulta SQL`: A própria aplicação monta os SQL's e manda para o front.
+- `Tratamento de erros`: Caso falte dados ou os mesmos não estejam corretos, é retornado uma mensagem amigável.
 <br>
 
 # 📁 Abrir e rodar o projeto
@@ -17,10 +18,13 @@ Esta API Java é o back-end do projeto gerador de relatório, feito pelos estagi
 2. Instale as dependências necessárias*.
 3. Compile e execute o aplicativo Java.
 
+Obs: as rotas estão configuradas para que o projeto seja aberto na pasta "relatorio".
+
 # Tecnologias usadas / Dependências necessárias*
 
 - `Linguagem`: Java
+- `Framework`: Spring Boot
 - `Kit de desenvolvimento`: JDK-21
 - `Gerenciador de dependências`: Maven
 - `IDE`: Intellij
-- `Banco de dados`: MySQL
+- `Banco de dados`: MySQL e Oracle
