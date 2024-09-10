@@ -117,7 +117,7 @@ class DataBaseDataRepository {
         	String columnTableName = metaData.getTableName(i);
         	String columnName = metaData.getColumnName(i);
         	
-        	if (columnNickName.equals(columnName)) {
+        	if (columnNickName == columnName) {
         		columnsNickName.add(columnTableName + "." + columnName);
         	} else {
         		columnsNickName.add(columnNickName);
@@ -144,24 +144,11 @@ class DataBaseDataRepository {
     	ResultSetMetaData metaData = data.getMetaData();
     	int columnsNumber = metaData.getColumnCount();
     	Totalizer totalizer;
-    	String stringTotalizer = "";
     	data.next();
     	
     	for (int i = 1; i <= columnsNumber; i++) {
-    		totalizer = queryWithTotalizers.listOfTotalizers().get(i-1);
-    		
-    		if (totalizer.equals(Totalizer.AVG)) {
-    			stringTotalizer = "Média";
-    		} else if (totalizer.equals(Totalizer.SUM)) {
-    			stringTotalizer = "Soma";
-    		} else if (totalizer.equals(Totalizer.MIN)) {
-    			stringTotalizer = "Mínimo";
-    		} else if (totalizer.equals(Totalizer.MAX)) {
-    			stringTotalizer = "Máximo";
-    		} else if (totalizer.equals(Totalizer.COUNT)) {
-    			stringTotalizer = "Contador";
-    		}
-    		totalizersResults.add(stringTotalizer + ": " + data.getInt(i));
+    		totalizer = queryWithTotalizers.totalizers().get(i-1);
+    		totalizersResults.add(totalizer.toPortuguese() + ": " + data.getInt(i));
     	}
     	    	
     	return totalizersResults;

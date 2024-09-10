@@ -2,9 +2,10 @@ package com.systextil.relatorio.dataBaseData;
 
 import java.util.ArrayList;
 
-public record QueryWithTotalizers(
+/** Classe necessária no método DataBaseRepository.getTotalizersResults() */
+record QueryWithTotalizers(
 		
 	String query,
-	ArrayList<Totalizer> listOfTotalizers
+	ArrayList<Totalizer> totalizers
 
 ) {}
