@@ -35,21 +35,31 @@ public class DataBaseDataController {
     @PostMapping
     public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws RuntimeException {
         String finalQuery = SQLGenerator.generateFinalQuery(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
-        QueryWithTotalizers queryWithTotalizers = SQLGenerator.generateTotalizersQuery(queryData.totalizers(), queryData.table());
+        QueryWithTotalizers queryWithTotalizers = null;
+        
+        if (!queryData.totalizers().isEmpty()) {
+        	queryWithTotalizers = SQLGenerator.generateTotalizersQuery(queryData.totalizers(), queryData.table());
+        }
+        
         
         LoadedQueryData loadedQueryData = loadQuery(finalQuery, queryWithTotalizers);
         ArrayList<String> columnsNickName = loadedQueryData.columnsNickName();
         ArrayList<Object[]> foundObjects = loadedQueryData.foundObjects();
-        ArrayList<String> totalizersResults = loadedQueryData.totalizersResults();
-        int index = 0;
-        Map<String, String> columnAndTotalizer = new HashMap<String, String>();
         
-        for (Map.Entry<String, Totalizer> totalizer : queryData.totalizers().entrySet()) {
-        	columnAndTotalizer.put(totalizer.getKey(), totalizersResults.get(index));
-        	index++;
+        if (loadedQueryData.totalizersResults() != null) {
+        	ArrayList<String> totalizersResults = loadedQueryData.totalizersResults();
+        	int totalizersResultsCounter = 0;
+            Map<String, String> columnsAndTotalizers = new HashMap<>();
+            
+            for (Map.Entry<String, Totalizer> totalizer : queryData.totalizers().entrySet()) {
+            	columnsAndTotalizers.put(totalizer.getKey(), totalizersResults.get(totalizersResultsCounter));
+            	totalizersResultsCounter++;
+            }
+            
+            return new Object[]{finalQuery, queryWithTotalizers.query(), columnsNickName, foundObjects, columnsAndTotalizers};
         }
         
-        return new Object[]{finalQuery, queryWithTotalizers.query(), columnsNickName, foundObjects, columnAndTotalizer};
+        return new Object[]{finalQuery, columnsNickName, foundObjects};
     }
 
     @GetMapping("table")

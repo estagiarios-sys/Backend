@@ -17,7 +17,14 @@ class DataBaseDataRepository {
     	connectionOracle = new ConnectionOracle();
     	connectionOracle.connect();
     	LoadedQueryData loadedQueryData = findDataByQuery(connectionOracle.getIdConnection(), finalQuery);
-    	ArrayList<String> totalizersResults = getTotalizersResults(connectionOracle.getIdConnection(), queryWithTotalizers);
+    	
+    	if (queryWithTotalizers != null) {
+    		ArrayList<String> totalizersResults = getTotalizersResults(connectionOracle.getIdConnection(), queryWithTotalizers);
+    		LoadedQueryData loadedQueryDataWithTotalizersResults = new LoadedQueryData(loadedQueryData.columnsNickName(), loadedQueryData.foundObjects(), totalizersResults);
+        	connectionOracle.disconnect();
+        	
+        	return loadedQueryDataWithTotalizersResults;
+    	}
     	connectionOracle.disconnect();
     	
     	return loadedQueryData;
@@ -27,11 +34,17 @@ class DataBaseDataRepository {
     	connectionMySQL = new ConnectionMySQL();
     	connectionMySQL.connect();
     	LoadedQueryData loadedQueryData = findDataByQuery(connectionMySQL.getIdConnection(), finalQuery);
-    	ArrayList<String> totalizersResults = getTotalizersResults(connectionMySQL.getIdConnection(), queryWithTotalizers);
-    	LoadedQueryData updatedLoadedQueryData = new LoadedQueryData(loadedQueryData.columnsNickName(), loadedQueryData.foundObjects(), totalizersResults);
+    	
+    	if (queryWithTotalizers != null) {
+    		ArrayList<String> totalizersResults = getTotalizersResults(connectionMySQL.getIdConnection(), queryWithTotalizers);
+        	LoadedQueryData loadedQueryDataWithTotalizersResults = new LoadedQueryData(loadedQueryData.columnsNickName(), loadedQueryData.foundObjects(), totalizersResults);
+        	connectionMySQL.disconnect();
+        	
+        	return loadedQueryDataWithTotalizersResults;
+    	}
        	connectionMySQL.disconnect();
     	
-    	return updatedLoadedQueryData;
+    	return loadedQueryData;
     }
 
     Map<String, String[]> getTablesAndColumnsFromOracleDatabase() throws ClassNotFoundException, SQLException {
@@ -119,9 +132,7 @@ class DataBaseDataRepository {
             listObjects.add(object);
         }
         LoadedQueryData loadedQueryData = new LoadedQueryData(columnsNickName, listObjects, null);
-        
-        System.out.println(loadedQueryData);
-        
+                
         return loadedQueryData;
     }
     
@@ -151,9 +162,7 @@ class DataBaseDataRepository {
     		}
     		totalizersResults.add(stringTotalizer + ": " + data.getInt(i));
     	}
-    	
-    	System.out.println(totalizersResults);
-    	
+    	    	
     	return totalizersResults;
     }
     
