@@ -38,7 +38,7 @@ public class DataBaseDataController {
         QueryWithTotalizers queryWithTotalizers = null;
         
         if (!queryData.totalizers().isEmpty()) {
-        	queryWithTotalizers = SQLGenerator.generateTotalizersQuery(queryData.totalizers(), queryData.table());
+        	queryWithTotalizers = SQLGenerator.generateTotalizersQuery(queryData.totalizers());
         }
         LoadedQueryData loadedQueryData = loadQuery(finalQuery, queryWithTotalizers);
         ArrayList<String> columnsNickName = loadedQueryData.columnsNickName();

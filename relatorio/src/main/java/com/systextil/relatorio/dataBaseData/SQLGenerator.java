@@ -3,9 +3,9 @@ package com.systextil.relatorio.dataBaseData;
 import java.util.ArrayList;
 import java.util.Map;
 
-public class SQLGenerator {
+class SQLGenerator {
 
-    public static String generateFinalQuery(String table, ArrayList<String> columns, String conditions, String orderBy,  ArrayList<String> joins) {
+	static String generateFinalQuery(String table, ArrayList<String> columns, String conditions, String orderBy,  ArrayList<String> joins) {
         String query = "SELECT ";
         query = query.concat(listOfColumnsToQuery(columns));
         query = query.concat(" FROM ");
@@ -29,12 +29,23 @@ public class SQLGenerator {
         return query;
     }
     
-    public static QueryWithTotalizers generateTotalizersQuery(Map<String, Totalizer> totalizers, String table) {
+	static QueryWithTotalizers generateTotalizersQuery(Map<String, Totalizer> totalizers) {
     	String query = "SELECT ";
     	ArrayList<Totalizer> listOfTotalizers = new ArrayList<>();
+    	ArrayList<String> tables = new ArrayList<>();
     	boolean firstTotalizer = true;
     	
     	for (Map.Entry<String, Totalizer> totalizer: totalizers.entrySet()) {
+    		boolean newTable = false;
+    		String tableFromColumn = getTableFromColumn(totalizer.getKey());
+    		
+    		System.out.println(tableFromColumn);
+    		
+    		if (tables.isEmpty()) {
+    			tables.add(tableFromColumn);
+    		}
+    		
+    		System.out.println(tables);
     		
     		if (!firstTotalizer) {
     			query = query.concat(", ");
@@ -43,8 +54,9 @@ public class SQLGenerator {
     		listOfTotalizers.add(totalizer.getValue());
     		firstTotalizer = false;
     	}
-    	query = query.concat(" FROM " + table);
+    	query = query.concat(" FROM " + listOfColumnsToQuery(tables));
     	QueryWithTotalizers queryWithTotalizers = new QueryWithTotalizers(query, listOfTotalizers);
+    	System.out.println(query);
     	
     	return queryWithTotalizers;
     	
@@ -76,5 +88,15 @@ public class SQLGenerator {
         }
         
         return query;
+    }
+    
+    private static String getTableFromColumn(String columnName) {
+    	int dotIndex = columnName.indexOf(".");
+    	if (dotIndex == -1) {
+    		return columnName;
+    	} else {
+    		return columnName.substring(0, dotIndex);
+    	}
+    	
     }
 }
