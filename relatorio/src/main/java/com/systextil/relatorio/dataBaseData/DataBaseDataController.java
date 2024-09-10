@@ -40,8 +40,6 @@ public class DataBaseDataController {
         if (!queryData.totalizers().isEmpty()) {
         	queryWithTotalizers = SQLGenerator.generateTotalizersQuery(queryData.totalizers(), queryData.table());
         }
-        
-        
         LoadedQueryData loadedQueryData = loadQuery(finalQuery, queryWithTotalizers);
         ArrayList<String> columnsNickName = loadedQueryData.columnsNickName();
         ArrayList<Object[]> foundObjects = loadedQueryData.foundObjects();
@@ -59,7 +57,7 @@ public class DataBaseDataController {
             return new Object[]{finalQuery, queryWithTotalizers.query(), columnsNickName, foundObjects, columnsAndTotalizers};
         }
         
-        return new Object[]{finalQuery, columnsNickName, foundObjects};
+        return new Object[]{finalQuery, "", columnsNickName, foundObjects, ""};
     }
 
     @GetMapping("table")

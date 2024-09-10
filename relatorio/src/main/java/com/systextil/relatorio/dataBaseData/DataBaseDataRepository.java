@@ -126,6 +126,7 @@ class DataBaseDataRepository {
 
         while (data.next()) {
             Object[] object = new Object[columnsNumber];
+            
             for (int i = 1; i <= columnsNumber; i++) {
                 object[i - 1] = data.getString(i);
             }
