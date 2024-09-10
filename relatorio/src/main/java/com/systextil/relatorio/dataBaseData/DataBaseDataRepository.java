@@ -13,22 +13,25 @@ class DataBaseDataRepository {
     private ConnectionMySQL connectionMySQL;
     private ConnectionOracle connectionOracle;
 
-    LoadedQueryData findDataByQueryFromOracleDatabase(String sql) throws ClassNotFoundException, SQLException {
+    LoadedQueryData findDataByQueryFromOracleDatabase(String finalQuery, QueryWithTotalizers queryWithTotalizers) throws ClassNotFoundException, SQLException {
     	connectionOracle = new ConnectionOracle();
     	connectionOracle.connect();
-    	LoadedQueryData loadedQueryData = findDataByQuery(connectionOracle.getIdConnection(), sql);
+    	LoadedQueryData loadedQueryData = findDataByQuery(connectionOracle.getIdConnection(), finalQuery);
+    	ArrayList<String> totalizersResults = getTotalizersResults(connectionOracle.getIdConnection(), queryWithTotalizers);
     	connectionOracle.disconnect();
     	
     	return loadedQueryData;
     }
     
-    LoadedQueryData findDataByQueryFromMySQLDatabase(String sql) throws ClassNotFoundException, SQLException {
+    LoadedQueryData findDataByQueryFromMySQLDatabase(String finalQuery, QueryWithTotalizers queryWithTotalizers) throws ClassNotFoundException, SQLException {
     	connectionMySQL = new ConnectionMySQL();
     	connectionMySQL.connect();
-    	LoadedQueryData loadedQueryData = findDataByQuery(connectionMySQL.getIdConnection(), sql);
-    	connectionMySQL.disconnect();
+    	LoadedQueryData loadedQueryData = findDataByQuery(connectionMySQL.getIdConnection(), finalQuery);
+    	ArrayList<String> totalizersResults = getTotalizersResults(connectionMySQL.getIdConnection(), queryWithTotalizers);
+    	LoadedQueryData updatedLoadedQueryData = new LoadedQueryData(loadedQueryData.columnsNickName(), loadedQueryData.foundObjects(), totalizersResults);
+       	connectionMySQL.disconnect();
     	
-    	return loadedQueryData;
+    	return updatedLoadedQueryData;
     }
 
     Map<String, String[]> getTablesAndColumnsFromOracleDatabase() throws ClassNotFoundException, SQLException {
@@ -100,6 +103,7 @@ class DataBaseDataRepository {
         	String columnNickName = metaData.getColumnLabel(i);
         	String columnTableName = metaData.getTableName(i);
         	String columnName = metaData.getColumnName(i);
+        	
         	if (columnNickName.equals(columnName)) {
         		columnsNickName.add(columnTableName + "." + columnName);
         	} else {
@@ -114,9 +118,43 @@ class DataBaseDataRepository {
             }
             listObjects.add(object);
         }
-        LoadedQueryData loadedQueryData = new LoadedQueryData(columnsNickName, listObjects);
+        LoadedQueryData loadedQueryData = new LoadedQueryData(columnsNickName, listObjects, null);
+        
+        System.out.println(loadedQueryData);
         
         return loadedQueryData;
+    }
+    
+    private ArrayList<String> getTotalizersResults(Connection idConnection, QueryWithTotalizers queryWithTotalizers) throws SQLException {
+    	ArrayList<String> totalizersResults = new ArrayList<>();
+    	PreparedStatement command = idConnection.prepareStatement(queryWithTotalizers.query());
+    	ResultSet data = command.executeQuery();
+    	ResultSetMetaData metaData = data.getMetaData();
+    	int columnsNumber = metaData.getColumnCount();
+    	Totalizer totalizer;
+    	String stringTotalizer = "";
+    	data.next();
+    	
+    	for (int i = 1; i <= columnsNumber; i++) {
+    		totalizer = queryWithTotalizers.listOfTotalizers().get(i-1);
+    		
+    		if (totalizer.equals(Totalizer.AVG)) {
+    			stringTotalizer = "Média";
+    		} else if (totalizer.equals(Totalizer.SUM)) {
+    			stringTotalizer = "Soma";
+    		} else if (totalizer.equals(Totalizer.MIN)) {
+    			stringTotalizer = "Mínimo";
+    		} else if (totalizer.equals(Totalizer.MAX)) {
+    			stringTotalizer = "Máximo";
+    		} else if (totalizer.equals(Totalizer.COUNT)) {
+    			stringTotalizer = "Contador";
+    		}
+    		totalizersResults.add(stringTotalizer + ": " + data.getInt(i));
+    	}
+    	
+    	System.out.println(totalizersResults);
+    	
+    	return totalizersResults;
     }
     
     private Map<String, String[]> getTablesAndColumnsFromDatabase(Connection idConnection, String catalog, String tableNamePattern) throws SQLException {

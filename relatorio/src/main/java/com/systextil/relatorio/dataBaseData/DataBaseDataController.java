@@ -1,7 +1,7 @@
 package com.systextil.relatorio.dataBaseData;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.systextil.relatorio.service.SQLGenerator;
+
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -33,11 +34,22 @@ public class DataBaseDataController {
 
     @PostMapping
     public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws RuntimeException {
-        String sql = SQLGenerator.finalQuery(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
-        ArrayList<String> columnsNickName = loadQuery(sql).columnsNickName();
-        ArrayList<Object[]> foundObjects = loadQuery(sql).foundObjects();
-
-        return new Object[]{sql, columnsNickName, foundObjects};
+        String finalQuery = SQLGenerator.generateFinalQuery(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
+        QueryWithTotalizers queryWithTotalizers = SQLGenerator.generateTotalizersQuery(queryData.totalizers(), queryData.table());
+        
+        LoadedQueryData loadedQueryData = loadQuery(finalQuery, queryWithTotalizers);
+        ArrayList<String> columnsNickName = loadedQueryData.columnsNickName();
+        ArrayList<Object[]> foundObjects = loadedQueryData.foundObjects();
+        ArrayList<String> totalizersResults = loadedQueryData.totalizersResults();
+        int index = 0;
+        Map<String, String> columnAndTotalizer = new HashMap<String, String>();
+        
+        for (Map.Entry<String, Totalizer> totalizer : queryData.totalizers().entrySet()) {
+        	columnAndTotalizer.put(totalizer.getKey(), totalizersResults.get(index));
+        	index++;
+        }
+        
+        return new Object[]{finalQuery, queryWithTotalizers.query(), columnsNickName, foundObjects, columnAndTotalizer};
     }
 
     @GetMapping("table")
@@ -69,12 +81,12 @@ public class DataBaseDataController {
     }
     
     @PostMapping("loadedQuery")
-    public LoadedQueryData loadQuery(@RequestBody String sql) throws RuntimeException {
+    public LoadedQueryData loadQuery(@RequestBody String finalQuery, QueryWithTotalizers queryWithTotalizers) throws RuntimeException {
         dataBaseDataRepository = new DataBaseDataRepository();
         LoadedQueryData loadedQueryData;
         
         try {
-            loadedQueryData = dataBaseDataRepository.findDataByQueryFromMySQLDatabase(sql);
+            loadedQueryData = dataBaseDataRepository.findDataByQueryFromMySQLDatabase(finalQuery, queryWithTotalizers);
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
