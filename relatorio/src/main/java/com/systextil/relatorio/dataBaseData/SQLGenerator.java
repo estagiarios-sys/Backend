@@ -36,16 +36,11 @@ class SQLGenerator {
     	boolean firstTotalizer = true;
     	
     	for (Map.Entry<String, Totalizer> totalizer: totalizers.entrySet()) {
-    		boolean newTable = false;
     		String tableFromColumn = getTableFromColumn(totalizer.getKey());
     		
-    		System.out.println(tableFromColumn);
-    		
-    		if (tables.isEmpty()) {
+    		if (!tables.contains(tableFromColumn)) {
     			tables.add(tableFromColumn);
     		}
-    		
-    		System.out.println(tables);
     		
     		if (!firstTotalizer) {
     			query = query.concat(", ");
@@ -56,10 +51,8 @@ class SQLGenerator {
     	}
     	query = query.concat(" FROM " + listOfColumnsToQuery(tables));
     	QueryWithTotalizers queryWithTotalizers = new QueryWithTotalizers(query, listOfTotalizers);
-    	System.out.println(query);
     	
     	return queryWithTotalizers;
-    	
     }
 
     private static String listOfColumnsToQuery(ArrayList<String> colunas) {
