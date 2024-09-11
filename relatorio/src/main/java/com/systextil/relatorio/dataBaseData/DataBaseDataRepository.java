@@ -35,7 +35,7 @@ class DataBaseDataRepository {
     	connectionMySQL.connect();
     	LoadedQueryData loadedQueryData = findDataByQuery(connectionMySQL.getIdConnection(), finalQuery);
     	
-    	if (queryWithTotalizers != null) {
+    	if (queryWithTotalizers.query() != null || queryWithTotalizers.totalizers() != null) {
     		ArrayList<String> totalizersResults = getTotalizersResults(connectionMySQL.getIdConnection(), queryWithTotalizers);
         	LoadedQueryData loadedQueryDataWithTotalizersResults = new LoadedQueryData(loadedQueryData.columnsNickName(), loadedQueryData.foundObjects(), totalizersResults);
         	connectionMySQL.disconnect();

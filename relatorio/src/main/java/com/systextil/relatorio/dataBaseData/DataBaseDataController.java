@@ -40,7 +40,8 @@ public class DataBaseDataController {
         if (!queryData.totalizers().isEmpty()) {
         	queryWithTotalizers = SQLGenerator.generateTotalizersQuery(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
         }
-        LoadedQueryData loadedQueryData = loadQuery(finalQuery, queryWithTotalizers);
+        ToLoadQueryData toLoadQueryData = new ToLoadQueryData(finalQuery, queryWithTotalizers);
+        LoadedQueryData loadedQueryData = loadQuery(toLoadQueryData);
         ArrayList<String> columnsNickName = loadedQueryData.columnsNickName();
         ArrayList<Object[]> foundObjects = loadedQueryData.foundObjects();
         
@@ -89,12 +90,12 @@ public class DataBaseDataController {
     }
     
     @PostMapping("loadedQuery")
-    public LoadedQueryData loadQuery(@RequestBody String finalQuery, QueryWithTotalizers queryWithTotalizers) throws RuntimeException {
+    public LoadedQueryData loadQuery(@RequestBody ToLoadQueryData toLoadQueryData) throws RuntimeException {
         dataBaseDataRepository = new DataBaseDataRepository();
         LoadedQueryData loadedQueryData;
         
         try {
-            loadedQueryData = dataBaseDataRepository.findDataByQueryFromMySQLDatabase(finalQuery, queryWithTotalizers);
+            loadedQueryData = dataBaseDataRepository.findDataByQueryFromMySQLDatabase(toLoadQueryData.finalQuery, toLoadQueryData.queryWithTotalizers);
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -137,4 +138,9 @@ public class DataBaseDataController {
         	throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath);
         }
     }
+    
+    record ToLoadQueryData(
+    		String finalQuery,
+    		QueryWithTotalizers queryWithTotalizers
+    		) {}
 }
