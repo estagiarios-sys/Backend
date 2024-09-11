@@ -29,27 +29,31 @@ class SQLGenerator {
         return query;
     }
     
-	static QueryWithTotalizers generateTotalizersQuery(Map<String, Totalizer> totalizers) {
-    	String query = "SELECT ";
+	static QueryWithTotalizers generateTotalizersQuery(Map<String, Totalizer> totalizers, String table, String conditions, ArrayList<String> joins) {
     	ArrayList<Totalizer> listOfTotalizers = new ArrayList<>();
-    	ArrayList<String> tables = new ArrayList<>();
     	boolean firstTotalizer = true;
+    	String query = "SELECT ";
     	
     	for (Map.Entry<String, Totalizer> totalizer: totalizers.entrySet()) {
-    		String tableFromColumn = getTableFromColumn(totalizer.getKey());
-    		
-    		if (!tables.contains(tableFromColumn)) {
-    			tables.add(tableFromColumn);
-    		}
+    		listOfTotalizers.add(totalizer.getValue());
     		
     		if (!firstTotalizer) {
     			query = query.concat(", ");
     		}
     		query = query.concat(totalizer.getValue() + "(" + totalizer.getKey() + ")");
-    		listOfTotalizers.add(totalizer.getValue());
     		firstTotalizer = false;
     	}
-    	query = query.concat(" FROM " + listOfColumnsToQuery(tables));
+    	query = query.concat(" FROM " + table);
+    	
+    	if (!joins.isEmpty()) {
+            query = query.concat(" ");
+            query = query.concat(listOfJoinsToQuery(joins));
+        }
+    	
+    	if (!conditions.isBlank()) {
+            query = query.concat(" WHERE ");
+            query = query.concat(conditions);
+        }
     	QueryWithTotalizers queryWithTotalizers = new QueryWithTotalizers(query, listOfTotalizers);
     	
     	return queryWithTotalizers;
@@ -81,15 +85,5 @@ class SQLGenerator {
         }
         
         return query;
-    }
-    
-    private static String getTableFromColumn(String columnName) {
-    	int dotIndex = columnName.indexOf(".");
-    	if (dotIndex == -1) {
-    		return columnName;
-    	} else {
-    		return columnName.substring(0, dotIndex);
-    	}
-    	
     }
 }
