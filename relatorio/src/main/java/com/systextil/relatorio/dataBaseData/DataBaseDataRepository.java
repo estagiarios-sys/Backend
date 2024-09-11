@@ -116,8 +116,8 @@ class DataBaseDataRepository {
         	String columnNickName = metaData.getColumnLabel(i);
         	String columnTableName = metaData.getTableName(i);
         	String columnName = metaData.getColumnName(i);
-        	
-        	if (columnNickName == columnName) {
+        	        	
+        	if (columnNickName.equalsIgnoreCase(columnName)) {
         		columnsNickName.add(columnTableName + "." + columnName);
         	} else {
         		columnsNickName.add(columnNickName);
