@@ -1,6 +1,6 @@
 package com.systextil.relatorio.domain.savedQuery;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import jakarta.persistence.*;
 
@@ -14,9 +14,11 @@ public class SavedQuery {
     private String queryName;
     private String finalQuery;
     private String totalizersQuery;
+    
+    @OneToMany(cascade = CascadeType.PERSIST)
     @Embedded
-    @OneToMany
-    private ArrayList<Totalizer> totalizers;
+    @JoinColumn(name = "saved_query_id")
+    private List<Totalizer> totalizers;
 
     public SavedQuery() {
     }
@@ -25,7 +27,7 @@ public class SavedQuery {
     	this.queryName = savedQuerySaving.queryName();
     	this.finalQuery = savedQuerySaving.finalQuery();
     	this.totalizersQuery = savedQuerySaving.totalizersQuery();
-    	this.totalizers = (ArrayList<Totalizer>) savedQuerySaving.totalizers().stream().map(Totalizer::new).toList();
+    	this.totalizers = savedQuerySaving.totalizers().stream().map(Totalizer::new).toList();
     }
 
     public Long getId() {
@@ -36,7 +38,7 @@ public class SavedQuery {
         return queryName;
     }
 
-    public String getQuery() {
+    public String getFinalQuery() {
         return finalQuery;
     }
     
@@ -44,15 +46,14 @@ public class SavedQuery {
 		return totalizersQuery;
 	}
 
-	public ArrayList<Totalizer> getTotalizers() {
+	public List<Totalizer> getTotalizers() {
 		return totalizers;
 	}    
     
     public void updateData(SavedQuerySaving savedQuerySaving) {
     	this.finalQuery = savedQuerySaving.finalQuery();
     	this.totalizersQuery = savedQuerySaving.totalizersQuery();
-    	this.totalizers = (ArrayList<Totalizer>) savedQuerySaving.totalizers().stream().map(t -> new Totalizer(t)).toList();
-    	
+    	this.totalizers = savedQuerySaving.totalizers().stream().map(t -> new Totalizer(t)).toList();
     }
 
 

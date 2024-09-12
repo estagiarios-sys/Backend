@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Entity
@@ -17,6 +18,7 @@ public class Totalizer {
 	private Long id;
 	private String totalizer;
 	@ManyToOne
+	@JoinColumn(name = "saved_query_id")
 	private SavedQuery savedQuery;
 	
 	public Totalizer() {
