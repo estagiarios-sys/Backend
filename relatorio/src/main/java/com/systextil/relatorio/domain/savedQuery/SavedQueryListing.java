@@ -1,4 +1,4 @@
-package com.systextil.relatorio.savedQuery;
+package com.systextil.relatorio.domain.savedQuery;
 
 record SavedQueryListing(
         String queryName,

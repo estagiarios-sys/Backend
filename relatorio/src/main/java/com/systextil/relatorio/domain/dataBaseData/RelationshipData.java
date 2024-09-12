@@ -1,4 +1,4 @@
-package com.systextil.relatorio.dataBaseData;
+package com.systextil.relatorio.domain.dataBaseData;
 
 record RelationshipData(
 		String tabelas,

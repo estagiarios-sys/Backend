@@ -1,4 +1,4 @@
-package com.systextil.relatorio.dataBaseData;
+package com.systextil.relatorio.domain.dataBaseData;
 
 import com.systextil.relatorio.infra.dataBaseConnection.ConnectionMySQL;
 import com.systextil.relatorio.infra.dataBaseConnection.ConnectionOracle;
@@ -18,16 +18,18 @@ class DataBaseDataRepository {
     	connectionOracle.connect();
     	LoadedQueryData loadedQueryData = findDataByQuery(connectionOracle.getIdConnection(), finalQuery);
     	
-    	if (queryWithTotalizers != null) {
+    	try {
+    		queryWithTotalizers.query();
     		ArrayList<String> totalizersResults = getTotalizersResults(connectionOracle.getIdConnection(), queryWithTotalizers);
-    		LoadedQueryData loadedQueryDataWithTotalizersResults = new LoadedQueryData(loadedQueryData.columnsNickName(), loadedQueryData.foundObjects(), totalizersResults);
+        	LoadedQueryData loadedQueryDataWithTotalizersResults = new LoadedQueryData(loadedQueryData.columnsNickName(), loadedQueryData.foundObjects(), totalizersResults);
         	connectionOracle.disconnect();
         	
         	return loadedQueryDataWithTotalizersResults;
+    	} catch (NullPointerException e) {
+    		connectionOracle.disconnect();
+        	
+        	return loadedQueryData;
     	}
-    	connectionOracle.disconnect();
-    	
-    	return loadedQueryData;
     }
     
     LoadedQueryData findDataByQueryFromMySQLDatabase(String finalQuery, QueryWithTotalizers queryWithTotalizers) throws ClassNotFoundException, SQLException {
@@ -35,16 +37,18 @@ class DataBaseDataRepository {
     	connectionMySQL.connect();
     	LoadedQueryData loadedQueryData = findDataByQuery(connectionMySQL.getIdConnection(), finalQuery);
     	
-    	if (queryWithTotalizers.query() != null || queryWithTotalizers.totalizers() != null) {
+    	try {
+    		queryWithTotalizers.query();
     		ArrayList<String> totalizersResults = getTotalizersResults(connectionMySQL.getIdConnection(), queryWithTotalizers);
         	LoadedQueryData loadedQueryDataWithTotalizersResults = new LoadedQueryData(loadedQueryData.columnsNickName(), loadedQueryData.foundObjects(), totalizersResults);
         	connectionMySQL.disconnect();
         	
         	return loadedQueryDataWithTotalizersResults;
+    	} catch (NullPointerException e) {
+    		connectionMySQL.disconnect();
+        	
+        	return loadedQueryData;
     	}
-       	connectionMySQL.disconnect();
-    	
-    	return loadedQueryData;
     }
 
     Map<String, String[]> getTablesAndColumnsFromOracleDatabase() throws ClassNotFoundException, SQLException {

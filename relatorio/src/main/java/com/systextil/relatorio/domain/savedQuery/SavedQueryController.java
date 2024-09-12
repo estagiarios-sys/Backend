@@ -1,4 +1,4 @@
-package com.systextil.relatorio.savedQuery;
+package com.systextil.relatorio.domain.savedQuery;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
