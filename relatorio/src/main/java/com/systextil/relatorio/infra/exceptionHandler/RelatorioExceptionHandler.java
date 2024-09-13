@@ -15,10 +15,12 @@ import java.util.Map;
 public class RelatorioExceptionHandler {
 
     @ExceptionHandler(SQLSyntaxErrorException.class)
-    public ResponseEntity<String[]> return400ErrorForSQLSyntaxError(SQLSyntaxErrorException exception) {
-        String message = "Não foi possível montar o SQL. Verifique os dados passados no JSON. Segue mensagem do SQLSyntaxErrorException";
-        String[] messages = new String[]{message, exception.getLocalizedMessage()};
-        return ResponseEntity.badRequest().body(messages);
+    public ResponseEntity<Map<String, String>> return400ErrorForSQLSyntaxError(SQLSyntaxErrorException exception) {
+    	Map<String, String> errors = new HashMap<>();
+    	errors.put("message", "Não foi possível montar o SQL. Verifique os dados passados no JSON");
+        errors.put("exception message", exception.getLocalizedMessage());
+    	
+        return ResponseEntity.badRequest().body(errors);
     }
 
     /** Método chamado quando algum dado não passar por alguma validação */
@@ -26,9 +28,9 @@ public class RelatorioExceptionHandler {
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException exception) {
         Map<String, String> errors = new HashMap<>();
         for (FieldError error : exception.getBindingResult().getFieldErrors()) {
-            errors.put("Mensagem:", error.getDefaultMessage());
-            errors.put("Campo do JSON:", error.getField());
-            errors.put("Anotação:", error.getCode());
+            errors.put("message", error.getDefaultMessage());
+            errors.put("json field", error.getField());
+            errors.put("annotation", error.getCode());
         }
         return ResponseEntity.badRequest().body(errors);
     }

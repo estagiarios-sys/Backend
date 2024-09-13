@@ -95,7 +95,7 @@ public class DataBaseDataController {
         LoadedQueryData loadedQueryData;
         
         try {
-            loadedQueryData = dataBaseDataRepository.findDataByQueryFromMySQLDatabase(toLoadQueryData.finalQuery, toLoadQueryData.queryWithTotalizers);
+            loadedQueryData = dataBaseDataRepository.findDataByQueryFromMySQLDatabase(toLoadQueryData.finalQuery(), toLoadQueryData.queryWithTotalizers());
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -138,9 +138,4 @@ public class DataBaseDataController {
         	throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath);
         }
     }
-    
-    record ToLoadQueryData(
-    		String finalQuery,
-    		QueryWithTotalizers queryWithTotalizers
-    		) {}
 }
