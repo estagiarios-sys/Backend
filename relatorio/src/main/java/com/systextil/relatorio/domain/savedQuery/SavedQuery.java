@@ -27,7 +27,12 @@ public class SavedQuery {
     	this.queryName = savedQuerySaving.queryName();
     	this.finalQuery = savedQuerySaving.finalQuery();
     	this.totalizersQuery = savedQuerySaving.totalizersQuery();
-    	this.totalizers = savedQuerySaving.totalizers().stream().map(Totalizer::new).toList();
+    	try {
+    		this.totalizers = savedQuerySaving.totalizers().stream().map(Totalizer::new).toList();
+    	} catch(NullPointerException e) {
+    		this.totalizers = null;
+    	}
+    	
     }
 
     public Long getId() {
@@ -53,7 +58,12 @@ public class SavedQuery {
     public void updateData(SavedQuerySaving savedQuerySaving) {
     	this.finalQuery = savedQuerySaving.finalQuery();
     	this.totalizersQuery = savedQuerySaving.totalizersQuery();
-    	this.totalizers = savedQuerySaving.totalizers().stream().map(t -> new Totalizer(t)).toList();
+    	try {
+    		this.totalizers = savedQuerySaving.totalizers().stream().map(t -> new Totalizer(t)).toList();
+    	} catch(NullPointerException e) {
+    		this.totalizers = null;
+    	}
+    	
     }
 
 

@@ -1,4 +1,4 @@
-package com.systextil.relatorio.infra;
+package com.systextil.relatorio.infra.exceptionHandler;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
