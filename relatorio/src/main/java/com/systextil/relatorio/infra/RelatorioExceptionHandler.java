@@ -6,6 +6,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.SQLSyntaxErrorException;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,14 +23,23 @@ public class RelatorioExceptionHandler {
 
     /** Método chamado quando algum dado não passar por alguma validação */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException exception) {
         Map<String, String> errors = new HashMap<>();
-        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+        for (FieldError error : exception.getBindingResult().getFieldErrors()) {
             errors.put("Mensagem:", error.getDefaultMessage());
             errors.put("Campo do JSON:", error.getField());
             errors.put("Anotação:", error.getCode());
         }
         return ResponseEntity.badRequest().body(errors);
+    }
+    
+    @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
+    public ResponseEntity<Map<String, String>> return400ErrorForDuplicateEntry(SQLIntegrityConstraintViolationException exception) {
+    	Map<String, String> errors = new HashMap<>();
+    	errors.put("message", exception.getLocalizedMessage());
+    	
+    	return ResponseEntity.badRequest().body(errors);
+    	
     }
 
 }
