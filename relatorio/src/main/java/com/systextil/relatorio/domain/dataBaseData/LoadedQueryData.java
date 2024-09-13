@@ -1,9 +1,10 @@
 package com.systextil.relatorio.domain.dataBaseData;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 record LoadedQueryData(
-	ArrayList<String> columnsNickName,
+	Map<String, String> columnsNameAndNickName,
 	ArrayList<Object[]> foundObjects,
 	ArrayList<String> totalizersResults
 ) {}

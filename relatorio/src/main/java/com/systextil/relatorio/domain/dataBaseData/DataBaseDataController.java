@@ -42,7 +42,7 @@ public class DataBaseDataController {
         }
         ToLoadQueryData toLoadQueryData = new ToLoadQueryData(finalQuery, queryWithTotalizers);
         LoadedQueryData loadedQueryData = loadQuery(toLoadQueryData);
-        ArrayList<String> columnsNickName = loadedQueryData.columnsNickName();
+        Map<String, String> columnsNameAndNickName = loadedQueryData.columnsNameAndNickName();
         ArrayList<Object[]> foundObjects = loadedQueryData.foundObjects();
         
         if (loadedQueryData.totalizersResults() != null) {
@@ -55,10 +55,10 @@ public class DataBaseDataController {
             	totalizersResultsCounter++;
             }
             
-            return new Object[]{finalQuery, queryWithTotalizers.query(), columnsNickName, foundObjects, columnsAndTotalizers};
+            return new Object[]{finalQuery, queryWithTotalizers.query(), columnsNameAndNickName, foundObjects, columnsAndTotalizers};
         }
         
-        return new Object[]{finalQuery, "", columnsNickName, foundObjects, ""};
+        return new Object[]{finalQuery, "", columnsNameAndNickName, foundObjects, ""};
     }
 
     @GetMapping("table")
