@@ -39,7 +39,14 @@ public class RelatorioExceptionHandler {
     	errors.put("message", exception.getLocalizedMessage());
     	
     	return ResponseEntity.badRequest().body(errors);
+    }
+    
+    @ExceptionHandler(TotalizerFieldsMismatchException.class)
+    public ResponseEntity<Map<String, String>> return400ErrorForTotalizerFieldsMismatchException(TotalizerFieldsMismatchException exception) {
+    	Map<String, String> errors = new HashMap<>();
+    	errors.put("message", exception.getLocalizedMessage());
     	
+    	return ResponseEntity.badRequest().body(errors);
     }
 
 }
