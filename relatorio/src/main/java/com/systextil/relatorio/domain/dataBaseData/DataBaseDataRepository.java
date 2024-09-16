@@ -21,7 +21,7 @@ class DataBaseDataRepository {
     	try {
     		queryWithTotalizers.query();
     		ArrayList<String> totalizersResults = getTotalizersResults(connectionOracle.getIdConnection(), queryWithTotalizers);
-        	LoadedQueryData loadedQueryDataWithTotalizersResults = new LoadedQueryData(loadedQueryData.columnsNickName(), loadedQueryData.foundObjects(), totalizersResults);
+        	LoadedQueryData loadedQueryDataWithTotalizersResults = new LoadedQueryData(loadedQueryData.columnsNameAndNickName(), loadedQueryData.foundObjects(), totalizersResults);
         	connectionOracle.disconnect();
         	
         	return loadedQueryDataWithTotalizersResults;
@@ -40,7 +40,7 @@ class DataBaseDataRepository {
     	try {
     		queryWithTotalizers.query();
     		ArrayList<String> totalizersResults = getTotalizersResults(connectionMySQL.getIdConnection(), queryWithTotalizers);
-        	LoadedQueryData loadedQueryDataWithTotalizersResults = new LoadedQueryData(loadedQueryData.columnsNickName(), loadedQueryData.foundObjects(), totalizersResults);
+        	LoadedQueryData loadedQueryDataWithTotalizersResults = new LoadedQueryData(loadedQueryData.columnsNameAndNickName(), loadedQueryData.foundObjects(), totalizersResults);
         	connectionMySQL.disconnect();
         	
         	return loadedQueryDataWithTotalizersResults;
@@ -110,7 +110,7 @@ class DataBaseDataRepository {
     
     private LoadedQueryData findDataByQuery(Connection idConnection, String sql) throws SQLException, ClassNotFoundException {
         ArrayList<Object[]> listObjects = new ArrayList<>();
-        ArrayList<String> columnsNickName = new ArrayList<>();
+        Map<String, String> columnsNameAndNickName = new HashMap<>();
         PreparedStatement command = idConnection.prepareStatement(sql);
         ResultSet data = command.executeQuery();
         ResultSetMetaData metaData = data.getMetaData();
@@ -122,9 +122,9 @@ class DataBaseDataRepository {
         	String columnName = metaData.getColumnName(i);
         	        	
         	if (columnNickName.equalsIgnoreCase(columnName)) {
-        		columnsNickName.add(columnTableName + "." + columnName);
+        		columnsNameAndNickName.put(columnTableName + "." + columnName, null);
         	} else {
-        		columnsNickName.add(columnNickName);
+        		columnsNameAndNickName.put(columnTableName + "." + columnName, columnNickName);
         	}
         }
 
@@ -136,7 +136,7 @@ class DataBaseDataRepository {
             }
             listObjects.add(object);
         }
-        LoadedQueryData loadedQueryData = new LoadedQueryData(columnsNickName, listObjects, null);
+        LoadedQueryData loadedQueryData = new LoadedQueryData(columnsNameAndNickName, listObjects, null);
                 
         return loadedQueryData;
     }
