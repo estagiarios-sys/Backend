@@ -1,5 +1,8 @@
 package com.systextil.relatorio.infra.dataBaseConnection;
 
+/** 
+ * Classe pai: {@link DataBaseConnection}
+ */
 public class ConnectionOracle extends DataBaseConnection {
 
     private final String user = "systextil";

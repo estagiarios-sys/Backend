@@ -40,7 +40,7 @@ public class SavedQueryController {
     }
     
     @DeleteMapping("delete/{queryName}")
-    public ResponseEntity<Void> deleteSQL(@PathVariable(value = "queryName") String queryName) {
+    public ResponseEntity<Void> deleteSQL(@PathVariable String queryName) {
     	savedQueryRepository.deleteByQueryName(queryName);
     	
     	return ResponseEntity.noContent().build();

@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotEmpty;
 import java.util.ArrayList;
 import java.util.Map;
 
+/** Record com os dados necessários para a geração do SQL */
 record QueryData(
     @NotBlank
     String table,

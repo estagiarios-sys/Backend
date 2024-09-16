@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+/** Classe pai das classes que farão conexão com banco de dados */
 class DataBaseConnection {
 
     private String user;
@@ -24,6 +25,7 @@ class DataBaseConnection {
         return idConnection;
     }
     
+    /** Método usado para as classes filhas configurarem a conexão */
     protected void fillAttributes(String user, String password, String url) {
     	this.user = user;
     	this.password = password;

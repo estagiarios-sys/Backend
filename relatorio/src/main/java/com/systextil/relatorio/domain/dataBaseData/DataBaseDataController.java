@@ -93,7 +93,7 @@ public class DataBaseDataController {
     public LoadedQueryData loadQuery(@RequestBody ToLoadQueryData toLoadQueryData) throws RuntimeException {
         dataBaseDataRepository = new DataBaseDataRepository();
         LoadedQueryData loadedQueryData;
-        
+
         try {
             loadedQueryData = dataBaseDataRepository.findDataByQueryFromMySQLDatabase(toLoadQueryData.finalQuery(), toLoadQueryData.queryWithTotalizers());
         } catch (SQLException | ClassNotFoundException e) {
