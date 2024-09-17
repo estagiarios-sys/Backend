@@ -13,7 +13,7 @@ import org.springframework.web.client.RestTemplate;
 public class PdfController {
 
     @PostMapping("/generate")
-    public ResponseEntity<byte[]> generatePdf(@RequestBody String htmlContent) {
+    public ResponseEntity<byte[]> generatePdf(@RequestBody PdfRequest pdfRequest) {
         try {
             RestTemplate restTemplate = new RestTemplate();
 
@@ -21,7 +21,8 @@ public class PdfController {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            HttpEntity<String> request = new HttpEntity<>(htmlContent, headers);
+            // Converte PdfRequest para JSON
+            HttpEntity<PdfRequest> request = new HttpEntity<>(pdfRequest, headers);
 
             // Faz a requisição POST para o microserviço Node.js
             ResponseEntity<byte[]> response = restTemplate.exchange(
@@ -43,7 +44,7 @@ public class PdfController {
     }
 
     @PostMapping("/preview")
-    public ResponseEntity<byte[]> previewPdf(@RequestBody String htmlContent) {
+    public ResponseEntity<byte[]> previewPdf(@RequestBody PdfRequest pdfRequest) {
         try {
             RestTemplate restTemplate = new RestTemplate();
 
@@ -51,7 +52,7 @@ public class PdfController {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            HttpEntity<String> request = new HttpEntity<>(htmlContent, headers);
+            HttpEntity<PdfRequest> request = new HttpEntity<>(pdfRequest, headers);
 
             // Faz a requisição POST para o microserviço Node.js
             ResponseEntity<byte[]> response = restTemplate.exchange(
