@@ -33,7 +33,7 @@ public class DataBaseDataController {
     private String relationshipsJsonFilePath;
 
     @PostMapping
-    public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws RuntimeException {
+    public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws SQLException {
         String finalQuery = SQLGenerator.generateFinalQuery(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
         QueryWithTotalizers queryWithTotalizers = null;
         
@@ -110,15 +110,10 @@ public class DataBaseDataController {
     }
     
     @PostMapping("loadedQuery")
-    public LoadedQueryData loadQuery(@RequestBody ToLoadQueryData toLoadQueryData) throws RuntimeException {
+    public LoadedQueryData loadQuery(@RequestBody ToLoadQueryData toLoadQueryData) throws SQLException {
         dataBaseDataRepository = new DataBaseDataRepository();
-        LoadedQueryData loadedQueryData;
-
-        try {
-            loadedQueryData = dataBaseDataRepository.findDataByQueryFromMySQLDatabase(toLoadQueryData.finalQuery(), toLoadQueryData.queryWithTotalizers());
-        } catch (SQLException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        LoadedQueryData loadedQueryData = null;
+        loadedQueryData = dataBaseDataRepository.findDataByQueryFromMySQLDatabase(toLoadQueryData.finalQuery(), toLoadQueryData.queryWithTotalizers());
         
         return loadedQueryData;
     }

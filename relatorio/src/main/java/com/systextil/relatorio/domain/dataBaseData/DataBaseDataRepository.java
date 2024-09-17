@@ -13,7 +13,7 @@ class DataBaseDataRepository {
     private ConnectionMySQL connectionMySQL;
     private ConnectionOracle connectionOracle;
 
-    LoadedQueryData findDataByQueryFromOracleDatabase(String finalQuery, QueryWithTotalizers queryWithTotalizers) throws ClassNotFoundException, SQLException {
+    LoadedQueryData findDataByQueryFromOracleDatabase(String finalQuery, QueryWithTotalizers queryWithTotalizers) throws SQLException {
     	connectionOracle = new ConnectionOracle();
     	connectionOracle.connect();
     	LoadedQueryData loadedQueryData = findDataByQuery(connectionOracle.getIdConnection(), finalQuery);
@@ -32,7 +32,7 @@ class DataBaseDataRepository {
     	}
     }
     
-    LoadedQueryData findDataByQueryFromMySQLDatabase(String finalQuery, QueryWithTotalizers queryWithTotalizers) throws ClassNotFoundException, SQLException {
+    LoadedQueryData findDataByQueryFromMySQLDatabase(String finalQuery, QueryWithTotalizers queryWithTotalizers) throws SQLException {
     	connectionMySQL = new ConnectionMySQL();
     	connectionMySQL.connect();
     	LoadedQueryData loadedQueryData = findDataByQuery(connectionMySQL.getIdConnection(), finalQuery);
@@ -108,7 +108,7 @@ class DataBaseDataRepository {
         return listRelationshipData;
     }
     
-    private LoadedQueryData findDataByQuery(Connection idConnection, String sql) throws SQLException, ClassNotFoundException {
+    private LoadedQueryData findDataByQuery(Connection idConnection, String sql) throws SQLException {
         ArrayList<Object[]> listObjects = new ArrayList<>();
         Map<String, String> columnsNameAndNickName = new HashMap<>();
         PreparedStatement command = idConnection.prepareStatement(sql);

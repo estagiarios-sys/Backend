@@ -51,4 +51,11 @@ public class RelatorioExceptionHandler {
     	return ResponseEntity.badRequest().body(errors);
     }
 
+    @ExceptionHandler(CannotConnectToDataBaseException.class)
+    public ResponseEntity<Map<String, String>> return500ErrorForCannotConnectToDataBaseException(CannotConnectToDataBaseException exception) {
+    	Map<String, String> errors = new HashMap<>();
+    	errors.put("message", exception.getLocalizedMessage());
+    	
+    	return ResponseEntity.internalServerError().body(errors);
+    }   
 }
