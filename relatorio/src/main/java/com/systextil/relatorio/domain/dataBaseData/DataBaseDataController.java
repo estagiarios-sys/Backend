@@ -46,6 +46,7 @@ public class DataBaseDataController {
         ArrayList<String> columnsNameOrNickName = new ArrayList<>();
         
         for (Map.Entry<String, String> columnNameAndNickName : columnsNameAndNickName.entrySet()) {
+        	
    			if (columnNameAndNickName.getValue() != null) {
    				columnsNameOrNickName.add(columnNameAndNickName.getValue());
    			} else {
@@ -63,6 +64,7 @@ public class DataBaseDataController {
             	String columnsAndTotalizersColumn = null;
             	
             	for (Map.Entry<String, String> columnNameAndNickName : columnsNameAndNickName.entrySet()) {
+            		
             		if (totalizer.getKey().equalsIgnoreCase(columnNameAndNickName.getKey())) {
             			if (columnNameAndNickName.getValue() != null) {
             				columnsAndTotalizersColumn = columnNameAndNickName.getValue();

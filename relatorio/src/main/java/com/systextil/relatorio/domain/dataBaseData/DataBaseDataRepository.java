@@ -6,6 +6,7 @@ import com.systextil.relatorio.infra.dataBaseConnection.ConnectionOracle;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 class DataBaseDataRepository {
@@ -110,7 +111,7 @@ class DataBaseDataRepository {
     
     private LoadedQueryData findDataByQuery(Connection idConnection, String sql) throws SQLException {
         ArrayList<Object[]> listObjects = new ArrayList<>();
-        Map<String, String> columnsNameAndNickName = new HashMap<>();
+        Map<String, String> columnsNameAndNickName = new LinkedHashMap<>();
         PreparedStatement command = idConnection.prepareStatement(sql);
         ResultSet data = command.executeQuery();
         ResultSetMetaData metaData = data.getMetaData();
