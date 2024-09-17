@@ -7,13 +7,13 @@ class SQLGenerator {
 
 	static String generateFinalQuery(String table, ArrayList<String> columns, String conditions, String orderBy,  ArrayList<String> joins) {
         String query = "SELECT ";
-        query = query.concat(listOfColumnsToQuery(columns));
+        query = query.concat(String.join(", ", columns));
         query = query.concat(" FROM ");
         query = query.concat(table);
         
         if (!joins.isEmpty()) {
             query = query.concat(" ");
-            query = query.concat(listOfJoinsToQuery(joins));
+            query = query.concat(String.join(" ", joins));
         }
         
         if (!conditions.isBlank()) {
@@ -47,7 +47,7 @@ class SQLGenerator {
     	
     	if (!joins.isEmpty()) {
             query = query.concat(" ");
-            query = query.concat(listOfJoinsToQuery(joins));
+            query = query.concat(String.join(" ", joins));
         }
     	
     	if (!conditions.isBlank()) {
@@ -57,33 +57,5 @@ class SQLGenerator {
     	QueryWithTotalizers queryWithTotalizers = new QueryWithTotalizers(query, listOfTotalizers);
     	
     	return queryWithTotalizers;
-    }
-
-    private static String listOfColumnsToQuery(ArrayList<String> colunas) {
-        String query = "";
-        
-        for (String coluna : colunas) {
-        	
-            if (!coluna.equals(colunas.getFirst())) {
-                query = query.concat(", ");
-            }
-            query = query.concat(coluna);
-        }
-        
-        return query;
-    }
-
-    private static String listOfJoinsToQuery(ArrayList<String> joins) {
-        String query = "";
-        
-        for (String join : joins) {
-        	
-            if (!join.equals(joins.getFirst())) {
-                query = query.concat(" ");
-            }
-            query = query.concat(join);
-        }
-        
-        return query;
     }
 }

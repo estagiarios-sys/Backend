@@ -13,7 +13,9 @@ class DataBaseConnection {
     private Connection idConnection;
 
     public void connect() throws ClassNotFoundException, SQLException {
-        this.idConnection = DriverManager.getConnection(url, user, password);
+    	//try {
+    		this.idConnection = DriverManager.getConnection(url, user, password);
+    	//} catch () {}
     }
 
     public void disconnect() throws SQLException {

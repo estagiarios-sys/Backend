@@ -43,6 +43,15 @@ public class DataBaseDataController {
         ToLoadQueryData toLoadQueryData = new ToLoadQueryData(finalQuery, queryWithTotalizers);
         LoadedQueryData loadedQueryData = loadQuery(toLoadQueryData);
         Map<String, String> columnsNameAndNickName = loadedQueryData.columnsNameAndNickName();
+        ArrayList<String> columnsNameOrNickName = new ArrayList<>();
+        
+        for (Map.Entry<String, String> columnNameAndNickName : columnsNameAndNickName.entrySet()) {
+   			if (columnNameAndNickName.getValue() != null) {
+   				columnsNameOrNickName.add(columnNameAndNickName.getValue());
+   			} else {
+   				columnsNameOrNickName.add(columnNameAndNickName.getKey());
+    		}
+    	}
         ArrayList<Object[]> foundObjects = loadedQueryData.foundObjects();
         
         if (loadedQueryData.totalizersResults() != null) {
@@ -51,14 +60,25 @@ public class DataBaseDataController {
             Map<String, String> columnsAndTotalizers = new HashMap<>();
             
             for (Map.Entry<String, Totalizer> totalizer : queryData.totalizers().entrySet()) {
-            	columnsAndTotalizers.put(totalizer.getKey(), totalizersResults.get(totalizersResultsCounter));
+            	String columnsAndTotalizersColumn = null;
+            	
+            	for (Map.Entry<String, String> columnNameAndNickName : columnsNameAndNickName.entrySet()) {
+            		if (totalizer.getKey().equalsIgnoreCase(columnNameAndNickName.getKey())) {
+            			if (columnNameAndNickName.getValue() != null) {
+            				columnsAndTotalizersColumn = columnNameAndNickName.getValue();
+            			} else {
+            				columnsAndTotalizersColumn = columnNameAndNickName.getKey();
+            			}
+            		}
+            	}
+            	columnsAndTotalizers.put(columnsAndTotalizersColumn, totalizersResults.get(totalizersResultsCounter));
             	totalizersResultsCounter++;
             }
             
-            return new Object[]{finalQuery, queryWithTotalizers.query(), columnsNameAndNickName, foundObjects, columnsAndTotalizers};
+            return new Object[]{finalQuery, queryWithTotalizers.query(), columnsNameOrNickName, foundObjects, columnsAndTotalizers};
         }
         
-        return new Object[]{finalQuery, "", columnsNameAndNickName, foundObjects, ""};
+        return new Object[]{finalQuery, "", columnsNameOrNickName, foundObjects, ""};
     }
 
     @GetMapping("table")
