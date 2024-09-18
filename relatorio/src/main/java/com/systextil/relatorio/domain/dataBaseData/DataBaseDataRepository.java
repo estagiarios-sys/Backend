@@ -62,6 +62,15 @@ class DataBaseDataRepository {
 		
 		return actualTime;
 	}
+    
+    double getActualTimeFromQueriesAnalysisFromOracleDataBase(String finalQueryAnalysis, String totalizersQueryAnalysis) throws SQLException {
+		connectionOracle = new ConnectionOracle();
+		connectionOracle.connect();
+		double actualTime = getActualTimeFromQueriesAnalysis(connectionOracle.getIdConnection(), finalQueryAnalysis, totalizersQueryAnalysis);
+		connectionOracle.disconnect();
+		
+		return actualTime;
+	}
 
 	Map<String, String[]> getTablesAndColumnsFromOracleDataBase() throws ClassNotFoundException, SQLException {
         connectionOracle = new ConnectionOracle();
@@ -188,7 +197,6 @@ class DataBaseDataRepository {
     	data.next();
     	String allData = data.getString(1);
     	String firstLineData = allData.split("\n", 0)[1];
-    	System.out.println(firstLineData);
     	Pattern pattern = Pattern.compile("actual time=(\\d+\\.\\d+)\\.\\.(\\d+\\.\\d+)");
     	Matcher matcher = pattern.matcher(firstLineData);
     	double startTime = 0;
