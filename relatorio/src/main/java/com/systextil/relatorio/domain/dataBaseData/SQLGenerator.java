@@ -58,4 +58,15 @@ class SQLGenerator {
     	
     	return queryWithTotalizers;
     }
+	
+	static String generateFinalQueryAnalysis (String table, ArrayList<String> columns, String conditions, String orderBy,  ArrayList<String> joins) {
+		String finalQuery = generateFinalQuery(table, columns, conditions, orderBy, joins);
+		return "EXPLAIN ANALYZE " + finalQuery;
+	}
+	
+	static String generateTotalizersQueryAnalysis(Map<String, Totalizer> totalizers, String table, String conditions, ArrayList<String> joins) {
+		String totalizersQuery = generateTotalizersQuery(totalizers, table, conditions, joins).query();
+		
+		return "EXPLAIN ANALYZE " + totalizersQuery;
+	}
 }

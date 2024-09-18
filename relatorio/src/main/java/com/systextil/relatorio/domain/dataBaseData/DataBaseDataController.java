@@ -82,6 +82,20 @@ public class DataBaseDataController {
         
         return new Object[]{finalQuery, "", columnsNameOrNickName, foundObjects, ""};
     }
+    
+    @PostMapping("analysis")
+    public double getQueryAnalysis(@RequestBody @Valid QueryData queryData) throws SQLException {
+    	dataBaseDataRepository = new DataBaseDataRepository();
+    	String finalQueryAnalysis = SQLGenerator.generateFinalQueryAnalysis(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
+    	String totalizersQueryAnalysis = null;
+    	
+    	if (!queryData.totalizers().isEmpty()) {
+    		totalizersQueryAnalysis = SQLGenerator.generateTotalizersQueryAnalysis(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
+    	}
+    	double actualTime = dataBaseDataRepository.getActualTimeFromQueriesAnalysisFromMySQLDataBase(finalQueryAnalysis, totalizersQueryAnalysis);
+    	
+    	return actualTime;
+    }
 
     @GetMapping("table")
     public ResponseEntity<Resource> getTablesAndColumns() throws IOException {
@@ -115,7 +129,7 @@ public class DataBaseDataController {
     public LoadedQueryData loadQuery(@RequestBody ToLoadQueryData toLoadQueryData) throws SQLException {
         dataBaseDataRepository = new DataBaseDataRepository();
         LoadedQueryData loadedQueryData = null;
-        loadedQueryData = dataBaseDataRepository.findDataByQueryFromMySQLDatabase(toLoadQueryData.finalQuery(), toLoadQueryData.queryWithTotalizers());
+        loadedQueryData = dataBaseDataRepository.findDataByQueryFromMySQLDataBase(toLoadQueryData.finalQuery(), toLoadQueryData.queryWithTotalizers());
         
         return loadedQueryData;
     }
@@ -147,7 +161,7 @@ public class DataBaseDataController {
         	dataBaseDataRepository = new DataBaseDataRepository();
         	ObjectMapper objectMapper = new ObjectMapper();
         	FileWriter fileWriter = new FileWriter(resource.getFile());
-        	ArrayList<RelationshipData> relationships = dataBaseDataRepository.getRelationshipsFromMySQLDatabase();
+        	ArrayList<RelationshipData> relationships = dataBaseDataRepository.getRelationshipsFromMySQLDataBase();
         	String json = objectMapper.writeValueAsString(relationships);
         	fileWriter.write(json);
         	fileWriter.close();

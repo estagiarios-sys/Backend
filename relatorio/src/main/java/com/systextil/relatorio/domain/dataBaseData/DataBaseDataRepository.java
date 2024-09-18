@@ -8,13 +8,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class DataBaseDataRepository {
 
     private ConnectionMySQL connectionMySQL;
     private ConnectionOracle connectionOracle;
 
-    LoadedQueryData findDataByQueryFromOracleDatabase(String finalQuery, QueryWithTotalizers queryWithTotalizers) throws SQLException {
+    LoadedQueryData findDataByQueryFromOracleDataBase(String finalQuery, QueryWithTotalizers queryWithTotalizers) throws SQLException {
     	connectionOracle = new ConnectionOracle();
     	connectionOracle.connect();
     	LoadedQueryData loadedQueryData = findDataByQuery(connectionOracle.getIdConnection(), finalQuery);
@@ -33,7 +35,7 @@ class DataBaseDataRepository {
     	}
     }
     
-    LoadedQueryData findDataByQueryFromMySQLDatabase(String finalQuery, QueryWithTotalizers queryWithTotalizers) throws SQLException {
+    LoadedQueryData findDataByQueryFromMySQLDataBase(String finalQuery, QueryWithTotalizers queryWithTotalizers) throws SQLException {
     	connectionMySQL = new ConnectionMySQL();
     	connectionMySQL.connect();
     	LoadedQueryData loadedQueryData = findDataByQuery(connectionMySQL.getIdConnection(), finalQuery);
@@ -51,11 +53,20 @@ class DataBaseDataRepository {
         	return loadedQueryData;
     	}
     }
+    
+    double getActualTimeFromQueriesAnalysisFromMySQLDataBase(String finalQueryAnalysis, String totalizersQueryAnalysis) throws SQLException {
+		connectionMySQL = new ConnectionMySQL();
+		connectionMySQL.connect();
+		double actualTime = getActualTimeFromQueriesAnalysis(connectionMySQL.getIdConnection(), finalQueryAnalysis, totalizersQueryAnalysis);
+		connectionMySQL.disconnect();
+		
+		return actualTime;
+	}
 
-    Map<String, String[]> getTablesAndColumnsFromOracleDatabase() throws ClassNotFoundException, SQLException {
+	Map<String, String[]> getTablesAndColumnsFromOracleDataBase() throws ClassNotFoundException, SQLException {
         connectionOracle = new ConnectionOracle();
         connectionOracle.connect();
-        Map<String, String[]> tablesAndColumns = getTablesAndColumnsFromDatabase(connectionOracle.getIdConnection(), "deVS", "BASI%");
+        Map<String, String[]> tablesAndColumns = getTablesAndColumnsFromDataBase(connectionOracle.getIdConnection(), "deVS", "BASI%");
         connectionOracle.disconnect();
         
         return tablesAndColumns;
@@ -64,13 +75,13 @@ class DataBaseDataRepository {
     Map<String, String[]> getTablesAndColumnsFromMySQLDatabase() throws ClassNotFoundException, SQLException {
     	connectionMySQL = new ConnectionMySQL();
     	connectionMySQL.connect();
-    	Map<String, String[]> tablesAndColumns = getTablesAndColumnsFromDatabase(connectionMySQL.getIdConnection(), "db_gerador_relatorio", "%");
+    	Map<String, String[]> tablesAndColumns = getTablesAndColumnsFromDataBase(connectionMySQL.getIdConnection(), "db_gerador_relatorio", "%");
     	connectionMySQL.disconnect();
     	
     	return tablesAndColumns;
     }
 
-    ArrayList<RelationshipData> getRelationshipsFromOracleDatabase() throws SQLException, ClassNotFoundException {
+    ArrayList<RelationshipData> getRelationshipsFromOracleDataBase() throws SQLException, ClassNotFoundException {
         connectionOracle = new ConnectionOracle();
         connectionOracle.connect();
         String sql = "SELECT " +
@@ -91,19 +102,19 @@ class DataBaseDataRepository {
                 "AND rc.TABLE_NAME LIKE 'BASI%' " +
                 "ORDER BY " +
                 "  uc.TABLE_NAME, uc.COLUMN_NAME";
-        ArrayList<RelationshipData> listRelationshipData = getRelationshipsFromDatabase(connectionOracle.getIdConnection(), sql);
+        ArrayList<RelationshipData> listRelationshipData = getRelationshipsFromDataBase(connectionOracle.getIdConnection(), sql);
         connectionOracle.disconnect();
         
         return listRelationshipData;
     }
     
-    ArrayList<RelationshipData> getRelationshipsFromMySQLDatabase() throws SQLException, ClassNotFoundException {
+    ArrayList<RelationshipData> getRelationshipsFromMySQLDataBase() throws SQLException, ClassNotFoundException {
         connectionMySQL = new ConnectionMySQL();
         connectionMySQL.connect();
         String sql = "SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME " +
                 "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
                 "WHERE REFERENCED_TABLE_NAME IS NOT NULL";
-        ArrayList<RelationshipData> listRelationshipData = getRelationshipsFromDatabase(connectionMySQL.getIdConnection(), sql);
+        ArrayList<RelationshipData> listRelationshipData = getRelationshipsFromDataBase(connectionMySQL.getIdConnection(), sql);
         connectionMySQL.disconnect();
         
         return listRelationshipData;
@@ -159,7 +170,39 @@ class DataBaseDataRepository {
     	return totalizersResults;
     }
     
-    private Map<String, String[]> getTablesAndColumnsFromDatabase(Connection idConnection, String catalog, String tableNamePattern) throws SQLException {
+    private double getActualTimeFromQueriesAnalysis(Connection idConnection, String finalQueryAnalysis, String totalizersQueryAnalysis) throws SQLException {
+    	double actualTimeFromFinalQuery = getActualTimeFromQueryAnalysis(idConnection, finalQueryAnalysis);
+    	if (totalizersQueryAnalysis != null) {
+    		double actualTimeFromTotalizersQuery = getActualTimeFromQueryAnalysis(idConnection, totalizersQueryAnalysis);
+        	
+        	return actualTimeFromFinalQuery + actualTimeFromTotalizersQuery;
+    	}
+    	
+    	return actualTimeFromFinalQuery;
+    	
+	}
+    
+    private double getActualTimeFromQueryAnalysis(Connection idConnection, String query) throws SQLException {
+    	PreparedStatement command = idConnection.prepareStatement(query);
+    	ResultSet data = command.executeQuery();
+    	data.next();
+    	String allData = data.getString(1);
+    	String firstLineData = allData.split("\n", 0)[1];
+    	System.out.println(firstLineData);
+    	Pattern pattern = Pattern.compile("actual time=(\\d+\\.\\d+)\\.\\.(\\d+\\.\\d+)");
+    	Matcher matcher = pattern.matcher(firstLineData);
+    	double startTime = 0;
+    	double endTime = 0;
+    	
+    	if (matcher.find()) {
+    		startTime = Double.parseDouble(matcher.group(1));
+        	endTime = Double.parseDouble(matcher.group(2));
+    	}
+    	
+    	return (startTime + endTime) / 2;
+    }
+    
+    private Map<String, String[]> getTablesAndColumnsFromDataBase(Connection idConnection, String catalog, String tableNamePattern) throws SQLException {
         Map<String, String[]> tablesAndColumns = new HashMap<>();
         DatabaseMetaData metaData = idConnection.getMetaData();
         ResultSet tables = metaData.getTables(catalog, null, tableNamePattern, new String[]{"TABLE"});
@@ -181,7 +224,7 @@ class DataBaseDataRepository {
         return tablesAndColumns;
     }
     
-    private ArrayList<RelationshipData> getRelationshipsFromDatabase(Connection idConnection, String sql) throws SQLException {
+    private ArrayList<RelationshipData> getRelationshipsFromDataBase(Connection idConnection, String sql) throws SQLException {
     	PreparedStatement comando = idConnection.prepareStatement(sql);
         ResultSet dados = comando.executeQuery();
         ArrayList<RelationshipData> listRelationshipData = new ArrayList<>();
