@@ -14,9 +14,11 @@ record SavedQuerySaving(
 	@NotBlank
 	String finalQuery,
 	String totalizersQuery,
+	byte[] imgPDF,
+	String titlePDF,
 	ArrayList<TotalizerSaving> totalizers
 ) {
-	
+
 	private void validateTotalizerFields() {
 		if (this.totalizersQuery != null && this.totalizers == null) {
 			throw new TotalizerFieldsMismatchException("totalizersQuery deve ser fornecido com totalizers");
@@ -30,11 +32,15 @@ record SavedQuerySaving(
 			@JsonProperty("queryName") String queryName,
 			@JsonProperty("finalQuery") String finalQuery,
             @JsonProperty("totalizersQuery") String totalizersQuery,
+			@JsonProperty("imgPDF") byte[] imgPDF,
+            @JsonProperty("titlePDF") String titlePDF,
             @JsonProperty("totalizers") ArrayList<TotalizerSaving> totalizers) {
 		this.queryName = queryName;
 		this.finalQuery = finalQuery;
 		this.totalizersQuery = totalizersQuery;
 		this.totalizers = totalizers;
+		this.imgPDF = imgPDF;
+		this.titlePDF = titlePDF;
 		validateTotalizerFields();
 	}
 }
