@@ -72,19 +72,22 @@ class DataBaseDataRepository {
 		return actualTime;
 	}
 
-	Map<String, String[]> getTablesAndColumnsFromOracleDataBase() throws ClassNotFoundException, SQLException {
+	Map<String, Map<String, String>> getTablesAndColumnsFromOracleDataBase() throws ClassNotFoundException, SQLException {
         connectionOracle = new ConnectionOracle();
         connectionOracle.connect();
-        Map<String, String[]> tablesAndColumns = getTablesAndColumnsFromDataBase(connectionOracle.getIdConnection(), "deVS", "BASI%");
+        Map<String, Map<String, String>> tablesAndColumns = getTablesAndColumnsFromDataBase(connectionOracle.getIdConnection(), "deVS", "BASI%");
+
         connectionOracle.disconnect();
         
         return tablesAndColumns;
     }
     
-    Map<String, String[]> getTablesAndColumnsFromMySQLDatabase() throws ClassNotFoundException, SQLException {
+    Map<String, Map<String, String>> getTablesAndColumnsFromMySQLDatabase() throws ClassNotFoundException, SQLException {
     	connectionMySQL = new ConnectionMySQL();
     	connectionMySQL.connect();
-    	Map<String, String[]> tablesAndColumns = getTablesAndColumnsFromDataBase(connectionMySQL.getIdConnection(), "db_gerador_relatorio", "%");
+
+    	Map<String, Map<String, String>> tablesAndColumns = getTablesAndColumnsFromDataBase(connectionMySQL.getIdConnection(), "db_gerador_relatorio", "%");
+
     	connectionMySQL.disconnect();
     	
     	return tablesAndColumns;
@@ -210,8 +213,8 @@ class DataBaseDataRepository {
     	return (startTime + endTime) / 2;
     }
     
-    private Map<String, String[]> getTablesAndColumnsFromDataBase(Connection idConnection, String catalog, String tableNamePattern) throws SQLException {
-        Map<String, String[]> tablesAndColumns = new HashMap<>();
+    private Map<String, Map<String, String>> getTablesAndColumnsFromDataBase(Connection idConnection, String catalog, String tableNamePattern) throws SQLException {
+        Map<String, Map<String, String>> tablesAndColumns = new HashMap<>();
         DatabaseMetaData metaData = idConnection.getMetaData();
         ResultSet tables = metaData.getTables(catalog, null, tableNamePattern, new String[]{"TABLE"});
 
@@ -219,14 +222,17 @@ class DataBaseDataRepository {
             String tableName = tables.getString("TABLE_NAME");
 
             ResultSet columns = metaData.getColumns(null, null, tableName, "%");
-            ArrayList<String> columnNames = new ArrayList<>();
+            Map<String, String> columnNames = new LinkedHashMap<>();
             while (columns.next()) {
                 String columnName = columns.getString("COLUMN_NAME");
+                String columnType = columns.getString("TYPE_NAME");
                 if (columnName != null) {
-                    columnNames.add(columnName);
+                    //preciso transformar em um map
+                    columnNames.put(columnName, columnType);
                 }
             }
-            tablesAndColumns.put(tableName, columnNames.toArray(new String[0]));
+            tablesAndColumns.put(tableName, columnNames);
+            System.out.println(tablesAndColumns);
         }
 
         return tablesAndColumns;
