@@ -129,7 +129,7 @@ public class DataBaseDataController {
         	dataBaseDataRepository = new DataBaseDataRepository();
         	ObjectMapper objectMapper = new ObjectMapper();
         	FileWriter fileWriter = new FileWriter(resource.getFile());
-            Map<String, String[]> tablesAndColumns = dataBaseDataRepository.getTablesAndColumnsFromMySQLDatabase();
+            Map<String, Map<String, String>> tablesAndColumns = dataBaseDataRepository.getTablesAndColumnsFromMySQLDatabase();
             String json = objectMapper.writeValueAsString(tablesAndColumns);
         	fileWriter.write(json);
         	fileWriter.close();
