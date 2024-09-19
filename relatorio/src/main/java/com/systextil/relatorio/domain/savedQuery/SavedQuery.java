@@ -14,6 +14,8 @@ public class SavedQuery {
     private String queryName;
     private String finalQuery;
     private String totalizersQuery;
+    private byte[] imgPDF;
+    private String titlePDF;
     
     @OneToMany(cascade = CascadeType.PERSIST)
     @Embedded
@@ -27,6 +29,8 @@ public class SavedQuery {
     	this.queryName = savedQuerySaving.queryName();
     	this.finalQuery = savedQuerySaving.finalQuery();
     	this.totalizersQuery = savedQuerySaving.totalizersQuery();
+        this.titlePDF = savedQuerySaving.titlePDF();
+        this.imgPDF = savedQuerySaving.imgPDF();
     	try {
     		this.totalizers = savedQuerySaving.totalizers().stream().map(Totalizer::new).toList();
     	} catch(NullPointerException e) {
@@ -50,6 +54,18 @@ public class SavedQuery {
 	public String getTotalizersQuery() {
 		return totalizersQuery;
 	}
+
+    public String getTitlePDF(){
+        return titlePDF;
+    }
+
+    public byte[] getImgPDF(){
+        return imgPDF;
+    }
+
+    public void setImgPDF(byte[] imgPDF){
+        this.imgPDF = imgPDF;
+    }
 
 	public List<Totalizer> getTotalizers() {
 		return totalizers;
