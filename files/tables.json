@@ -1,1 +1,60 @@
-{"materia_prima":["id","nome","descricao","unidade_medida"],"cliente":["CPF","NOME","CEP","DATA_NASCIMENTO"],"compras":["id","cnpj_fornecedor","id_materia_prima","valor"],"nota_fiscal":["NUMERO","DATA_EMISSAO","VALOR","CPF_CLIENTE"],"totalizer":["ID","TOTALIZER","SAVED_QUERY_ID"],"produto":["id","nome","descricao","unidade_medida"],"un_medida":["id","nome"],"consultas_salvas":["ID","QUERY_NAME","FINAL_QUERY","TOTALIZERS_QUERY"],"fornecedores":["cnpj","nome","cep"],"vendas":["id","cpf_cliente","id_produto","valor"]}
+{
+    "materia_prima": {
+        "id": "TINYINT UNSIGNED",
+        "nome": "VARCHAR",
+        "descricao": "VARCHAR",
+        "unidade_medida": "TINYINT UNSIGNED"
+    },
+    "cliente": {
+        "CPF": "VARCHAR",
+        "NOME": "VARCHAR",
+        "CEP": "VARCHAR",
+        "DATA_NASCIMENTO": "DATE"
+    },
+    "compras": {
+        "id": "TINYINT UNSIGNED",
+        "cnpj_fornecedor": "VARCHAR",
+        "id_materia_prima": "TINYINT UNSIGNED",
+        "valor": "DECIMAL"
+    },
+    "nota_fiscal": {
+        "NUMERO": "INT",
+        "DATA_EMISSAO": "DATE",
+        "VALOR": "FLOAT",
+        "CPF_CLIENTE": "VARCHAR"
+    },
+    "totalizer": {
+        "ID": "SMALLINT UNSIGNED",
+        "TOTALIZER": "VARCHAR",
+        "SAVED_QUERY_ID": "SMALLINT UNSIGNED"
+    },
+    "produto": {
+        "id": "TINYINT UNSIGNED",
+        "nome": "VARCHAR",
+        "descricao": "VARCHAR",
+        "unidade_medida": "TINYINT UNSIGNED"
+    },
+    "un_medida": {
+        "id": "TINYINT UNSIGNED",
+        "nome": "VARCHAR"
+    },
+    "consultas_salvas": {
+        "ID": "SMALLINT UNSIGNED",
+        "QUERY_NAME": "VARCHAR",
+        "FINAL_QUERY": "TEXT",
+        "TOTALIZERS_QUERY": "TEXT",
+        "imgPDF": "BLOB",
+        "titlePDF": "VARCHAR"
+    },
+    "fornecedores": {
+        "cnpj": "VARCHAR",
+        "nome": "VARCHAR",
+        "cep": "VARCHAR"
+    },
+    "vendas": {
+        "id": "TINYINT UNSIGNED",
+        "cpf_cliente": "VARCHAR",
+        "id_produto": "TINYINT UNSIGNED",
+        "valor": "DECIMAL"
+    }
+}
