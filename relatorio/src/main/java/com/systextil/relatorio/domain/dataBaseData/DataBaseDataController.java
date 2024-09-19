@@ -157,14 +157,14 @@ public class DataBaseDataController {
         	dataBaseDataRepository = new DataBaseDataRepository();
         	ObjectMapper objectMapper = new ObjectMapper();
         	FileWriter fileWriter = new FileWriter(resource.getFile());
-        	Map<String, String[]> tablesAndColumns = null;
+          
+        	Map<String, Map<String, String>> tablesAndColumns = null;
         	
             if (oracleMySQL == 1) {
             	tablesAndColumns = dataBaseDataRepository.getTablesAndColumnsFromMySQLDatabase();
             } else {
             	tablesAndColumns = dataBaseDataRepository.getTablesAndColumnsFromOracleDataBase();
             }
-            System.out.println(tablesAndColumns);
             String json = objectMapper.writeValueAsString(tablesAndColumns);
         	fileWriter.write(json);
         	fileWriter.close();
