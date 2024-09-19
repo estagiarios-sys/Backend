@@ -89,18 +89,24 @@ public class DataBaseDataController {
     @PostMapping("analysis")
     public double getQueryAnalysis(@RequestBody @Valid QueryData queryData) throws SQLException {
     	dataBaseDataRepository = new DataBaseDataRepository();
-    	String finalQueryAnalysis = SQLGenerator.generateFinalQueryAnalysis(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
-    	String totalizersQueryAnalysis = null;
-    	
-    	if (!queryData.totalizers().isEmpty()) {
-    		totalizersQueryAnalysis = SQLGenerator.generateTotalizersQueryAnalysis(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
-    	}
-    	double actualTime = 0;
+    	int actualTime = 0;
     	
     	if (oracleMySQL == 1) {
-    		actualTime = dataBaseDataRepository.getActualTimeFromQueriesAnalysisFromMySQLDataBase(finalQueryAnalysis, totalizersQueryAnalysis);
+    		String finalQueryAnalysis = SQLGenerator.generateFinalQueryAnalysisFromMySQLDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
+        	String totalizersQueryAnalysis = null;
+        	
+        	if (!queryData.totalizers().isEmpty()) {
+        		totalizersQueryAnalysis = SQLGenerator.generateTotalizersQueryAnalysisFromMySQLDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
+        	}
+        	actualTime = dataBaseDataRepository.getActualTimeFromQueriesAnalysisFromMySQLDataBase(finalQueryAnalysis, totalizersQueryAnalysis);
     	} else {
-    		actualTime = dataBaseDataRepository.getActualTimeFromQueriesAnalysisFromOracleDataBase(finalQueryAnalysis, totalizersQueryAnalysis);
+    		String[] finalQueryAnaysis = SQLGenerator.generateFinalQueryAnalysisFromOracleDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
+    		String[] totalizersQueryAnalysis = null;
+    		
+    		if (!queryData.totalizers().isEmpty()) {
+        		totalizersQueryAnalysis = SQLGenerator.generateTotalizersQueryAnalysisFromOracleDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
+        	}
+    		actualTime = dataBaseDataRepository.getActualTimeFromQueriesAnalysisFromOracleDataBase(finalQueryAnaysis, totalizersQueryAnalysis);
     	}
     	
     	return actualTime;

@@ -54,22 +54,36 @@ class DataBaseDataRepository {
     	}
     }
     
-    double getActualTimeFromQueriesAnalysisFromMySQLDataBase(String finalQueryAnalysis, String totalizersQueryAnalysis) throws SQLException {
-		connectionMySQL = new ConnectionMySQL();
-		connectionMySQL.connect();
-		double actualTime = getActualTimeFromQueriesAnalysis(connectionMySQL.getIdConnection(), finalQueryAnalysis, totalizersQueryAnalysis);
-		connectionMySQL.disconnect();
-		
-		return actualTime;
-	}
-    
-    double getActualTimeFromQueriesAnalysisFromOracleDataBase(String finalQueryAnalysis, String totalizersQueryAnalysis) throws SQLException {
+    int getActualTimeFromQueriesAnalysisFromOracleDataBase(String[] finalQueryAnalysis, String[] totalizersQueryAnalysis) throws SQLException {
 		connectionOracle = new ConnectionOracle();
 		connectionOracle.connect();
-		double actualTime = getActualTimeFromQueriesAnalysis(connectionOracle.getIdConnection(), finalQueryAnalysis, totalizersQueryAnalysis);
+		int actualTimeFromFinalQuery = getActualTimeFromQueryAnalysisFromOracleDataBase(connectionOracle.getIdConnection(), finalQueryAnalysis);
+		
+		if (totalizersQueryAnalysis != null) {
+			int actualTimeFromTotalizersQuery = getActualTimeFromQueryAnalysisFromOracleDataBase(connectionOracle.getIdConnection(), totalizersQueryAnalysis);
+			connectionOracle.disconnect();
+			
+			return actualTimeFromFinalQuery + actualTimeFromTotalizersQuery;
+		}
 		connectionOracle.disconnect();
 		
-		return actualTime;
+		return actualTimeFromFinalQuery;
+	}
+    
+    int getActualTimeFromQueriesAnalysisFromMySQLDataBase(String finalQueryAnalysis, String totalizersQueryAnalysis) throws SQLException {
+		connectionMySQL = new ConnectionMySQL();
+		connectionMySQL.connect();
+		int actualTimeFromFinalQuery = getActualTimeFromQueryAnalysisFromMySQLDataBase(connectionMySQL.getIdConnection(), finalQueryAnalysis);
+    	
+    	if (totalizersQueryAnalysis != null) {
+    		int actualTimeFromTotalizersQuery = getActualTimeFromQueryAnalysisFromMySQLDataBase(connectionMySQL.getIdConnection(), totalizersQueryAnalysis);
+        	connectionMySQL.disconnect();
+    		
+        	return actualTimeFromFinalQuery + actualTimeFromTotalizersQuery;
+    	}
+    	connectionMySQL.disconnect();
+    	
+    	return actualTimeFromFinalQuery;
 	}
 
 	Map<String, Map<String, String>> getTablesAndColumnsFromOracleDataBase() throws ClassNotFoundException, SQLException {
@@ -189,19 +203,30 @@ class DataBaseDataRepository {
     	return totalizersResults;
     }
     
-    private double getActualTimeFromQueriesAnalysis(Connection idConnection, String finalQueryAnalysis, String totalizersQueryAnalysis) throws SQLException {
-    	double actualTimeFromFinalQuery = getActualTimeFromQueryAnalysis(idConnection, finalQueryAnalysis);
-    	if (totalizersQueryAnalysis != null) {
-    		double actualTimeFromTotalizersQuery = getActualTimeFromQueryAnalysis(idConnection, totalizersQueryAnalysis);
-        	
-        	return actualTimeFromFinalQuery + actualTimeFromTotalizersQuery;
+    private int getActualTimeFromQueryAnalysisFromOracleDataBase(Connection idConnection, String[] query) throws SQLException {
+    	PreparedStatement command;
+    	command = idConnection.prepareStatement(query[0]);
+    	command.execute();
+    	command = idConnection.prepareStatement(query[1]);
+    	ResultSet planData = command.executeQuery();
+    	ArrayList<String> planDataLines = new ArrayList<>();
+    	
+    	while (planData.next()) {
+        	planDataLines.add(planData.getString(1));
     	}
-    	
-    	return actualTimeFromFinalQuery;
-    	
-	}
+    	String planDataTimeLine = planDataLines.get(5);
+    	Pattern pattern = Pattern.compile("\\|\\s(\\d{2}:\\d{2}:\\d{2})");
+        Matcher matcher = pattern.matcher(planDataTimeLine);
+        int seconds = 0;
+
+        if (matcher.find()) {
+        	seconds = TimeConverter.convertHHmmssToSeconds(matcher.group(1));
+        }
+    	    	
+    	return seconds;
+    }
     
-    private double getActualTimeFromQueryAnalysis(Connection idConnection, String query) throws SQLException {
+    private int getActualTimeFromQueryAnalysisFromMySQLDataBase(Connection idConnection, String query) throws SQLException {
     	PreparedStatement command = idConnection.prepareStatement(query);
     	ResultSet data = command.executeQuery();
     	data.next();
@@ -209,12 +234,12 @@ class DataBaseDataRepository {
     	String firstLineData = allData.split("\n", 0)[1];
     	Pattern pattern = Pattern.compile("actual time=(\\d+\\.\\d+)\\.\\.(\\d+\\.\\d+)");
     	Matcher matcher = pattern.matcher(firstLineData);
-    	double startTime = 0;
-    	double endTime = 0;
+    	int startTime = 0;
+    	int endTime = 0;
     	
     	if (matcher.find()) {
-    		startTime = Double.parseDouble(matcher.group(1));
-        	endTime = Double.parseDouble(matcher.group(2));
+    		startTime = Integer.parseInt(matcher.group(1));
+        	endTime = Integer.parseInt(matcher.group(2));
     	}
     	
     	return (startTime + endTime) / 2;
@@ -238,7 +263,6 @@ class DataBaseDataRepository {
                 }
             }
             tablesAndColumns.put(tableName, columnNames);
-            System.out.println(tablesAndColumns);
         }
 
         return tablesAndColumns;
