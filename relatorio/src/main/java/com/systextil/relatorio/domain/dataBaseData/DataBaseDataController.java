@@ -32,7 +32,8 @@ public class DataBaseDataController {
     @Value("${relationships.json.file.path}")
     private String relationshipsJsonFilePath;
 
-    private final int oracleMySQL = 1;
+    // 0 para oracle e 1 para MySQL
+    private final int oracleMySQL = 0;
     
     @PostMapping
     public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws SQLException {
@@ -143,7 +144,7 @@ public class DataBaseDataController {
         } else {
         	loadedQueryData = dataBaseDataRepository.findDataByQueryFromOracleDataBase(toLoadQueryData.finalQuery(), toLoadQueryData.queryWithTotalizers());
         }
-        
+                
         return loadedQueryData;
     }
     
@@ -163,6 +164,7 @@ public class DataBaseDataController {
             } else {
             	tablesAndColumns = dataBaseDataRepository.getTablesAndColumnsFromOracleDataBase();
             }
+            System.out.println(tablesAndColumns);
             String json = objectMapper.writeValueAsString(tablesAndColumns);
         	fileWriter.write(json);
         	fileWriter.close();

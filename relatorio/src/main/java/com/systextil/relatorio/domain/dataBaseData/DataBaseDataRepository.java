@@ -26,7 +26,7 @@ class DataBaseDataRepository {
     		ArrayList<String> totalizersResults = getTotalizersResults(connectionOracle.getIdConnection(), queryWithTotalizers);
         	LoadedQueryData loadedQueryDataWithTotalizersResults = new LoadedQueryData(loadedQueryData.columnsNameAndNickName(), loadedQueryData.foundObjects(), totalizersResults);
         	connectionOracle.disconnect();
-        	
+        	        	
         	return loadedQueryDataWithTotalizersResults;
     	} catch (NullPointerException e) {
     		connectionOracle.disconnect();
@@ -75,7 +75,7 @@ class DataBaseDataRepository {
 	Map<String, String[]> getTablesAndColumnsFromOracleDataBase() throws ClassNotFoundException, SQLException {
         connectionOracle = new ConnectionOracle();
         connectionOracle.connect();
-        Map<String, String[]> tablesAndColumns = getTablesAndColumnsFromDataBase(connectionOracle.getIdConnection(), "deVS", "BASI%");
+        Map<String, String[]> tablesAndColumns = getTablesAndColumnsFromDataBase(connectionOracle.getIdConnection(), "ACADEMY", "%");
         connectionOracle.disconnect();
         
         return tablesAndColumns;
@@ -107,8 +107,6 @@ class DataBaseDataRepository {
                 "  USER_CONS_COLUMNS rc ON c.R_CONSTRAINT_NAME = rc.CONSTRAINT_NAME " +
                 "WHERE " +
                 "  c.CONSTRAINT_TYPE = 'R' " +
-                "AND uc.TABLE_NAME LIKE 'BASI%' " +
-                "AND rc.TABLE_NAME LIKE 'BASI%' " +
                 "ORDER BY " +
                 "  uc.TABLE_NAME, uc.COLUMN_NAME";
         ArrayList<RelationshipData> listRelationshipData = getRelationshipsFromDataBase(connectionOracle.getIdConnection(), sql);
@@ -132,33 +130,43 @@ class DataBaseDataRepository {
     private LoadedQueryData findDataByQuery(Connection idConnection, String sql) throws SQLException {
         ArrayList<Object[]> listObjects = new ArrayList<>();
         Map<String, String> columnsNameAndNickName = new LinkedHashMap<>();
+        ArrayList<String> tableNames = new ArrayList<>();
+        ArrayList<String> columnNames = new ArrayList<>();
+        Pattern tableDotColumnPattern = Pattern.compile("(\\w+)\\.(\\w+)", Pattern.CASE_INSENSITIVE);
+        Matcher tableDotColumnMatcher = tableDotColumnPattern.matcher(sql);
+        
+        while (tableDotColumnMatcher.find()) {
+            String tableName = tableDotColumnMatcher.group(1);
+            String columnName = tableDotColumnMatcher.group(2);
+            tableNames.add(tableName);
+            columnNames.add(columnName);
+        }
         PreparedStatement command = idConnection.prepareStatement(sql);
         ResultSet data = command.executeQuery();
         ResultSetMetaData metaData = data.getMetaData();
         int columnsNumber = metaData.getColumnCount();
-        
+
         for (int i = 1; i <= columnsNumber; i++) {
-        	String columnNickName = metaData.getColumnLabel(i);
-        	String columnTableName = metaData.getTableName(i);
-        	String columnName = metaData.getColumnName(i);
-        	        	
-        	if (columnNickName.equalsIgnoreCase(columnName)) {
-        		columnsNameAndNickName.put(columnTableName + "." + columnName, null);
-        	} else {
-        		columnsNameAndNickName.put(columnTableName + "." + columnName, columnNickName);
-        	}
+            String columnNickName = metaData.getColumnLabel(i);
+            String columnName = columnNames.get(i-1);
+
+            if (columnNickName.equalsIgnoreCase(columnName)) {
+                columnsNameAndNickName.put(tableNames.get(i-1) + "." + columnName, null);
+            } else {
+                columnsNameAndNickName.put(tableNames.get(i-1) + "." + columnName, columnNickName);
+            }
         }
 
         while (data.next()) {
             Object[] object = new Object[columnsNumber];
-            
+
             for (int i = 1; i <= columnsNumber; i++) {
                 object[i - 1] = data.getString(i);
             }
             listObjects.add(object);
         }
         LoadedQueryData loadedQueryData = new LoadedQueryData(columnsNameAndNickName, listObjects, null);
-                
+
         return loadedQueryData;
     }
     
@@ -213,7 +221,7 @@ class DataBaseDataRepository {
     private Map<String, String[]> getTablesAndColumnsFromDataBase(Connection idConnection, String catalog, String tableNamePattern) throws SQLException {
         Map<String, String[]> tablesAndColumns = new HashMap<>();
         DatabaseMetaData metaData = idConnection.getMetaData();
-        ResultSet tables = metaData.getTables(catalog, null, tableNamePattern, new String[]{"TABLE"});
+        ResultSet tables = metaData.getTables(catalog, metaData.getUserName(), tableNamePattern, new String[]{"TABLE"});
 
         while (tables.next()) {
             String tableName = tables.getString("TABLE_NAME");

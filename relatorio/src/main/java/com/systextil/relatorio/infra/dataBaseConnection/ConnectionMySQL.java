@@ -5,9 +5,9 @@ package com.systextil.relatorio.infra.dataBaseConnection;
  */
 public class ConnectionMySQL extends DataBaseConnection {
 
-    private final String user = "root";
-    private final String password = "root";
-    private final String url = "jdbc:mysql://localhost:3306/db_gerador_relatorio";
+    private final String user = "";
+    private final String password = "";
+    private final String url = "";
     
     public ConnectionMySQL() {
     	fillAttributes(user, password, url);
