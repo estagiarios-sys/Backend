@@ -22,7 +22,7 @@ class DataBaseDataRepository {
     	connectionOracle.connect();
     	LoadedQueryData loadedQueryData = findDataByQuery(connectionOracle.getIdConnection(), finalQuery);
     	
-    	if (!totalizersQuery.isBlank()) {
+    	if (totalizersQuery != null && !totalizersQuery.isBlank()) {
     		ArrayList<String> totalizersResults = getTotalizersResults(connectionOracle.getIdConnection(), totalizersQuery);
         	LoadedQueryData loadedQueryDataWithTotalizersResults = new LoadedQueryData(loadedQueryData.columnsNameAndNickName(), loadedQueryData.foundObjects(), totalizersResults);
         	connectionOracle.disconnect();
