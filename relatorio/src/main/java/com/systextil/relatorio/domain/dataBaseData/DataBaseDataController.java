@@ -40,50 +40,62 @@ public class DataBaseDataController {
     public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws SQLException {
         String finalQuery = SQLGenerator.generateFinalQuery(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
         QueryWithTotalizers queryWithTotalizers = null;
-        
+
         if (!queryData.totalizers().isEmpty()) {
-        	queryWithTotalizers = SQLGenerator.generateTotalizersQuery(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
-        }        
-        ToLoadQueryData toLoadQueryData = new ToLoadQueryData(finalQuery, queryWithTotalizers);
+
+            queryWithTotalizers = SQLGenerator.generateTotalizersQuery(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
+        }
+
+        // Se você ainda não tem imgPDF e titlePDF, pode passar null ou valores padrão
+        byte[] imgPDF = null; // Exemplo de valor nulo ou carregar a imagem se necessário
+        String titlePDF = "Título Padrão"; // Exemplo de título padrão, pode ser modificado conforme necessário
+
+        // Agora criamos ToLoadQueryData com todos os parâmetros esperados
+        ToLoadQueryData toLoadQueryData = new ToLoadQueryData(finalQuery, queryWithTotalizers, imgPDF, titlePDF);
+
+        // Carregar os dados
+
         LoadedQueryData loadedQueryData = loadQuery(toLoadQueryData);
         Map<String, String> columnsNameAndNickName = loadedQueryData.columnsNameAndNickName();
         ArrayList<String> columnsNameOrNickName = new ArrayList<>();
-        
+
         for (Map.Entry<String, String> columnNameAndNickName : columnsNameAndNickName.entrySet()) {
-        	
-   			if (columnNameAndNickName.getValue() != null) {
-   				columnsNameOrNickName.add(columnNameAndNickName.getValue());
-   			} else {
-   				columnsNameOrNickName.add(columnNameAndNickName.getKey());
-    		}
-    	}
-        ArrayList<Object[]> foundObjects = loadedQueryData.foundObjects();
-        
-        if (loadedQueryData.totalizersResults() != null) {
-        	ArrayList<String> totalizersResults = loadedQueryData.totalizersResults();
-        	int totalizersResultsCounter = 0;
-            Map<String, String> columnsAndTotalizers = new HashMap<>();
-            
-            for (Map.Entry<String, Totalizer> totalizer : queryData.totalizers().entrySet()) {
-            	String columnsAndTotalizersColumn = null;
-            	
-            	for (Map.Entry<String, String> columnNameAndNickName : columnsNameAndNickName.entrySet()) {
-            		
-            		if (totalizer.getKey().equalsIgnoreCase(columnNameAndNickName.getKey())) {
-            			if (columnNameAndNickName.getValue() != null) {
-            				columnsAndTotalizersColumn = columnNameAndNickName.getValue();
-            			} else {
-            				columnsAndTotalizersColumn = columnNameAndNickName.getKey();
-            			}
-            		}
-            	}
-            	columnsAndTotalizers.put(columnsAndTotalizersColumn, totalizersResults.get(totalizersResultsCounter));
-            	totalizersResultsCounter++;
+            if (columnNameAndNickName.getValue() != null) {
+                columnsNameOrNickName.add(columnNameAndNickName.getValue());
+            } else {
+                columnsNameOrNickName.add(columnNameAndNickName.getKey());
             }
-            
+        }
+
+        ArrayList<Object[]> foundObjects = loadedQueryData.foundObjects();
+
+        // Processar totalizadores, se estiverem disponíveis
+        if (loadedQueryData.totalizersResults() != null) {
+            ArrayList<String> totalizersResults = loadedQueryData.totalizersResults();
+            int totalizersResultsCounter = 0;
+            Map<String, String> columnsAndTotalizers = new HashMap<>();
+
+            for (Map.Entry<String, Totalizer> totalizer : queryData.totalizers().entrySet()) {
+                String columnsAndTotalizersColumn = null;
+
+                for (Map.Entry<String, String> columnNameAndNickName : columnsNameAndNickName.entrySet()) {
+                    if (totalizer.getKey().equalsIgnoreCase(columnNameAndNickName.getKey())) {
+                        if (columnNameAndNickName.getValue() != null) {
+                            columnsAndTotalizersColumn = columnNameAndNickName.getValue();
+                        } else {
+                            columnsAndTotalizersColumn = columnNameAndNickName.getKey();
+                        }
+                    }
+                }
+
+                columnsAndTotalizers.put(columnsAndTotalizersColumn, totalizersResults.get(totalizersResultsCounter));
+                totalizersResultsCounter++;
+            }
+
             return new Object[]{finalQuery, queryWithTotalizers.query(), columnsNameOrNickName, foundObjects, columnsAndTotalizers};
         }
-        
+
+        // Retorno padrão quando não há totalizadores
         return new Object[]{finalQuery, "", columnsNameOrNickName, foundObjects, ""};
     }
     
@@ -113,6 +125,7 @@ public class DataBaseDataController {
     	return actualTime;
     }
 
+
     @GetMapping("table")
     public ResponseEntity<Resource> getTablesAndColumns() throws IOException {
     	Path filePath = Paths.get(tablesJsonFilePath);
@@ -140,21 +153,28 @@ public class DataBaseDataController {
             throw new RuntimeException(fileNotFoundMessage + filePath);
         }
     }
-    
+
     @PostMapping("loadedQuery")
     public LoadedQueryData loadQuery(@RequestBody ToLoadQueryData toLoadQueryData) throws SQLException {
         dataBaseDataRepository = new DataBaseDataRepository();
+
         LoadedQueryData loadedQueryData = null;
         
         if (oracleMySQL == 1) {
-        	loadedQueryData = dataBaseDataRepository.findDataByQueryFromMySQLDataBase(toLoadQueryData.finalQuery(), toLoadQueryData.queryWithTotalizers());
+        	  LoadedQueryData loadedQueryData = dataBaseDataRepository.findDataByQueryFromMySQLDatabase(
+                toLoadQueryData.finalQuery(),
+                toLoadQueryData.queryWithTotalizers(),
+                toLoadQueryData.imgPDF(),
+                toLoadQueryData.titlePDF()
+        );
         } else {
         	loadedQueryData = dataBaseDataRepository.findDataByQueryFromOracleDataBase(toLoadQueryData.finalQuery(), toLoadQueryData.queryWithTotalizers());
         }
                 
+
         return loadedQueryData;
     }
-    
+
     @PutMapping("update/table")
     public void setTablesAndColumnsFromDatabaseIntoJson() throws Exception {
         Path filePath = Paths.get(tablesJsonFilePath);
