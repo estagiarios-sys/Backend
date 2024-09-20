@@ -83,6 +83,7 @@ class DataBaseDataRepository {
     	return actualTimeFromFinalQuery;
 	}
 
+
 	Map<String, Map<String, String>> getTablesAndColumnsFromOracleDataBase() throws ClassNotFoundException, SQLException {
         connectionOracle = new ConnectionOracle();
         connectionOracle.connect();
@@ -95,9 +96,7 @@ class DataBaseDataRepository {
     Map<String, Map<String, String>> getTablesAndColumnsFromMySQLDatabase() throws ClassNotFoundException, SQLException {
     	connectionMySQL = new ConnectionMySQL();
     	connectionMySQL.connect();
-
     	Map<String, Map<String, String>> tablesAndColumns = getTablesAndColumnsFromDataBase(connectionMySQL.getIdConnection(), "db_gerador_relatorio", "%");
-
     	connectionMySQL.disconnect();
     	
     	return tablesAndColumns;
@@ -139,7 +138,7 @@ class DataBaseDataRepository {
         
         return listRelationshipData;
     }
-    
+
     private LoadedQueryData findDataByQuery(Connection idConnection, String sql) throws SQLException {
         ArrayList<Object[]> listObjects = new ArrayList<>();
         Map<String, String> columnsNameAndNickName = new LinkedHashMap<>();

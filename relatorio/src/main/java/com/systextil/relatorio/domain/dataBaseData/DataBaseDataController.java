@@ -43,7 +43,7 @@ public class DataBaseDataController {
         
         if (!queryData.totalizers().isEmpty()) {
         	totalizersQuery = SQLGenerator.generateTotalizersQuery(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
-        }        
+        }
         ToLoadQueryData toLoadQueryData = new ToLoadQueryData(finalQuery, totalizersQuery, queryData.totalizers());
         TreatedLoadedQueryData treatedLoadedQueryData = loadQuery(toLoadQueryData);
         ArrayList<String> columnsNameOrNickName = treatedLoadedQueryData.columnsNameOrNickName();
@@ -79,6 +79,7 @@ public class DataBaseDataController {
     	return actualTime;
     }
 
+
     @GetMapping("table")
     public ResponseEntity<Resource> getTablesAndColumns() throws IOException {
     	Path filePath = Paths.get(tablesJsonFilePath);
@@ -106,7 +107,7 @@ public class DataBaseDataController {
             throw new RuntimeException(fileNotFoundMessage + filePath);
         }
     }
-    
+
     @PostMapping("loadedQuery")
     public TreatedLoadedQueryData loadQuery(@RequestBody ToLoadQueryData toLoadQueryData) throws SQLException {
         dataBaseDataRepository = new DataBaseDataRepository();
@@ -120,7 +121,7 @@ public class DataBaseDataController {
 
         return treatLoadedQueryData(loadedQueryData, toLoadQueryData.totalizers());
     }
-    
+
     @PutMapping("update/table")
     public void setTablesAndColumnsFromDatabaseIntoJson() throws Exception {
         Path filePath = Paths.get(tablesJsonFilePath);
@@ -172,7 +173,11 @@ public class DataBaseDataController {
     
     private TreatedLoadedQueryData treatLoadedQueryData(LoadedQueryData loadedQueryData, Map<String, Totalizer> totalizers) {
     	ArrayList<String> columnsNameOrNickName = columnsNameAndNickNameToColumnsNameOrNickName(loadedQueryData.columnsNameAndNickName());
-    	Map<String, String> columnsAndTotalizersResult = joinColumnsAndTotalizersResult(loadedQueryData, totalizers);
+    	Map<String, String> columnsAndTotalizersResult = null;
+    	
+    	if (totalizers != null) {
+    		columnsAndTotalizersResult = joinColumnsAndTotalizersResult(loadedQueryData, totalizers);
+    	}
     	
     	return new TreatedLoadedQueryData(columnsNameOrNickName, loadedQueryData.foundObjects(), columnsAndTotalizersResult);
     }
