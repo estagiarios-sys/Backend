@@ -2,12 +2,15 @@ package com.systextil.relatorio.domain.dataBaseData;
 
 import com.systextil.relatorio.infra.dataBaseConnection.ConnectionMySQL;
 import com.systextil.relatorio.infra.dataBaseConnection.ConnectionOracle;
+import com.systextil.relatorio.infra.exceptionHandler.ActualTimeNotFoundException;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class DataBaseDataRepository {
 
@@ -50,28 +53,82 @@ class DataBaseDataRepository {
                     titlePDF // Adiciona titlePDF ao retorno
             );
         }
+
+    LoadedQueryData findDataByQueryFromOracleDataBase(String finalQuery, QueryWithTotalizers queryWithTotalizers) throws SQLException {
+    	connectionOracle = new ConnectionOracle();
+    	connectionOracle.connect();
+    	LoadedQueryData loadedQueryData = findDataByQuery(connectionOracle.getIdConnection(), finalQuery);
+    	
+    	try {
+    		queryWithTotalizers.query();
+    		ArrayList<String> totalizersResults = getTotalizersResults(connectionOracle.getIdConnection(), queryWithTotalizers);
+        	LoadedQueryData loadedQueryDataWithTotalizersResults = new LoadedQueryData(loadedQueryData.columnsNameAndNickName(), loadedQueryData.foundObjects(), totalizersResults);
+        	connectionOracle.disconnect();
+        	        	
+        	return loadedQueryDataWithTotalizersResults;
+    	} catch (NullPointerException e) {
+    		connectionOracle.disconnect();
+        	
+        	return loadedQueryData;
+    	}
     }
+    
+   
+    
+    int getActualTimeFromQueriesAnalysisFromOracleDataBase(String[] finalQueryAnalysis, String[] totalizersQueryAnalysis) throws SQLException {
+		connectionOracle = new ConnectionOracle();
+		connectionOracle.connect();
+		int actualTimeFromFinalQuery = getActualTimeFromQueryAnalysisFromOracleDataBase(connectionOracle.getIdConnection(), finalQueryAnalysis);
+		
+		if (totalizersQueryAnalysis != null) {
+			int actualTimeFromTotalizersQuery = getActualTimeFromQueryAnalysisFromOracleDataBase(connectionOracle.getIdConnection(), totalizersQueryAnalysis);
+			connectionOracle.disconnect();
+			
+			return actualTimeFromFinalQuery + actualTimeFromTotalizersQuery;
+		}
+		connectionOracle.disconnect();
+		
+		return actualTimeFromFinalQuery;
+	}
+    
+    int getActualTimeFromQueriesAnalysisFromMySQLDataBase(String finalQueryAnalysis, String totalizersQueryAnalysis) throws SQLException {
+		connectionMySQL = new ConnectionMySQL();
+		connectionMySQL.connect();
+		int actualTimeFromFinalQuery = getActualTimeFromQueryAnalysisFromMySQLDataBase(connectionMySQL.getIdConnection(), finalQueryAnalysis);
+    	
+    	if (totalizersQueryAnalysis != null) {
+    		int actualTimeFromTotalizersQuery = getActualTimeFromQueryAnalysisFromMySQLDataBase(connectionMySQL.getIdConnection(), totalizersQueryAnalysis);
+        	connectionMySQL.disconnect();
+    		
+        	return actualTimeFromFinalQuery + actualTimeFromTotalizersQuery;
+    	}
+    	connectionMySQL.disconnect();
+    	
+    	return actualTimeFromFinalQuery;
+	}
 
 
-    Map<String, String[]> getTablesAndColumnsFromOracleDatabase() throws ClassNotFoundException, SQLException {
+	Map<String, Map<String, String>> getTablesAndColumnsFromOracleDataBase() throws ClassNotFoundException, SQLException {
         connectionOracle = new ConnectionOracle();
         connectionOracle.connect();
-        Map<String, String[]> tablesAndColumns = getTablesAndColumnsFromDatabase(connectionOracle.getIdConnection(), "deVS", "BASI%");
+		Map<String, Map<String, String>> tablesAndColumns = getTablesAndColumnsFromDataBase(connectionOracle.getIdConnection(), "ACADEMY", "%");
         connectionOracle.disconnect();
         
         return tablesAndColumns;
     }
     
-    Map<String, String[]> getTablesAndColumnsFromMySQLDatabase() throws ClassNotFoundException, SQLException {
+    Map<String, Map<String, String>> getTablesAndColumnsFromMySQLDatabase() throws ClassNotFoundException, SQLException {
     	connectionMySQL = new ConnectionMySQL();
     	connectionMySQL.connect();
-    	Map<String, String[]> tablesAndColumns = getTablesAndColumnsFromDatabase(connectionMySQL.getIdConnection(), "db_gerador_relatorio", "%");
+
+    	Map<String, Map<String, String>> tablesAndColumns = getTablesAndColumnsFromDataBase(connectionMySQL.getIdConnection(), "db_gerador_relatorio", "%");
+
     	connectionMySQL.disconnect();
     	
     	return tablesAndColumns;
     }
 
-    ArrayList<RelationshipData> getRelationshipsFromOracleDatabase() throws SQLException, ClassNotFoundException {
+    ArrayList<RelationshipData> getRelationshipsFromOracleDataBase() throws SQLException, ClassNotFoundException {
         connectionOracle = new ConnectionOracle();
         connectionOracle.connect();
         String sql = "SELECT " +
@@ -88,23 +145,21 @@ class DataBaseDataRepository {
                 "  USER_CONS_COLUMNS rc ON c.R_CONSTRAINT_NAME = rc.CONSTRAINT_NAME " +
                 "WHERE " +
                 "  c.CONSTRAINT_TYPE = 'R' " +
-                "AND uc.TABLE_NAME LIKE 'BASI%' " +
-                "AND rc.TABLE_NAME LIKE 'BASI%' " +
                 "ORDER BY " +
                 "  uc.TABLE_NAME, uc.COLUMN_NAME";
-        ArrayList<RelationshipData> listRelationshipData = getRelationshipsFromDatabase(connectionOracle.getIdConnection(), sql);
+        ArrayList<RelationshipData> listRelationshipData = getRelationshipsFromDataBase(connectionOracle.getIdConnection(), sql);
         connectionOracle.disconnect();
         
         return listRelationshipData;
     }
     
-    ArrayList<RelationshipData> getRelationshipsFromMySQLDatabase() throws SQLException, ClassNotFoundException {
+    ArrayList<RelationshipData> getRelationshipsFromMySQLDataBase() throws SQLException, ClassNotFoundException {
         connectionMySQL = new ConnectionMySQL();
         connectionMySQL.connect();
         String sql = "SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME " +
                 "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
                 "WHERE REFERENCED_TABLE_NAME IS NOT NULL";
-        ArrayList<RelationshipData> listRelationshipData = getRelationshipsFromDatabase(connectionMySQL.getIdConnection(), sql);
+        ArrayList<RelationshipData> listRelationshipData = getRelationshipsFromDataBase(connectionMySQL.getIdConnection(), sql);
         connectionMySQL.disconnect();
         
         return listRelationshipData;
@@ -113,6 +168,17 @@ class DataBaseDataRepository {
     private LoadedQueryData findDataByQuery(Connection idConnection, String sql) throws SQLException {
         ArrayList<Object[]> listObjects = new ArrayList<>();
         Map<String, String> columnsNameAndNickName = new LinkedHashMap<>();
+        ArrayList<String> tableNames = new ArrayList<>();
+        ArrayList<String> columnNames = new ArrayList<>();
+        Pattern tableDotColumnPattern = Pattern.compile("(\\w+)\\.(\\w+)", Pattern.CASE_INSENSITIVE);
+        Matcher tableDotColumnMatcher = tableDotColumnPattern.matcher(sql);
+        
+        while (tableDotColumnMatcher.find()) {
+            String tableName = tableDotColumnMatcher.group(1);
+            String columnName = tableDotColumnMatcher.group(2);
+            tableNames.add(tableName);
+            columnNames.add(columnName);
+        }
         PreparedStatement command = idConnection.prepareStatement(sql);
         ResultSet data = command.executeQuery();
         ResultSetMetaData metaData = data.getMetaData();
@@ -120,6 +186,7 @@ class DataBaseDataRepository {
 
         for (int i = 1; i <= columnsNumber; i++) {
             String columnNickName = metaData.getColumnLabel(i);
+
             String columnTableName = metaData.getTableName(i);
             String columnName = metaData.getColumnName(i);
 
@@ -127,6 +194,7 @@ class DataBaseDataRepository {
                 columnsNameAndNickName.put(columnTableName + "." + columnName, null);
             } else {
                 columnsNameAndNickName.put(columnTableName + "." + columnName, columnNickName);
+
             }
         }
 
@@ -138,6 +206,7 @@ class DataBaseDataRepository {
             }
             listObjects.add(object);
         }
+
 
         // Se você ainda não tem imgPDF e titlePDF, passe null ou um valor padrão
         byte[] imgPDF = null; // ou busque a imagem de outra fonte se necessário
@@ -151,6 +220,7 @@ class DataBaseDataRepository {
                 imgPDF, // valor da imagem
                 titlePDF // valor do título
         );
+
 
         return loadedQueryData;
     }
@@ -173,29 +243,74 @@ class DataBaseDataRepository {
     	return totalizersResults;
     }
     
-    private Map<String, String[]> getTablesAndColumnsFromDatabase(Connection idConnection, String catalog, String tableNamePattern) throws SQLException {
-        Map<String, String[]> tablesAndColumns = new HashMap<>();
+    private int getActualTimeFromQueryAnalysisFromOracleDataBase(Connection idConnection, String[] query) throws SQLException {
+    	PreparedStatement command;
+    	command = idConnection.prepareStatement(query[0]);
+    	command.execute();
+    	command = idConnection.prepareStatement(query[1]);
+    	ResultSet planData = command.executeQuery();
+    	ArrayList<String> planDataLines = new ArrayList<>();
+    	
+    	while (planData.next()) {
+        	planDataLines.add(planData.getString(1));
+    	}
+    	String planDataTimeLine = planDataLines.get(5);
+    	Pattern pattern = Pattern.compile("\\|\\s(\\d{2}:\\d{2}:\\d{2})");
+        Matcher matcher = pattern.matcher(planDataTimeLine);
+        int seconds = 0;
+
+        if (matcher.find()) {
+        	seconds = TimeConverter.convertHHmmssToSeconds(matcher.group(1));
+        } else {
+        	throw new ActualTimeNotFoundException("Tempo da consulta não foi encontrado. Provavelmente o banco de dados Oracle está desatualizado");
+        }
+    	    	
+    	return seconds;
+    }
+    
+    private int getActualTimeFromQueryAnalysisFromMySQLDataBase(Connection idConnection, String query) throws SQLException {
+    	PreparedStatement command = idConnection.prepareStatement(query);
+    	ResultSet data = command.executeQuery();
+    	data.next();
+    	String allData = data.getString(1);
+    	String firstLineData = allData.split("\n", 0)[1];
+    	Pattern pattern = Pattern.compile("actual time=(\\d+\\.\\d+)\\.\\.(\\d+\\.\\d+)");
+    	Matcher matcher = pattern.matcher(firstLineData);
+    	int startTime = 0;
+    	int endTime = 0;
+    	
+    	if (matcher.find()) {
+    		startTime = Integer.parseInt(matcher.group(1));
+        	endTime = Integer.parseInt(matcher.group(2));
+    	}
+    	
+    	return (startTime + endTime) / 2;
+    }
+    
+    private Map<String, Map<String, String>> getTablesAndColumnsFromDataBase(Connection idConnection, String catalog, String tableNamePattern) throws SQLException {
+        Map<String, Map<String, String>> tablesAndColumns = new HashMap<>();
         DatabaseMetaData metaData = idConnection.getMetaData();
-        ResultSet tables = metaData.getTables(catalog, null, tableNamePattern, new String[]{"TABLE"});
+        ResultSet tables = metaData.getTables(catalog, metaData.getUserName(), tableNamePattern, new String[]{"TABLE"});
 
         while (tables.next()) {
             String tableName = tables.getString("TABLE_NAME");
 
             ResultSet columns = metaData.getColumns(null, null, tableName, "%");
-            ArrayList<String> columnNames = new ArrayList<>();
+            Map<String, String> columnNames = new LinkedHashMap<>();
             while (columns.next()) {
                 String columnName = columns.getString("COLUMN_NAME");
+                String columnType = columns.getString("TYPE_NAME");
                 if (columnName != null) {
-                    columnNames.add(columnName);
+                    columnNames.put(columnName, columnType);
                 }
             }
-            tablesAndColumns.put(tableName, columnNames.toArray(new String[0]));
+            tablesAndColumns.put(tableName, columnNames);
         }
 
         return tablesAndColumns;
     }
     
-    private ArrayList<RelationshipData> getRelationshipsFromDatabase(Connection idConnection, String sql) throws SQLException {
+    private ArrayList<RelationshipData> getRelationshipsFromDataBase(Connection idConnection, String sql) throws SQLException {
     	PreparedStatement comando = idConnection.prepareStatement(sql);
         ResultSet dados = comando.executeQuery();
         ArrayList<RelationshipData> listRelationshipData = new ArrayList<>();

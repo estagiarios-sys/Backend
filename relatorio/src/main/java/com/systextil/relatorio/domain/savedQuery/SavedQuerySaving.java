@@ -21,9 +21,9 @@ record SavedQuerySaving(
 
 	private void validateTotalizerFields() {
 		if (this.totalizersQuery != null && this.totalizers == null) {
-			throw new TotalizerFieldsMismatchException("totalizersQuery deve ser fornecido com totalizers");
+			throw new TotalizerFieldsMismatchException("TotalizersQuery deve ser fornecido com totalizers");
 		} else if (this.totalizersQuery == null && this.totalizers != null) {
-			throw new TotalizerFieldsMismatchException("totalizers deve ser fornecido com totalizersQuery");
+			throw new TotalizerFieldsMismatchException("Totalizers deve ser fornecido com totalizersQuery");
 		}
 	}
 	

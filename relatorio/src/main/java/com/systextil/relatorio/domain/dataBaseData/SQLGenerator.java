@@ -58,4 +58,30 @@ class SQLGenerator {
     	
     	return queryWithTotalizers;
     }
+	
+	static String generateFinalQueryAnalysisFromMySQLDataBase (String table, ArrayList<String> columns, String conditions, String orderBy,  ArrayList<String> joins) {
+		String finalQuery = generateFinalQuery(table, columns, conditions, orderBy, joins);
+		
+		return "EXPLAIN ANALYZE " + finalQuery;
+	}
+	
+	static String generateTotalizersQueryAnalysisFromMySQLDataBase(Map<String, Totalizer> totalizers, String table, String conditions, ArrayList<String> joins) {
+		String totalizersQuery = generateTotalizersQuery(totalizers, table, conditions, joins).query();
+		
+		return "EXPLAIN ANALYZE " + totalizersQuery;
+	}
+	
+	static String[] generateFinalQueryAnalysisFromOracleDataBase (String table, ArrayList<String> columns, String conditions, String orderBy,  ArrayList<String> joins) {
+		String finalQuery = generateFinalQuery(table, columns, conditions, orderBy, joins);
+		String[] finalQueryAnalysis = {"EXPLAIN PLAN FOR " + finalQuery, "SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY)"};
+		
+		return finalQueryAnalysis;
+	}
+	
+	static String[] generateTotalizersQueryAnalysisFromOracleDataBase(Map<String, Totalizer> totalizers, String table, String conditions, ArrayList<String> joins) {
+		String totalizersQuery = generateTotalizersQuery(totalizers, table, conditions, joins).query();
+		String[] totalizersQueryAnalysis = {"EXPLAIN PLAN FOR " + totalizersQuery, "SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY)"};
+		
+		return totalizersQueryAnalysis;
+	}
 }

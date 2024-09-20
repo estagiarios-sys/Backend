@@ -32,12 +32,17 @@ public class DataBaseDataController {
     @Value("${relationships.json.file.path}")
     private String relationshipsJsonFilePath;
 
+    // 0 para oracle e 1 para MySQL
+    private final int oracleMySQL = 0;
+    private final String fileNotFoundMessage = "Arquivo não encontrado ou não legível: ";
+    
     @PostMapping
     public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws SQLException {
         String finalQuery = SQLGenerator.generateFinalQuery(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
         QueryWithTotalizers queryWithTotalizers = null;
 
         if (!queryData.totalizers().isEmpty()) {
+
             queryWithTotalizers = SQLGenerator.generateTotalizersQuery(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
         }
 
@@ -49,6 +54,7 @@ public class DataBaseDataController {
         ToLoadQueryData toLoadQueryData = new ToLoadQueryData(finalQuery, queryWithTotalizers, imgPDF, titlePDF);
 
         // Carregar os dados
+
         LoadedQueryData loadedQueryData = loadQuery(toLoadQueryData);
         Map<String, String> columnsNameAndNickName = loadedQueryData.columnsNameAndNickName();
         ArrayList<String> columnsNameOrNickName = new ArrayList<>();
@@ -92,6 +98,32 @@ public class DataBaseDataController {
         // Retorno padrão quando não há totalizadores
         return new Object[]{finalQuery, "", columnsNameOrNickName, foundObjects, ""};
     }
+    
+    @PostMapping("analysis")
+    public double getQueryAnalysis(@RequestBody @Valid QueryData queryData) throws SQLException {
+    	dataBaseDataRepository = new DataBaseDataRepository();
+    	int actualTime = 0;
+    	
+    	if (oracleMySQL == 1) {
+    		String finalQueryAnalysis = SQLGenerator.generateFinalQueryAnalysisFromMySQLDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
+        	String totalizersQueryAnalysis = null;
+        	
+        	if (!queryData.totalizers().isEmpty()) {
+        		totalizersQueryAnalysis = SQLGenerator.generateTotalizersQueryAnalysisFromMySQLDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
+        	}
+        	actualTime = dataBaseDataRepository.getActualTimeFromQueriesAnalysisFromMySQLDataBase(finalQueryAnalysis, totalizersQueryAnalysis);
+    	} else {
+    		String[] finalQueryAnaysis = SQLGenerator.generateFinalQueryAnalysisFromOracleDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
+    		String[] totalizersQueryAnalysis = null;
+    		
+    		if (!queryData.totalizers().isEmpty()) {
+        		totalizersQueryAnalysis = SQLGenerator.generateTotalizersQueryAnalysisFromOracleDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
+        	}
+    		actualTime = dataBaseDataRepository.getActualTimeFromQueriesAnalysisFromOracleDataBase(finalQueryAnaysis, totalizersQueryAnalysis);
+    	}
+    	
+    	return actualTime;
+    }
 
 
     @GetMapping("table")
@@ -104,7 +136,7 @@ public class DataBaseDataController {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(resource);
         } else {
-            throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath);
+            throw new RuntimeException(fileNotFoundMessage + filePath);
         }
     }
 
@@ -118,7 +150,7 @@ public class DataBaseDataController {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(resource);
         } else {
-            throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath);
+            throw new RuntimeException(fileNotFoundMessage + filePath);
         }
     }
 
@@ -126,13 +158,19 @@ public class DataBaseDataController {
     public LoadedQueryData loadQuery(@RequestBody ToLoadQueryData toLoadQueryData) throws SQLException {
         dataBaseDataRepository = new DataBaseDataRepository();
 
-        // Passando imgPDF e titlePDF para o método findDataByQueryFromMySQLDatabase
-        LoadedQueryData loadedQueryData = dataBaseDataRepository.findDataByQueryFromMySQLDatabase(
+        LoadedQueryData loadedQueryData = null;
+        
+        if (oracleMySQL == 1) {
+        	  LoadedQueryData loadedQueryData = dataBaseDataRepository.findDataByQueryFromMySQLDatabase(
                 toLoadQueryData.finalQuery(),
                 toLoadQueryData.queryWithTotalizers(),
                 toLoadQueryData.imgPDF(),
                 toLoadQueryData.titlePDF()
         );
+        } else {
+        	loadedQueryData = dataBaseDataRepository.findDataByQueryFromOracleDataBase(toLoadQueryData.finalQuery(), toLoadQueryData.queryWithTotalizers());
+        }
+                
 
         return loadedQueryData;
     }
@@ -146,12 +184,19 @@ public class DataBaseDataController {
         	dataBaseDataRepository = new DataBaseDataRepository();
         	ObjectMapper objectMapper = new ObjectMapper();
         	FileWriter fileWriter = new FileWriter(resource.getFile());
-            Map<String, String[]> tablesAndColumns = dataBaseDataRepository.getTablesAndColumnsFromMySQLDatabase();
+          
+        	Map<String, Map<String, String>> tablesAndColumns = null;
+        	
+            if (oracleMySQL == 1) {
+            	tablesAndColumns = dataBaseDataRepository.getTablesAndColumnsFromMySQLDatabase();
+            } else {
+            	tablesAndColumns = dataBaseDataRepository.getTablesAndColumnsFromOracleDataBase();
+            }
             String json = objectMapper.writeValueAsString(tablesAndColumns);
         	fileWriter.write(json);
         	fileWriter.close();
         } else {
-        	throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath);
+        	throw new RuntimeException(fileNotFoundMessage + filePath);
         }
     }
 
@@ -164,12 +209,18 @@ public class DataBaseDataController {
         	dataBaseDataRepository = new DataBaseDataRepository();
         	ObjectMapper objectMapper = new ObjectMapper();
         	FileWriter fileWriter = new FileWriter(resource.getFile());
-        	ArrayList<RelationshipData> relationships = dataBaseDataRepository.getRelationshipsFromMySQLDatabase();
+        	ArrayList<RelationshipData> relationships = null;
+        	
+        	if (oracleMySQL == 1) {
+        		relationships = dataBaseDataRepository.getRelationshipsFromMySQLDataBase();
+        	} else {
+        		relationships = dataBaseDataRepository.getRelationshipsFromOracleDataBase();
+        	}
         	String json = objectMapper.writeValueAsString(relationships);
         	fileWriter.write(json);
         	fileWriter.close();
         } else {
-        	throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath);
+        	throw new RuntimeException(fileNotFoundMessage + filePath);
         }
     }
 }

@@ -31,7 +31,7 @@ public class SavedQueryController {
 
     @PostMapping(value = "/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SavedQuery> saveSQL(
-            @RequestParam("queryData") String queryData,  // Aqui você recebe os dados JSON como String
+            @RequestParam String queryData,  // Aqui você recebe os dados JSON como String
             @RequestParam("imgPDF") MultipartFile file  // Aqui você recebe a imagem como arquivo
     ) {
         try {
@@ -53,9 +53,6 @@ public class SavedQueryController {
             return ResponseEntity.badRequest().build();
         }
     }
-
-
-
 
     @DeleteMapping("delete/{queryName}")
     public ResponseEntity<Void> deleteSQL(@PathVariable String queryName) {
