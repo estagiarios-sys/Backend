@@ -61,6 +61,7 @@ class SQLGenerator {
 	
 	static String generateFinalQueryAnalysisFromMySQLDataBase (String table, ArrayList<String> columns, String conditions, String orderBy,  ArrayList<String> joins) {
 		String finalQuery = generateFinalQuery(table, columns, conditions, orderBy, joins);
+		
 		return "EXPLAIN ANALYZE " + finalQuery;
 	}
 	

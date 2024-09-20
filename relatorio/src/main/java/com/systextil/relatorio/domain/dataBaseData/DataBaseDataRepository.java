@@ -2,6 +2,7 @@ package com.systextil.relatorio.domain.dataBaseData;
 
 import com.systextil.relatorio.infra.dataBaseConnection.ConnectionMySQL;
 import com.systextil.relatorio.infra.dataBaseConnection.ConnectionOracle;
+import com.systextil.relatorio.infra.exceptionHandler.ActualTimeNotFoundException;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -221,6 +222,8 @@ class DataBaseDataRepository {
 
         if (matcher.find()) {
         	seconds = TimeConverter.convertHHmmssToSeconds(matcher.group(1));
+        } else {
+        	throw new ActualTimeNotFoundException("Tempo da consulta não foi encontrado. Provavelmente o banco de dados Oracle está desatualizado");
         }
     	    	
     	return seconds;

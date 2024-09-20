@@ -34,6 +34,7 @@ public class DataBaseDataController {
 
     // 0 para oracle e 1 para MySQL
     private final int oracleMySQL = 0;
+    private final String fileNotFoundMessage = "Arquivo não encontrado ou não legível: ";
     
     @PostMapping
     public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws SQLException {
@@ -122,7 +123,7 @@ public class DataBaseDataController {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(resource);
         } else {
-            throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath);
+            throw new RuntimeException(fileNotFoundMessage + filePath);
         }
     }
 
@@ -136,7 +137,7 @@ public class DataBaseDataController {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(resource);
         } else {
-            throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath);
+            throw new RuntimeException(fileNotFoundMessage + filePath);
         }
     }
     
@@ -175,7 +176,7 @@ public class DataBaseDataController {
         	fileWriter.write(json);
         	fileWriter.close();
         } else {
-        	throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath);
+        	throw new RuntimeException(fileNotFoundMessage + filePath);
         }
     }
 
@@ -199,7 +200,7 @@ public class DataBaseDataController {
         	fileWriter.write(json);
         	fileWriter.close();
         } else {
-        	throw new RuntimeException("Arquivo não encontrado ou não legível: " + filePath);
+        	throw new RuntimeException(fileNotFoundMessage + filePath);
         }
     }
 }

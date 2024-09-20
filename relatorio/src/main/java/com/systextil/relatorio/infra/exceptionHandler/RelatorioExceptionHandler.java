@@ -57,5 +57,13 @@ public class RelatorioExceptionHandler {
     	errors.put("message", exception.getLocalizedMessage());
     	
     	return ResponseEntity.internalServerError().body(errors);
-    }   
+    }
+    
+    @ExceptionHandler(ActualTimeNotFoundException.class)
+    public ResponseEntity<Map<String, String>> return500ErrorForActualTimeNotFoundException(ActualTimeNotFoundException exception) {
+    	Map<String, String> errors = new HashMap<>();
+    	errors.put("message", exception.getLocalizedMessage());
+    	
+    	return ResponseEntity.internalServerError().body(errors);
+    }
 }
