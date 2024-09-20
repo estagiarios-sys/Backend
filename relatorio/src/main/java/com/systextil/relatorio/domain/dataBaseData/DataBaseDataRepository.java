@@ -17,42 +17,38 @@ class DataBaseDataRepository {
     private ConnectionMySQL connectionMySQL;
     private ConnectionOracle connectionOracle;
 
-    LoadedQueryData findDataByQueryFromOracleDataBase(String finalQuery, QueryWithTotalizers queryWithTotalizers) throws SQLException {
+    LoadedQueryData findDataByQueryFromOracleDataBase(String finalQuery, String totalizersQuery) throws SQLException {
     	connectionOracle = new ConnectionOracle();
     	connectionOracle.connect();
     	LoadedQueryData loadedQueryData = findDataByQuery(connectionOracle.getIdConnection(), finalQuery);
     	
-    	try {
-    		queryWithTotalizers.query();
-    		ArrayList<String> totalizersResults = getTotalizersResults(connectionOracle.getIdConnection(), queryWithTotalizers);
+    	if (!totalizersQuery.isBlank()) {
+    		ArrayList<String> totalizersResults = getTotalizersResults(connectionOracle.getIdConnection(), totalizersQuery);
         	LoadedQueryData loadedQueryDataWithTotalizersResults = new LoadedQueryData(loadedQueryData.columnsNameAndNickName(), loadedQueryData.foundObjects(), totalizersResults);
         	connectionOracle.disconnect();
         	        	
         	return loadedQueryDataWithTotalizersResults;
-    	} catch (NullPointerException e) {
-    		connectionOracle.disconnect();
-        	
-        	return loadedQueryData;
     	}
+    	connectionOracle.disconnect();
+        	
+    	return loadedQueryData;
     }
     
-    LoadedQueryData findDataByQueryFromMySQLDataBase(String finalQuery, QueryWithTotalizers queryWithTotalizers) throws SQLException {
+    LoadedQueryData findDataByQueryFromMySQLDataBase(String finalQuery, String totalizersQuery) throws SQLException {
     	connectionMySQL = new ConnectionMySQL();
     	connectionMySQL.connect();
     	LoadedQueryData loadedQueryData = findDataByQuery(connectionMySQL.getIdConnection(), finalQuery);
     	
-    	try {
-    		queryWithTotalizers.query();
-    		ArrayList<String> totalizersResults = getTotalizersResults(connectionMySQL.getIdConnection(), queryWithTotalizers);
+    	if (!totalizersQuery.isBlank()) {
+    		ArrayList<String> totalizersResults = getTotalizersResults(connectionMySQL.getIdConnection(), totalizersQuery);
         	LoadedQueryData loadedQueryDataWithTotalizersResults = new LoadedQueryData(loadedQueryData.columnsNameAndNickName(), loadedQueryData.foundObjects(), totalizersResults);
         	connectionMySQL.disconnect();
-        	
+        	        	
         	return loadedQueryDataWithTotalizersResults;
-    	} catch (NullPointerException e) {
-    		connectionMySQL.disconnect();
-        	
-        	return loadedQueryData;
     	}
+    	connectionMySQL.disconnect();
+        	
+    	return loadedQueryData;
     }
     
     int getActualTimeFromQueriesAnalysisFromOracleDataBase(String[] finalQueryAnalysis, String[] totalizersQueryAnalysis) throws SQLException {
@@ -182,23 +178,20 @@ class DataBaseDataRepository {
             }
             listObjects.add(object);
         }
-        LoadedQueryData loadedQueryData = new LoadedQueryData(columnsNameAndNickName, listObjects, null);
 
-        return loadedQueryData;
+        return new LoadedQueryData(columnsNameAndNickName, listObjects, null);
     }
     
-    private ArrayList<String> getTotalizersResults(Connection idConnection, QueryWithTotalizers queryWithTotalizers) throws SQLException {
+    private ArrayList<String> getTotalizersResults(Connection idConnection, String totalizersQuery) throws SQLException {
     	ArrayList<String> totalizersResults = new ArrayList<>();
-    	PreparedStatement command = idConnection.prepareStatement(queryWithTotalizers.query());
+    	PreparedStatement command = idConnection.prepareStatement(totalizersQuery);
     	ResultSet data = command.executeQuery();
     	ResultSetMetaData metaData = data.getMetaData();
     	int columnsNumber = metaData.getColumnCount();
-    	Totalizer totalizer;
     	data.next();
     	
     	for (int i = 1; i <= columnsNumber; i++) {
-    		totalizer = queryWithTotalizers.totalizers().get(i-1);
-    		totalizersResults.add(totalizer.toPortuguese() + ": " + data.getInt(i));
+    		totalizersResults.add(String.valueOf(data.getInt(i)));
     	}
     	    	
     	return totalizersResults;

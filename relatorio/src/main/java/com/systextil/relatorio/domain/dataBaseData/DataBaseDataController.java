@@ -39,52 +39,18 @@ public class DataBaseDataController {
     @PostMapping
     public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws SQLException {
         String finalQuery = SQLGenerator.generateFinalQuery(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
-        QueryWithTotalizers queryWithTotalizers = null;
+        String totalizersQuery = null;
         
         if (!queryData.totalizers().isEmpty()) {
-        	queryWithTotalizers = SQLGenerator.generateTotalizersQuery(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
+        	totalizersQuery = SQLGenerator.generateTotalizersQuery(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
         }        
-        ToLoadQueryData toLoadQueryData = new ToLoadQueryData(finalQuery, queryWithTotalizers);
-        LoadedQueryData loadedQueryData = loadQuery(toLoadQueryData);
-        Map<String, String> columnsNameAndNickName = loadedQueryData.columnsNameAndNickName();
-        ArrayList<String> columnsNameOrNickName = new ArrayList<>();
+        ToLoadQueryData toLoadQueryData = new ToLoadQueryData(finalQuery, totalizersQuery, queryData.totalizers());
+        TreatedLoadedQueryData treatedLoadedQueryData = loadQuery(toLoadQueryData);
+        ArrayList<String> columnsNameOrNickName = treatedLoadedQueryData.columnsNameOrNickName();
+        ArrayList<Object[]> foundObjects = treatedLoadedQueryData.foundObjects();
+        Map<String, String> columnsAndTotalizersResult = treatedLoadedQueryData.columnsAndTotalizersResult();
         
-        for (Map.Entry<String, String> columnNameAndNickName : columnsNameAndNickName.entrySet()) {
-        	
-   			if (columnNameAndNickName.getValue() != null) {
-   				columnsNameOrNickName.add(columnNameAndNickName.getValue());
-   			} else {
-   				columnsNameOrNickName.add(columnNameAndNickName.getKey());
-    		}
-    	}
-        ArrayList<Object[]> foundObjects = loadedQueryData.foundObjects();
-        
-        if (loadedQueryData.totalizersResults() != null) {
-        	ArrayList<String> totalizersResults = loadedQueryData.totalizersResults();
-        	int totalizersResultsCounter = 0;
-            Map<String, String> columnsAndTotalizers = new HashMap<>();
-            
-            for (Map.Entry<String, Totalizer> totalizer : queryData.totalizers().entrySet()) {
-            	String columnsAndTotalizersColumn = null;
-            	
-            	for (Map.Entry<String, String> columnNameAndNickName : columnsNameAndNickName.entrySet()) {
-            		
-            		if (totalizer.getKey().equalsIgnoreCase(columnNameAndNickName.getKey())) {
-            			if (columnNameAndNickName.getValue() != null) {
-            				columnsAndTotalizersColumn = columnNameAndNickName.getValue();
-            			} else {
-            				columnsAndTotalizersColumn = columnNameAndNickName.getKey();
-            			}
-            		}
-            	}
-            	columnsAndTotalizers.put(columnsAndTotalizersColumn, totalizersResults.get(totalizersResultsCounter));
-            	totalizersResultsCounter++;
-            }
-            
-            return new Object[]{finalQuery, queryWithTotalizers.query(), columnsNameOrNickName, foundObjects, columnsAndTotalizers};
-        }
-        
-        return new Object[]{finalQuery, "", columnsNameOrNickName, foundObjects, ""};
+        return new Object[]{finalQuery, totalizersQuery, columnsNameOrNickName, foundObjects, columnsAndTotalizersResult};
     }
     
     @PostMapping("analysis")
@@ -142,17 +108,17 @@ public class DataBaseDataController {
     }
     
     @PostMapping("loadedQuery")
-    public LoadedQueryData loadQuery(@RequestBody ToLoadQueryData toLoadQueryData) throws SQLException {
+    public TreatedLoadedQueryData loadQuery(@RequestBody ToLoadQueryData toLoadQueryData) throws SQLException {
         dataBaseDataRepository = new DataBaseDataRepository();
         LoadedQueryData loadedQueryData = null;
         
         if (oracleMySQL == 1) {
-        	loadedQueryData = dataBaseDataRepository.findDataByQueryFromMySQLDataBase(toLoadQueryData.finalQuery(), toLoadQueryData.queryWithTotalizers());
+        	loadedQueryData = dataBaseDataRepository.findDataByQueryFromMySQLDataBase(toLoadQueryData.finalQuery(), toLoadQueryData.totalizersQuery());
         } else {
-        	loadedQueryData = dataBaseDataRepository.findDataByQueryFromOracleDataBase(toLoadQueryData.finalQuery(), toLoadQueryData.queryWithTotalizers());
+        	loadedQueryData = dataBaseDataRepository.findDataByQueryFromOracleDataBase(toLoadQueryData.finalQuery(), toLoadQueryData.totalizersQuery());
         }
-                
-        return loadedQueryData;
+
+        return treatLoadedQueryData(loadedQueryData, toLoadQueryData.totalizers());
     }
     
     @PutMapping("update/table")
@@ -202,5 +168,51 @@ public class DataBaseDataController {
         } else {
         	throw new RuntimeException(fileNotFoundMessage + filePath);
         }
+    }
+    
+    private TreatedLoadedQueryData treatLoadedQueryData(LoadedQueryData loadedQueryData, Map<String, Totalizer> totalizers) {
+    	ArrayList<String> columnsNameOrNickName = columnsNameAndNickNameToColumnsNameOrNickName(loadedQueryData.columnsNameAndNickName());
+    	Map<String, String> columnsAndTotalizersResult = joinColumnsAndTotalizersResult(loadedQueryData, totalizers);
+    	
+    	return new TreatedLoadedQueryData(columnsNameOrNickName, loadedQueryData.foundObjects(), columnsAndTotalizersResult);
+    }
+    
+    private Map<String, String> joinColumnsAndTotalizersResult(LoadedQueryData loadedQueryData, Map<String, Totalizer> totalizers) {
+    	int totalizersResultsCounter = 0;
+        Map<String, String> columnsAndTotalizersResult = new HashMap<>();
+        
+        for (Map.Entry<String, Totalizer> totalizer : totalizers.entrySet()) {
+        	String columnsAndTotalizersColumn = null;
+        	
+        	for (Map.Entry<String, String> columnNameAndNickName : loadedQueryData.columnsNameAndNickName().entrySet()) {
+        		
+        		if (totalizer.getKey().equalsIgnoreCase(columnNameAndNickName.getKey())) {
+        			if (columnNameAndNickName.getValue() != null) {
+        				columnsAndTotalizersColumn = columnNameAndNickName.getValue();
+        			} else {
+        				columnsAndTotalizersColumn = columnNameAndNickName.getKey();
+        			}
+        		}
+        	}
+        	columnsAndTotalizersResult.put(columnsAndTotalizersColumn, totalizer.getValue().toPortuguese() + ": " + loadedQueryData.totalizersResult().get(totalizersResultsCounter));
+        	totalizersResultsCounter++;
+        }
+        
+        return columnsAndTotalizersResult;
+    }
+    
+    private ArrayList<String> columnsNameAndNickNameToColumnsNameOrNickName(Map<String, String> columnsNameAndNickName) {
+    	ArrayList<String> columnsNameOrNickName = new ArrayList<>();
+    	
+    	for (Map.Entry<String, String> columnNameAndNickName : columnsNameAndNickName.entrySet()) {
+        	
+   			if (columnNameAndNickName.getValue() != null) {
+   				columnsNameOrNickName.add(columnNameAndNickName.getValue());
+   			} else {
+   				columnsNameOrNickName.add(columnNameAndNickName.getKey());
+    		}
+    	}
+    	
+    	return columnsNameOrNickName;
     }
 }

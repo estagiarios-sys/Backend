@@ -1,7 +1,10 @@
 package com.systextil.relatorio.domain.dataBaseData;
 
+import java.util.Map;
+
 /** Record usado no DataBaseDataController.loadQuery() para retornar um LoadedQueryData */
 record ToLoadQueryData(
 		String finalQuery,
-		QueryWithTotalizers queryWithTotalizers
-		) {}
+		String totalizersQuery,
+		Map<String, Totalizer> totalizers
+) {}

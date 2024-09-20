@@ -29,13 +29,11 @@ class SQLGenerator {
         return query;
     }
     
-	static QueryWithTotalizers generateTotalizersQuery(Map<String, Totalizer> totalizers, String table, String conditions, ArrayList<String> joins) {
-    	ArrayList<Totalizer> listOfTotalizers = new ArrayList<>();
+	static String generateTotalizersQuery(Map<String, Totalizer> totalizers, String table, String conditions, ArrayList<String> joins) {
     	boolean firstTotalizer = true;
     	String query = "SELECT ";
     	
     	for (Map.Entry<String, Totalizer> totalizer: totalizers.entrySet()) {
-    		listOfTotalizers.add(totalizer.getValue());
     		
     		if (!firstTotalizer) {
     			query = query.concat(", ");
@@ -54,9 +52,8 @@ class SQLGenerator {
             query = query.concat(" WHERE ");
             query = query.concat(conditions);
         }
-    	QueryWithTotalizers queryWithTotalizers = new QueryWithTotalizers(query, listOfTotalizers);
     	
-    	return queryWithTotalizers;
+    	return query;
     }
 	
 	static String generateFinalQueryAnalysisFromMySQLDataBase (String table, ArrayList<String> columns, String conditions, String orderBy,  ArrayList<String> joins) {
@@ -66,7 +63,7 @@ class SQLGenerator {
 	}
 	
 	static String generateTotalizersQueryAnalysisFromMySQLDataBase(Map<String, Totalizer> totalizers, String table, String conditions, ArrayList<String> joins) {
-		String totalizersQuery = generateTotalizersQuery(totalizers, table, conditions, joins).query();
+		String totalizersQuery = generateTotalizersQuery(totalizers, table, conditions, joins);
 		
 		return "EXPLAIN ANALYZE " + totalizersQuery;
 	}
@@ -79,7 +76,7 @@ class SQLGenerator {
 	}
 	
 	static String[] generateTotalizersQueryAnalysisFromOracleDataBase(Map<String, Totalizer> totalizers, String table, String conditions, ArrayList<String> joins) {
-		String totalizersQuery = generateTotalizersQuery(totalizers, table, conditions, joins).query();
+		String totalizersQuery = generateTotalizersQuery(totalizers, table, conditions, joins);
 		String[] totalizersQueryAnalysis = {"EXPLAIN PLAN FOR " + totalizersQuery, "SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY)"};
 		
 		return totalizersQueryAnalysis;
