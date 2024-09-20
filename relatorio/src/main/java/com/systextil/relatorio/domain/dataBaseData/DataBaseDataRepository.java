@@ -14,43 +14,44 @@ class DataBaseDataRepository {
     private ConnectionMySQL connectionMySQL;
     private ConnectionOracle connectionOracle;
 
-    LoadedQueryData findDataByQueryFromOracleDatabase(String finalQuery, QueryWithTotalizers queryWithTotalizers) throws SQLException {
-    	connectionOracle = new ConnectionOracle();
-    	connectionOracle.connect();
-    	LoadedQueryData loadedQueryData = findDataByQuery(connectionOracle.getIdConnection(), finalQuery);
-    	
-    	try {
-    		queryWithTotalizers.query();
-    		ArrayList<String> totalizersResults = getTotalizersResults(connectionOracle.getIdConnection(), queryWithTotalizers);
-        	LoadedQueryData loadedQueryDataWithTotalizersResults = new LoadedQueryData(loadedQueryData.columnsNameAndNickName(), loadedQueryData.foundObjects(), totalizersResults);
-        	connectionOracle.disconnect();
-        	
-        	return loadedQueryDataWithTotalizersResults;
-    	} catch (NullPointerException e) {
-    		connectionOracle.disconnect();
-        	
-        	return loadedQueryData;
-    	}
+    LoadedQueryData findDataByQueryFromMySQLDatabase(String finalQuery, QueryWithTotalizers queryWithTotalizers, byte[] imgPDF, String titlePDF) throws SQLException {
+        connectionMySQL = new ConnectionMySQL();
+        connectionMySQL.connect();
+
+        // Primeira consulta para buscar os dados baseados no finalQuery
+        LoadedQueryData loadedQueryData = findDataByQuery(connectionMySQL.getIdConnection(), finalQuery);
+
+        try {
+            // Executa a query dos totalizadores, se existir
+            queryWithTotalizers.query();
+            ArrayList<String> totalizersResults = getTotalizersResults(connectionMySQL.getIdConnection(), queryWithTotalizers);
+
+            // Cria um novo LoadedQueryData com os totalizadores, imgPDF e titlePDF
+            LoadedQueryData loadedQueryDataWithTotalizersResults = new LoadedQueryData(
+                    loadedQueryData.columnsNameAndNickName(),
+                    loadedQueryData.foundObjects(),
+                    totalizersResults,
+                    imgPDF,  // Adiciona imgPDF ao retorno
+                    titlePDF // Adiciona titlePDF ao retorno
+            );
+
+            connectionMySQL.disconnect();
+            return loadedQueryDataWithTotalizersResults;
+
+        } catch (NullPointerException e) {
+            connectionMySQL.disconnect();
+
+            // Retorna os dados sem totalizadores, mas com imgPDF e titlePDF
+            return new LoadedQueryData(
+                    loadedQueryData.columnsNameAndNickName(),
+                    loadedQueryData.foundObjects(),
+                    null,   // Sem totalizadores
+                    imgPDF, // Adiciona imgPDF ao retorno
+                    titlePDF // Adiciona titlePDF ao retorno
+            );
+        }
     }
-    
-    LoadedQueryData findDataByQueryFromMySQLDatabase(String finalQuery, QueryWithTotalizers queryWithTotalizers) throws SQLException {
-    	connectionMySQL = new ConnectionMySQL();
-    	connectionMySQL.connect();
-    	LoadedQueryData loadedQueryData = findDataByQuery(connectionMySQL.getIdConnection(), finalQuery);
-    	
-    	try {
-    		queryWithTotalizers.query();
-    		ArrayList<String> totalizersResults = getTotalizersResults(connectionMySQL.getIdConnection(), queryWithTotalizers);
-        	LoadedQueryData loadedQueryDataWithTotalizersResults = new LoadedQueryData(loadedQueryData.columnsNameAndNickName(), loadedQueryData.foundObjects(), totalizersResults);
-        	connectionMySQL.disconnect();
-        	
-        	return loadedQueryDataWithTotalizersResults;
-    	} catch (NullPointerException e) {
-    		connectionMySQL.disconnect();
-        	
-        	return loadedQueryData;
-    	}
-    }
+
 
     Map<String, String[]> getTablesAndColumnsFromOracleDatabase() throws ClassNotFoundException, SQLException {
         connectionOracle = new ConnectionOracle();
@@ -108,7 +109,7 @@ class DataBaseDataRepository {
         
         return listRelationshipData;
     }
-    
+
     private LoadedQueryData findDataByQuery(Connection idConnection, String sql) throws SQLException {
         ArrayList<Object[]> listObjects = new ArrayList<>();
         Map<String, String> columnsNameAndNickName = new LinkedHashMap<>();
@@ -116,32 +117,45 @@ class DataBaseDataRepository {
         ResultSet data = command.executeQuery();
         ResultSetMetaData metaData = data.getMetaData();
         int columnsNumber = metaData.getColumnCount();
-        
+
         for (int i = 1; i <= columnsNumber; i++) {
-        	String columnNickName = metaData.getColumnLabel(i);
-        	String columnTableName = metaData.getTableName(i);
-        	String columnName = metaData.getColumnName(i);
-        	        	
-        	if (columnNickName.equalsIgnoreCase(columnName)) {
-        		columnsNameAndNickName.put(columnTableName + "." + columnName, null);
-        	} else {
-        		columnsNameAndNickName.put(columnTableName + "." + columnName, columnNickName);
-        	}
+            String columnNickName = metaData.getColumnLabel(i);
+            String columnTableName = metaData.getTableName(i);
+            String columnName = metaData.getColumnName(i);
+
+            if (columnNickName.equalsIgnoreCase(columnName)) {
+                columnsNameAndNickName.put(columnTableName + "." + columnName, null);
+            } else {
+                columnsNameAndNickName.put(columnTableName + "." + columnName, columnNickName);
+            }
         }
 
         while (data.next()) {
             Object[] object = new Object[columnsNumber];
-            
+
             for (int i = 1; i <= columnsNumber; i++) {
                 object[i - 1] = data.getString(i);
             }
             listObjects.add(object);
         }
-        LoadedQueryData loadedQueryData = new LoadedQueryData(columnsNameAndNickName, listObjects, null);
-                
+
+        // Se você ainda não tem imgPDF e titlePDF, passe null ou um valor padrão
+        byte[] imgPDF = null; // ou busque a imagem de outra fonte se necessário
+        String titlePDF = "Título Padrão"; // ou busque o título de outra fonte se necessário
+
+        // Agora, fornecemos todos os valores esperados para o construtor
+        LoadedQueryData loadedQueryData = new LoadedQueryData(
+                columnsNameAndNickName,
+                listObjects,
+                null, // totalizersResults ainda não disponível
+                imgPDF, // valor da imagem
+                titlePDF // valor do título
+        );
+
         return loadedQueryData;
     }
-    
+
+
     private ArrayList<String> getTotalizersResults(Connection idConnection, QueryWithTotalizers queryWithTotalizers) throws SQLException {
     	ArrayList<String> totalizersResults = new ArrayList<>();
     	PreparedStatement command = idConnection.prepareStatement(queryWithTotalizers.query());

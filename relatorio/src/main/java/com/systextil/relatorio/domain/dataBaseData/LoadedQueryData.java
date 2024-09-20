@@ -7,5 +7,7 @@ import java.util.Map;
 record LoadedQueryData(
 	Map<String, String> columnsNameAndNickName,
 	ArrayList<Object[]> foundObjects,
-	ArrayList<String> totalizersResults
+	ArrayList<String> totalizersResults,
+	byte[] imgPDF,
+	String titlePDF
 ) {}
