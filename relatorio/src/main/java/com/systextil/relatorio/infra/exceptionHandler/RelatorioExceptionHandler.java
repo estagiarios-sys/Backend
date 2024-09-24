@@ -66,4 +66,12 @@ public class RelatorioExceptionHandler {
     	
     	return ResponseEntity.internalServerError().body(errors);
     }
+    
+    @ExceptionHandler(SavedQueryQueryNameIsEmptyException.class)
+    public ResponseEntity<Map<String, String>> return400ErrorForSavedQueryQueryNameIsEmptyException(SavedQueryQueryNameIsEmptyException exception) {
+    	Map<String, String> errors = new HashMap<>();
+    	errors.put("message", exception.getLocalizedMessage());
+    	
+    	return ResponseEntity.badRequest().body(errors);
+    }
 }

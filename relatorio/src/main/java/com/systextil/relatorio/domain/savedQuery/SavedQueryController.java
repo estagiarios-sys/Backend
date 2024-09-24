@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.systextil.relatorio.infra.exceptionHandler.SavedQueryQueryNameIsEmptyException;
 
 import java.io.IOException;
 import java.util.List;
@@ -36,12 +37,10 @@ public class SavedQueryController {
             @RequestParam(required = false, value = "imgPDF") MultipartFile file
     ) throws IOException {
     	byte[] imgPDF = null;
+    	
     	try {
     		imgPDF = file.getBytes();
-    	} catch (IOException | NullPointerException e) {
-    		
-    	}
-    	
+    	} catch (NullPointerException exception) {}
     	objectMapper = new ObjectMapper();
     	SavedQuerySaving savedQuerySaving = objectMapper.readValue(stringSavedQuerySaving, SavedQuerySaving.class);
     	SavedQuery savedQuery = new SavedQuery(savedQuerySaving, imgPDF);
@@ -60,23 +59,24 @@ public class SavedQueryController {
     @PutMapping(value = "/update/saved-query", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Transactional
     public ResponseEntity<Void> updateSQL(
-    		@RequestParam SavedQuerySaving savedQuerySaving,
-            @RequestParam("imgPDF") MultipartFile file
-    ) {
+    		@RequestParam String stringSavedQuerySaving,
+            @RequestParam(required = false, value = "imgPDF") MultipartFile file
+    ) throws IOException, SavedQueryQueryNameIsEmptyException {
+    	byte[] imgPDF = null;
+    	
     	try {
-    		byte[] imgPDF = file.getBytes();
-    		Optional<SavedQuery> optionalSavedQuery = savedQueryRepository.findByQueryName(savedQuerySaving.queryName());
+    		imgPDF = file.getBytes();
+    	} catch (NullPointerException exception) {}
+    	objectMapper = new ObjectMapper();
+    	SavedQuerySaving savedQuerySaving = objectMapper.readValue(stringSavedQuerySaving, SavedQuerySaving.class);
+    	Optional<SavedQuery> optionalSavedQuery = savedQueryRepository.findByQueryName(savedQuerySaving.queryName());
         	
-        	if (optionalSavedQuery.isPresent()) {
-        		optionalSavedQuery.get().updateData(savedQuerySaving, imgPDF);
+        if (optionalSavedQuery.isPresent()) {
+        	optionalSavedQuery.get().updateData(savedQuerySaving, imgPDF);
         		
-        		return ResponseEntity.ok().build();
-        	} else {
-        		
-        		return ResponseEntity.badRequest().build();
-        	}
-    	} catch (IOException e) {
-            return ResponseEntity.badRequest().build();
+        	return ResponseEntity.ok().build();
+        } else {
+        	throw new SavedQueryQueryNameIsEmptyException();
         }
     }
 }

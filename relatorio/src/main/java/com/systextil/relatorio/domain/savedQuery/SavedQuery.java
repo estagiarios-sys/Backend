@@ -52,11 +52,11 @@ public class SavedQuery {
         return finalQuery;
     }
     
-	public String getTotalizersQuery() {
+    public String getTotalizersQuery() {
 		return totalizersQuery;
 	}
 
-	public byte[] getImgPDF(){
+    public byte[] getImgPDF(){
         return imgPDF;
     }
 	
@@ -64,7 +64,7 @@ public class SavedQuery {
         return titlePDF;
     }
 
-	public List<Totalizer> getTotalizers() {
+    public List<Totalizer> getTotalizers() {
 		return totalizers;
 	}    
     
@@ -74,7 +74,7 @@ public class SavedQuery {
     	this.imgPDF = imgPDF;
     	try {
     		this.totalizers = savedQuerySaving.totalizers().stream().map(Totalizer::new).toList();
-    	} catch(NullPointerException e) {
+    	} catch(NullPointerException exception) {
     		this.totalizers = null;
     	}
     }
