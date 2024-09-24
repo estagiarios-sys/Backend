@@ -217,7 +217,7 @@ public class DataBaseDataController {
    				columnsNameOrNickName.add(columnNameAndNickName.getKey());
     		}
     	}
-    	
+    	    	
     	return columnsNameOrNickName;
     }
 }

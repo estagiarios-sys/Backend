@@ -1,6 +1,8 @@
 package com.systextil.relatorio.domain.savedQuery;
 
 
+import java.util.Map;
+
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,7 +18,8 @@ public class Totalizer {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	private String totalizer;
+	private String totalizerColumn;
+	private String name;
 	@ManyToOne
 	@JoinColumn(name = "saved_query_id")
 	private SavedQuery savedQuery;
@@ -25,19 +28,25 @@ public class Totalizer {
 	}
 	
 	public Totalizer(TotalizerSaving totalizerSaving) {
-		this.totalizer = totalizerSaving.totalizer();
+		for (Map.Entry<String, String> totalizer : totalizerSaving.totalizers().entrySet()) {
+			this.totalizerColumn = totalizer.getKey();
+			this.name = totalizer.getValue();
+		}
 	}
 
 	public Long getId() {
 		return id;
 	}
 
-	public String getTotalizer() {
-		return totalizer;
+	public String getColumn() {
+		return totalizerColumn;
+	}
+	
+	public String getName() {
+		return name;
 	}
 
 	public SavedQuery getSavedQuery() {
 		return savedQuery;
 	}
-	
 }

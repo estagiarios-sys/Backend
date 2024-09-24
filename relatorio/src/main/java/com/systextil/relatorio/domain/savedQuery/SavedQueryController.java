@@ -1,14 +1,14 @@
 package com.systextil.relatorio.domain.savedQuery;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.List;
@@ -19,6 +19,7 @@ public class SavedQueryController {
 
     @Autowired
     private SavedQueryRepository savedQueryRepository;
+    private ObjectMapper objectMapper;
 
     @GetMapping("find/saved-query")
     public List<SavedQueryListing> getSQL() {
@@ -31,27 +32,22 @@ public class SavedQueryController {
 
     @PostMapping(value = "/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SavedQuery> saveSQL(
-            @RequestParam String queryData,  // Aqui você recebe os dados JSON como String
-            @RequestParam("imgPDF") MultipartFile file  // Aqui você recebe a imagem como arquivo
-    ) {
-        try {
-            // Converter a string JSON para um objeto Java
-            ObjectMapper objectMapper = new ObjectMapper();
-            SavedQuerySaving savedQuerySaving = objectMapper.readValue(queryData, SavedQuerySaving.class);  // Converte o JSON para objeto
+            @RequestParam String stringSavedQuerySaving,
+            @RequestParam(required = false, value = "imgPDF") MultipartFile file
+    ) throws IOException {
+    	byte[] imgPDF = null;
+    	try {
+    		imgPDF = file.getBytes();
+    	} catch (IOException | NullPointerException e) {
+    		
+    	}
+    	
+    	objectMapper = new ObjectMapper();
+    	SavedQuerySaving savedQuerySaving = objectMapper.readValue(stringSavedQuerySaving, SavedQuerySaving.class);
+    	SavedQuery savedQuery = new SavedQuery(savedQuerySaving, imgPDF);
+    	savedQueryRepository.save(savedQuery);
 
-            // Processar a imagem
-            byte[] imgPDF = file.getBytes();  // Converte o MultipartFile para byte[] para salvar no banco
-
-            // Criar a entidade usando os dados do JSON e a imagem
-            SavedQuery savedQuery = new SavedQuery(savedQuerySaving);
-            savedQuery.setImgPDF(imgPDF);  // Adiciona a imagem ao objeto
-
-            savedQueryRepository.save(savedQuery);  // Salva no banco de dados
-
-            return ResponseEntity.created(null).body(savedQuery);
-        } catch (IOException e) {
-            return ResponseEntity.badRequest().build();
-        }
+    	return ResponseEntity.created(null).body(savedQuery);
     }
 
     @DeleteMapping("delete/{queryName}")
@@ -61,18 +57,26 @@ public class SavedQueryController {
     	return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("update/saved-query")
+    @PutMapping(value = "/update/saved-query", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Transactional
-    public ResponseEntity<Void> updateSQL(@RequestBody @Valid SavedQuerySaving savedQuerySaving) {
-    	Optional<SavedQuery> optionalSavedQuery = savedQueryRepository.findByQueryName(savedQuerySaving.queryName());
-    	
-    	if (optionalSavedQuery.isPresent()) {
-    		optionalSavedQuery.get().updateData(savedQuerySaving);
-    		
-    		return ResponseEntity.ok().build();
-    	} else {
-    		
-    		return ResponseEntity.badRequest().build();
-    	}
+    public ResponseEntity<Void> updateSQL(
+    		@RequestParam SavedQuerySaving savedQuerySaving,
+            @RequestParam("imgPDF") MultipartFile file
+    ) {
+    	try {
+    		byte[] imgPDF = file.getBytes();
+    		Optional<SavedQuery> optionalSavedQuery = savedQueryRepository.findByQueryName(savedQuerySaving.queryName());
+        	
+        	if (optionalSavedQuery.isPresent()) {
+        		optionalSavedQuery.get().updateData(savedQuerySaving, imgPDF);
+        		
+        		return ResponseEntity.ok().build();
+        	} else {
+        		
+        		return ResponseEntity.badRequest().build();
+        	}
+    	} catch (IOException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

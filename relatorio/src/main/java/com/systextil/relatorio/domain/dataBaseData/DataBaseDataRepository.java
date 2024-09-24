@@ -127,7 +127,7 @@ class DataBaseDataRepository {
         return listRelationshipData;
     }
     
-    ArrayList<RelationshipData> getRelationshipsFromMySQLDataBase() throws SQLException, ClassNotFoundException {
+    ArrayList<RelationshipData> getRelationshipsFromMySQLDataBase() throws SQLException {
         connectionMySQL = new ConnectionMySQL();
         connectionMySQL.connect();
         String sql = "SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME " +
@@ -177,7 +177,7 @@ class DataBaseDataRepository {
             }
             listObjects.add(object);
         }
-
+        
         return new LoadedQueryData(columnsNameAndNickName, listObjects, null);
     }
     

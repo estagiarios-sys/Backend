@@ -1,7 +1,7 @@
 package com.systextil.relatorio.domain.savedQuery;
 
+import java.util.Map;
+
 public record TotalizerSaving(
-		
-		String totalizer
-		
+		Map<String, String> totalizers
 ) {}

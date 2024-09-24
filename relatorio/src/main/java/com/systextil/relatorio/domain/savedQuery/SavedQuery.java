@@ -14,7 +14,9 @@ public class SavedQuery {
     private String queryName;
     private String finalQuery;
     private String totalizersQuery;
+    @Column(name = "IMG_PDF")
     private byte[] imgPDF;
+    @Column(name = "TITLE_PDF")
     private String titlePDF;
     
     @OneToMany(cascade = CascadeType.PERSIST)
@@ -25,18 +27,17 @@ public class SavedQuery {
     public SavedQuery() {
     }
     
-    public SavedQuery(SavedQuerySaving savedQuerySaving) {
+    public SavedQuery(SavedQuerySaving savedQuerySaving, byte[] imgPDF) {
     	this.queryName = savedQuerySaving.queryName();
     	this.finalQuery = savedQuerySaving.finalQuery();
     	this.totalizersQuery = savedQuerySaving.totalizersQuery();
+    	this.imgPDF = imgPDF;
         this.titlePDF = savedQuerySaving.titlePDF();
-        this.imgPDF = savedQuerySaving.imgPDF();
     	try {
     		this.totalizers = savedQuerySaving.totalizers().stream().map(Totalizer::new).toList();
     	} catch(NullPointerException e) {
     		this.totalizers = null;
     	}
-    	
     }
 
     public Long getId() {
@@ -55,32 +56,26 @@ public class SavedQuery {
 		return totalizersQuery;
 	}
 
-    public String getTitlePDF(){
-        return titlePDF;
-    }
-
-    public byte[] getImgPDF(){
+	public byte[] getImgPDF(){
         return imgPDF;
     }
-
-    public void setImgPDF(byte[] imgPDF){
-        this.imgPDF = imgPDF;
+	
+    public String getTitlePDF(){
+        return titlePDF;
     }
 
 	public List<Totalizer> getTotalizers() {
 		return totalizers;
 	}    
     
-    public void updateData(SavedQuerySaving savedQuerySaving) {
+    public void updateData(SavedQuerySaving savedQuerySaving, byte[] imgPDF) {
     	this.finalQuery = savedQuerySaving.finalQuery();
     	this.totalizersQuery = savedQuerySaving.totalizersQuery();
+    	this.imgPDF = imgPDF;
     	try {
-    		this.totalizers = savedQuerySaving.totalizers().stream().map(t -> new Totalizer(t)).toList();
+    		this.totalizers = savedQuerySaving.totalizers().stream().map(Totalizer::new).toList();
     	} catch(NullPointerException e) {
     		this.totalizers = null;
     	}
-    	
     }
-
-
 }
