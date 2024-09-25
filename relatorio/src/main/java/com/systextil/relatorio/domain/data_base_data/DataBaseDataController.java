@@ -1,6 +1,7 @@
 package com.systextil.relatorio.domain.data_base_data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.systextil.relatorio.infra.exception_handler.CannotConnectToDataBaseException;
 
 import jakarta.validation.Valid;
 
@@ -27,7 +28,8 @@ import java.util.Map.Entry;
 @RequestMapping("find")
 public class DataBaseDataController {
 
-    private DataBaseDataRepository dataBaseDataRepository;
+    private final OracleDataBaseDataRepository oracleDataBaseRepository;
+    private final MySqlDataBaseDataRepository mySqlDataBaseRepository;
     private FileWriter fileWriter;
     private ObjectMapper objectMapper;
     
@@ -37,9 +39,16 @@ public class DataBaseDataController {
     @Value("${relationships.json.file.path}")
     private String relationshipsJsonFilePath;
 
-    // 0 para oracle e 1 para MySQL
-    private static final int ORACLE_MYSQL = 0;
+    @Value("${database.type}")
+    private String dataBaseType;
+    
     private static final String FILE_NOT_FOUND_MESSAGE = "Arquivo não encontrado ou não legível: ";
+    private static final String NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE = "Tipo do banco de dados não configurado";
+    
+    public DataBaseDataController(OracleDataBaseDataRepository oracleDataBaseRepository, MySqlDataBaseDataRepository mySqlDataBaseRepository) {
+    	this.oracleDataBaseRepository = oracleDataBaseRepository;
+    	this.mySqlDataBaseRepository = mySqlDataBaseRepository;
+    }
     
     @PostMapping
     public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws SQLException {
@@ -65,25 +74,26 @@ public class DataBaseDataController {
     
     @PostMapping("analysis")
     public double getQueryAnalysis(@RequestBody @Valid QueryData queryData) throws SQLException {
-    	dataBaseDataRepository = new DataBaseDataRepository();
     	int actualTime = 0;
     	
-    	if (ORACLE_MYSQL == 1) {
+    	if (dataBaseType.equals("mysql")) {
     		String finalQueryAnalysis = SqlGenerator.generateFinalQueryAnalysisFromMySQLDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
         	String totalizersQueryAnalysis = null;
         	
         	if (!queryData.totalizers().isEmpty()) {
         		totalizersQueryAnalysis = SqlGenerator.generateTotalizersQueryAnalysisFromMySQLDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
         	}
-        	actualTime = dataBaseDataRepository.getActualTimeFromQueriesAnalysisFromMySQLDataBase(finalQueryAnalysis, totalizersQueryAnalysis);
-    	} else {
+        	actualTime = mySqlDataBaseRepository.getActualTimeFromQueriesAnalysisFromDataBase(finalQueryAnalysis, totalizersQueryAnalysis);
+    	} else if (dataBaseType.equals("oracle")) {
     		String[] finalQueryAnaysis = SqlGenerator.generateFinalQueryAnalysisFromOracleDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
     		String[] totalizersQueryAnalysis = null;
     		
     		if (!queryData.totalizers().isEmpty()) {
         		totalizersQueryAnalysis = SqlGenerator.generateTotalizersQueryAnalysisFromOracleDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
         	}
-    		actualTime = dataBaseDataRepository.getActualTimeFromQueriesAnalysisFromOracleDataBase(finalQueryAnaysis, totalizersQueryAnalysis);
+    		actualTime = oracleDataBaseRepository.getActualTimeFromQueriesAnalysisFromDataBase(finalQueryAnaysis, totalizersQueryAnalysis);
+    	} else {
+    		throw new CannotConnectToDataBaseException(NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE);
     	}
     	
     	return actualTime;
@@ -119,13 +129,14 @@ public class DataBaseDataController {
 
     @PostMapping("loadedQuery")
     public TreatedLoadedQueryData loadQuery(@RequestBody ToLoadQueryData toLoadQueryData) throws SQLException {
-        dataBaseDataRepository = new DataBaseDataRepository();
         LoadedQueryData loadedQueryData = null;
         
-        if (ORACLE_MYSQL == 1) {
-        	loadedQueryData = dataBaseDataRepository.findDataByQueryFromMySQLDataBase(toLoadQueryData.finalQuery(), toLoadQueryData.totalizersQuery());
+        if (dataBaseType.equals("mysql")) {
+        	loadedQueryData = mySqlDataBaseRepository.findDataByQuery(toLoadQueryData.finalQuery(), toLoadQueryData.totalizersQuery());
+        } else if (dataBaseType.equals("oracle")) {
+        	loadedQueryData = oracleDataBaseRepository.findDataByQuery(toLoadQueryData.finalQuery(), toLoadQueryData.totalizersQuery());
         } else {
-        	loadedQueryData = dataBaseDataRepository.findDataByQueryFromOracleDataBase(toLoadQueryData.finalQuery(), toLoadQueryData.totalizersQuery());
+    		throw new CannotConnectToDataBaseException(NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE);
         }
 
         return treatLoadedQueryData(loadedQueryData, toLoadQueryData.totalizers());
@@ -137,16 +148,17 @@ public class DataBaseDataController {
         Resource resource = new UrlResource(filePath.toUri());
         
         if (resource.isReadable() && resource.exists()) {
-        	dataBaseDataRepository = new DataBaseDataRepository();
         	objectMapper = new ObjectMapper();
         	fileWriter = new FileWriter(resource.getFile());
           
         	Map<String, Map<String, String>> tablesAndColumns = null;
         	
-            if (ORACLE_MYSQL == 1) {
-            	tablesAndColumns = dataBaseDataRepository.getTablesAndColumnsFromMySQLDatabase();
+            if (dataBaseType.equals("mysql")) {
+            	tablesAndColumns = mySqlDataBaseRepository.getTablesAndColumnsFromDataBase();
+            } else if (dataBaseType.equals("oracle")) {
+            	tablesAndColumns = oracleDataBaseRepository.getTablesAndColumnsFromDataBase();
             } else {
-            	tablesAndColumns = dataBaseDataRepository.getTablesAndColumnsFromOracleDataBase();
+        		throw new CannotConnectToDataBaseException(NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE);
             }
             String json = objectMapper.writeValueAsString(tablesAndColumns);
         	fileWriter.write(json);
@@ -162,15 +174,16 @@ public class DataBaseDataController {
         Resource resource = new UrlResource(filePath.toUri());
         
         if (resource.isReadable() && resource.exists()) {
-        	dataBaseDataRepository = new DataBaseDataRepository();
         	objectMapper = new ObjectMapper();
         	fileWriter = new FileWriter(resource.getFile());
         	ArrayList<RelationshipData> relationships = null;
         	
-        	if (ORACLE_MYSQL == 1) {
-        		relationships = dataBaseDataRepository.getRelationshipsFromMySQLDataBase();
+        	if (dataBaseType.equals("mysql")) {
+        		relationships = mySqlDataBaseRepository.getRelationshipsFromDataBase();
+        	} else if (dataBaseType.equals("oracle")) {
+        		relationships = oracleDataBaseRepository.getRelationshipsFromDataBase();
         	} else {
-        		relationships = dataBaseDataRepository.getRelationshipsFromOracleDataBase();
+        		throw new CannotConnectToDataBaseException(NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE);
         	}
         	String json = objectMapper.writeValueAsString(relationships);
         	fileWriter.write(json);
@@ -192,7 +205,6 @@ public class DataBaseDataController {
     }
     
     private Map<String, String> joinColumnsAndTotalizersResult(LoadedQueryData loadedQueryData, List<ColumnAndTotalizer> totalizers) {
-    	System.out.println(totalizers);
     	int totalizersResultsCounter = 0;
         Map<String, String> columnsAndTotalizersResult = new HashMap<>();
         

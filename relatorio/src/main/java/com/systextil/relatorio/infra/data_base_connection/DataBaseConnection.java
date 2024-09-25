@@ -19,7 +19,7 @@ class DataBaseConnection {
     	try {
 			this.idConnection = DriverManager.getConnection(url, user, password);
 		} catch (SQLException e) {
-			throw new CannotConnectToDataBaseException("não foi possível conectar ao banco");
+			throw new CannotConnectToDataBaseException("Não foi possível conectar ao banco");
 		}
 	}
 
