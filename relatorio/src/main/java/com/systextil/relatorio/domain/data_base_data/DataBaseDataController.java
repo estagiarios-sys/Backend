@@ -19,7 +19,9 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 @RestController
 @RequestMapping("find")
@@ -47,7 +49,12 @@ public class DataBaseDataController {
         if (!queryData.totalizers().isEmpty()) {
         	totalizersQuery = SqlGenerator.generateTotalizersQuery(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
         }
-        ToLoadQueryData toLoadQueryData = new ToLoadQueryData(finalQuery, totalizersQuery, queryData.totalizers());
+        List<ColumnAndTotalizer> totalizers = new ArrayList<>();
+        
+        for (Map.Entry<String, Totalizer> entry : queryData.totalizers().entrySet()) {
+        	totalizers.add(new ColumnAndTotalizer(Map.of(entry.getKey(), entry.getValue())));
+        }
+        ToLoadQueryData toLoadQueryData = new ToLoadQueryData(finalQuery, totalizersQuery, totalizers);
         TreatedLoadedQueryData treatedLoadedQueryData = loadQuery(toLoadQueryData);
         ArrayList<String> columnsNameOrNickName = treatedLoadedQueryData.columnsNameOrNickName();
         ArrayList<Object[]> foundObjects = treatedLoadedQueryData.foundObjects();
@@ -173,7 +180,7 @@ public class DataBaseDataController {
         }
     }
     
-    private TreatedLoadedQueryData treatLoadedQueryData(LoadedQueryData loadedQueryData, Map<String, Totalizer> totalizers) {
+    private TreatedLoadedQueryData treatLoadedQueryData(LoadedQueryData loadedQueryData, List<ColumnAndTotalizer> totalizers) {
     	ArrayList<String> columnsNameOrNickName = columnsNameAndNickNameToColumnsNameOrNickName(loadedQueryData.columnsNameAndNickName());
     	Map<String, String> columnsAndTotalizersResult = null;
     	
@@ -184,16 +191,18 @@ public class DataBaseDataController {
     	return new TreatedLoadedQueryData(columnsNameOrNickName, loadedQueryData.foundObjects(), columnsAndTotalizersResult);
     }
     
-    private Map<String, String> joinColumnsAndTotalizersResult(LoadedQueryData loadedQueryData, Map<String, Totalizer> totalizers) {
+    private Map<String, String> joinColumnsAndTotalizersResult(LoadedQueryData loadedQueryData, List<ColumnAndTotalizer> totalizers) {
+    	System.out.println(totalizers);
     	int totalizersResultsCounter = 0;
         Map<String, String> columnsAndTotalizersResult = new HashMap<>();
         
-        for (Map.Entry<String, Totalizer> totalizer : totalizers.entrySet()) {
+        for (ColumnAndTotalizer columnAndTotalizer : totalizers) {
+        	Entry<String, Totalizer> totalizerAndColumn = columnAndTotalizer.totalizers().entrySet().iterator().next();
         	String columnsAndTotalizersColumn = null;
         	
         	for (Map.Entry<String, String> columnNameAndNickName : loadedQueryData.columnsNameAndNickName().entrySet()) {
         		
-        		if (totalizer.getKey().equalsIgnoreCase(columnNameAndNickName.getKey())) {
+        		if (totalizerAndColumn.getKey().equalsIgnoreCase(columnNameAndNickName.getKey())) {
         			if (columnNameAndNickName.getValue() != null) {
         				columnsAndTotalizersColumn = columnNameAndNickName.getValue();
         			} else {
@@ -201,7 +210,7 @@ public class DataBaseDataController {
         			}
         		}
         	}
-        	columnsAndTotalizersResult.put(columnsAndTotalizersColumn, totalizer.getValue().toPortuguese() + ": " + loadedQueryData.totalizersResult().get(totalizersResultsCounter));
+        	columnsAndTotalizersResult.put(columnsAndTotalizersColumn, totalizerAndColumn.getValue().toPortuguese() + ": " + loadedQueryData.totalizersResult().get(totalizersResultsCounter));
         	totalizersResultsCounter++;
         }
         
