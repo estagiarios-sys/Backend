@@ -1,10 +1,10 @@
-package com.systextil.relatorio.domain.savedQuery;
+package com.systextil.relatorio.domain.saved_query;
 
 import java.util.ArrayList;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.systextil.relatorio.infra.exceptionHandler.TotalizerFieldsMismatchException;
+import com.systextil.relatorio.infra.exception_handler.TotalizerFieldsMismatchException;
 
 import jakarta.validation.constraints.NotBlank;
 

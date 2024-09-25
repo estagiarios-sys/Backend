@@ -1,4 +1,4 @@
-package com.systextil.relatorio.infra.exceptionHandler;
+package com.systextil.relatorio.infra.exception_handler;
 
 /** 
  * Excessão lançada quando os campos totalizersQuery e totalizers da SavedQuerySaving vêm separados.

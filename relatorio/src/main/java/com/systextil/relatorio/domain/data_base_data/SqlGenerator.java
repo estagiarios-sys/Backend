@@ -1,9 +1,13 @@
-package com.systextil.relatorio.domain.dataBaseData;
+package com.systextil.relatorio.domain.data_base_data;
 
 import java.util.ArrayList;
 import java.util.Map;
 
-class SQLGenerator {
+class SqlGenerator {
+	
+	private SqlGenerator() {
+		throw new IllegalStateException("Utility class");
+	}
 
 	static String generateFinalQuery(String table, ArrayList<String> columns, String conditions, String orderBy,  ArrayList<String> joins) {
         String query = "SELECT ";
@@ -70,15 +74,13 @@ class SQLGenerator {
 	
 	static String[] generateFinalQueryAnalysisFromOracleDataBase (String table, ArrayList<String> columns, String conditions, String orderBy,  ArrayList<String> joins) {
 		String finalQuery = generateFinalQuery(table, columns, conditions, orderBy, joins);
-		String[] finalQueryAnalysis = {"EXPLAIN PLAN FOR " + finalQuery, "SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY)"};
 		
-		return finalQueryAnalysis;
+		return new String[] {"EXPLAIN PLAN FOR " + finalQuery, "SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY)"};
 	}
 	
 	static String[] generateTotalizersQueryAnalysisFromOracleDataBase(Map<String, Totalizer> totalizers, String table, String conditions, ArrayList<String> joins) {
 		String totalizersQuery = generateTotalizersQuery(totalizers, table, conditions, joins);
-		String[] totalizersQueryAnalysis = {"EXPLAIN PLAN FOR " + totalizersQuery, "SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY)"};
 		
-		return totalizersQueryAnalysis;
+		return new String[] {"EXPLAIN PLAN FOR " + totalizersQuery, "SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY)"};
 	}
 }

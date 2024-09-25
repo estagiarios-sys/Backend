@@ -1,4 +1,4 @@
-package com.systextil.relatorio.infra.exceptionHandler;
+package com.systextil.relatorio.infra.exception_handler;
 
 public class SavedQueryQueryNameIsEmptyException extends RuntimeException {
 	

@@ -1,4 +1,4 @@
-package com.systextil.relatorio.domain.dataBaseData;
+package com.systextil.relatorio.domain.data_base_data;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;

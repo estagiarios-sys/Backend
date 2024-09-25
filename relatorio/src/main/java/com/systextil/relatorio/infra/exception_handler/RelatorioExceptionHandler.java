@@ -1,4 +1,4 @@
-package com.systextil.relatorio.infra.exceptionHandler;
+package com.systextil.relatorio.infra.exception_handler;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -13,11 +13,13 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class RelatorioExceptionHandler {
+	
+	private static final String STRING_MESSAGE = "message";
 
     @ExceptionHandler(SQLSyntaxErrorException.class)
     public ResponseEntity<Map<String, String>> return400ErrorForSQLSyntaxError(SQLSyntaxErrorException exception) {
     	Map<String, String> errors = new HashMap<>();
-    	errors.put("message", "Não foi possível montar o SQL. Verifique os dados passados no JSON");
+    	errors.put(STRING_MESSAGE, "Não foi possível montar o SQL. Verifique os dados passados no JSON");
         errors.put("exception message", exception.getLocalizedMessage());
     	
         return ResponseEntity.badRequest().body(errors);
@@ -28,7 +30,7 @@ public class RelatorioExceptionHandler {
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException exception) {
         Map<String, String> errors = new HashMap<>();
         for (FieldError error : exception.getBindingResult().getFieldErrors()) {
-            errors.put("message", error.getDefaultMessage());
+            errors.put(STRING_MESSAGE, error.getDefaultMessage());
             errors.put("json field", error.getField());
             errors.put("annotation", error.getCode());
         }
@@ -38,7 +40,7 @@ public class RelatorioExceptionHandler {
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     public ResponseEntity<Map<String, String>> return400ErrorForDuplicateEntry(SQLIntegrityConstraintViolationException exception) {
     	Map<String, String> errors = new HashMap<>();
-    	errors.put("message", exception.getLocalizedMessage());
+    	errors.put(STRING_MESSAGE, exception.getLocalizedMessage());
     	
     	return ResponseEntity.badRequest().body(errors);
     }
@@ -46,7 +48,7 @@ public class RelatorioExceptionHandler {
     @ExceptionHandler(TotalizerFieldsMismatchException.class)
     public ResponseEntity<Map<String, String>> return400ErrorForTotalizerFieldsMismatchException(TotalizerFieldsMismatchException exception) {
     	Map<String, String> errors = new HashMap<>();
-    	errors.put("message", exception.getLocalizedMessage());
+    	errors.put(STRING_MESSAGE, exception.getLocalizedMessage());
     	
     	return ResponseEntity.badRequest().body(errors);
     }
@@ -54,7 +56,7 @@ public class RelatorioExceptionHandler {
     @ExceptionHandler(CannotConnectToDataBaseException.class)
     public ResponseEntity<Map<String, String>> return500ErrorForCannotConnectToDataBaseException(CannotConnectToDataBaseException exception) {
     	Map<String, String> errors = new HashMap<>();
-    	errors.put("message", exception.getLocalizedMessage());
+    	errors.put(STRING_MESSAGE, exception.getLocalizedMessage());
     	
     	return ResponseEntity.internalServerError().body(errors);
     }
@@ -62,7 +64,7 @@ public class RelatorioExceptionHandler {
     @ExceptionHandler(ActualTimeNotFoundException.class)
     public ResponseEntity<Map<String, String>> return500ErrorForActualTimeNotFoundException(ActualTimeNotFoundException exception) {
     	Map<String, String> errors = new HashMap<>();
-    	errors.put("message", exception.getLocalizedMessage());
+    	errors.put(STRING_MESSAGE, exception.getLocalizedMessage());
     	
     	return ResponseEntity.internalServerError().body(errors);
     }
@@ -70,7 +72,7 @@ public class RelatorioExceptionHandler {
     @ExceptionHandler(SavedQueryQueryNameIsEmptyException.class)
     public ResponseEntity<Map<String, String>> return400ErrorForSavedQueryQueryNameIsEmptyException(SavedQueryQueryNameIsEmptyException exception) {
     	Map<String, String> errors = new HashMap<>();
-    	errors.put("message", exception.getLocalizedMessage());
+    	errors.put(STRING_MESSAGE, exception.getLocalizedMessage());
     	
     	return ResponseEntity.badRequest().body(errors);
     }

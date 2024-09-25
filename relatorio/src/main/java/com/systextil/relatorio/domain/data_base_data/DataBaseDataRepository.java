@@ -1,8 +1,8 @@
-package com.systextil.relatorio.domain.dataBaseData;
+package com.systextil.relatorio.domain.data_base_data;
 
-import com.systextil.relatorio.infra.dataBaseConnection.ConnectionMySQL;
-import com.systextil.relatorio.infra.dataBaseConnection.ConnectionOracle;
-import com.systextil.relatorio.infra.exceptionHandler.ActualTimeNotFoundException;
+import com.systextil.relatorio.infra.data_base_connection.ConnectionMySQL;
+import com.systextil.relatorio.infra.data_base_connection.ConnectionOracle;
+import com.systextil.relatorio.infra.exception_handler.ActualTimeNotFoundException;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -16,6 +16,8 @@ class DataBaseDataRepository {
 
     private ConnectionMySQL connectionMySQL;
     private ConnectionOracle connectionOracle;
+    private PreparedStatement command;
+    private ResultSet data;
 
     LoadedQueryData findDataByQueryFromOracleDataBase(String finalQuery, String totalizersQuery) throws SQLException {
     	connectionOracle = new ConnectionOracle();
@@ -84,7 +86,7 @@ class DataBaseDataRepository {
 	}
 
 
-	Map<String, Map<String, String>> getTablesAndColumnsFromOracleDataBase() throws ClassNotFoundException, SQLException {
+	Map<String, Map<String, String>> getTablesAndColumnsFromOracleDataBase() throws SQLException {
         connectionOracle = new ConnectionOracle();
         connectionOracle.connect();
 		Map<String, Map<String, String>> tablesAndColumns = getTablesAndColumnsFromDataBase(connectionOracle.getIdConnection(), "ACADEMY", "%");
@@ -93,7 +95,7 @@ class DataBaseDataRepository {
         return tablesAndColumns;
     }
     
-    Map<String, Map<String, String>> getTablesAndColumnsFromMySQLDatabase() throws ClassNotFoundException, SQLException {
+    Map<String, Map<String, String>> getTablesAndColumnsFromMySQLDatabase() throws SQLException {
     	connectionMySQL = new ConnectionMySQL();
     	connectionMySQL.connect();
     	Map<String, Map<String, String>> tablesAndColumns = getTablesAndColumnsFromDataBase(connectionMySQL.getIdConnection(), "db_gerador_relatorio", "%");
@@ -102,7 +104,7 @@ class DataBaseDataRepository {
     	return tablesAndColumns;
     }
 
-    ArrayList<RelationshipData> getRelationshipsFromOracleDataBase() throws SQLException, ClassNotFoundException {
+    ArrayList<RelationshipData> getRelationshipsFromOracleDataBase() throws SQLException {
         connectionOracle = new ConnectionOracle();
         connectionOracle.connect();
         String sql = "SELECT " +
@@ -153,8 +155,8 @@ class DataBaseDataRepository {
             tableNames.add(tableName);
             columnNames.add(columnName);
         }
-        PreparedStatement command = idConnection.prepareStatement(sql);
-        ResultSet data = command.executeQuery();
+        command = idConnection.prepareStatement(sql);
+        data = command.executeQuery();
         ResultSetMetaData metaData = data.getMetaData();
         int columnsNumber = metaData.getColumnCount();
 
@@ -183,8 +185,8 @@ class DataBaseDataRepository {
     
     private ArrayList<String> getTotalizersResults(Connection idConnection, String totalizersQuery) throws SQLException {
     	ArrayList<String> totalizersResults = new ArrayList<>();
-    	PreparedStatement command = idConnection.prepareStatement(totalizersQuery);
-    	ResultSet data = command.executeQuery();
+    	command = idConnection.prepareStatement(totalizersQuery);
+    	data = command.executeQuery();
     	ResultSetMetaData metaData = data.getMetaData();
     	int columnsNumber = metaData.getColumnCount();
     	data.next();
@@ -197,15 +199,14 @@ class DataBaseDataRepository {
     }
     
     private int getActualTimeFromQueryAnalysisFromOracleDataBase(Connection idConnection, String[] query) throws SQLException {
-    	PreparedStatement command;
     	command = idConnection.prepareStatement(query[0]);
     	command.execute();
     	command = idConnection.prepareStatement(query[1]);
-    	ResultSet planData = command.executeQuery();
+    	data = command.executeQuery();
     	ArrayList<String> planDataLines = new ArrayList<>();
     	
-    	while (planData.next()) {
-        	planDataLines.add(planData.getString(1));
+    	while (data.next()) {
+        	planDataLines.add(data.getString(1));
     	}
     	String planDataTimeLine = planDataLines.get(5);
     	Pattern pattern = Pattern.compile("\\|\\s(\\d{2}:\\d{2}:\\d{2})");
@@ -222,8 +223,8 @@ class DataBaseDataRepository {
     }
     
     private int getActualTimeFromQueryAnalysisFromMySQLDataBase(Connection idConnection, String query) throws SQLException {
-    	PreparedStatement command = idConnection.prepareStatement(query);
-    	ResultSet data = command.executeQuery();
+    	command = idConnection.prepareStatement(query);
+    	data = command.executeQuery();
     	data.next();
     	String allData = data.getString(1);
     	String firstLineData = allData.split("\n", 0)[1];
@@ -243,10 +244,10 @@ class DataBaseDataRepository {
     private Map<String, Map<String, String>> getTablesAndColumnsFromDataBase(Connection idConnection, String catalog, String tableNamePattern) throws SQLException {
         Map<String, Map<String, String>> tablesAndColumns = new HashMap<>();
         DatabaseMetaData metaData = idConnection.getMetaData();
-        ResultSet tables = metaData.getTables(catalog, metaData.getUserName(), tableNamePattern, new String[]{"TABLE"});
+        data = metaData.getTables(catalog, metaData.getUserName(), tableNamePattern, new String[]{"TABLE"});
 
-        while (tables.next()) {
-            String tableName = tables.getString("TABLE_NAME");
+        while (data.next()) {
+            String tableName = data.getString("TABLE_NAME");
 
             ResultSet columns = metaData.getColumns(null, null, tableName, "%");
             Map<String, String> columnNames = new LinkedHashMap<>();
@@ -264,15 +265,15 @@ class DataBaseDataRepository {
     }
     
     private ArrayList<RelationshipData> getRelationshipsFromDataBase(Connection idConnection, String sql) throws SQLException {
-    	PreparedStatement comando = idConnection.prepareStatement(sql);
-        ResultSet dados = comando.executeQuery();
+    	command = idConnection.prepareStatement(sql);
+        data = command.executeQuery();
         ArrayList<RelationshipData> listRelationshipData = new ArrayList<>();
 
-        while (dados.next()) {
-            String tableName = dados.getString("TABLE_NAME");
-            String columnName = dados.getString("COLUMN_NAME");
-            String referencedTableName = dados.getString("REFERENCED_TABLE_NAME");
-            String referencedColumnName = dados.getString("REFERENCED_COLUMN_NAME");
+        while (data.next()) {
+            String tableName = data.getString("TABLE_NAME");
+            String columnName = data.getString("COLUMN_NAME");
+            String referencedTableName = data.getString("REFERENCED_TABLE_NAME");
+            String referencedColumnName = data.getString("REFERENCED_COLUMN_NAME");
             String tableAndReferencedTable = tableName + " e " + referencedTableName;
             String join = "INNER JOIN " + referencedTableName + " ON " + tableName + "." + columnName + " = " + referencedTableName + "." + referencedColumnName;
             RelationshipData relationshipData = new RelationshipData(tableAndReferencedTable, join);

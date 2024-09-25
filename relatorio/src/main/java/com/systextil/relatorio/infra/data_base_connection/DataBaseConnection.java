@@ -1,10 +1,10 @@
-package com.systextil.relatorio.infra.dataBaseConnection;
+package com.systextil.relatorio.infra.data_base_connection;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import com.systextil.relatorio.infra.exceptionHandler.CannotConnectToDataBaseException;
+import com.systextil.relatorio.infra.exception_handler.CannotConnectToDataBaseException;
 
 
 /** Classe pai das classes que farão conexão com banco de dados */
@@ -24,8 +24,9 @@ class DataBaseConnection {
 	}
 
     public void disconnect() throws SQLException {
-        if (this.idConnection != null)
-			this.idConnection.close();
+        if (this.idConnection != null) {
+        	this.idConnection.close();
+        }
     }
 
     public Connection getIdConnection() {

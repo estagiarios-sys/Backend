@@ -1,4 +1,4 @@
-package com.systextil.relatorio.domain.savedQuery;
+package com.systextil.relatorio.domain.saved_query;
 
 import java.util.List;
 
@@ -19,7 +19,8 @@ public class SavedQuery {
     @Column(name = "TITLE_PDF")
     private String titlePDF;
     
-    @OneToMany(cascade = CascadeType.PERSIST)
+    @OneToMany(cascade = CascadeType.PERSIST,
+    		orphanRemoval = true)
     @Embedded
     @JoinColumn(name = "saved_query_id")
     private List<Totalizer> totalizers;

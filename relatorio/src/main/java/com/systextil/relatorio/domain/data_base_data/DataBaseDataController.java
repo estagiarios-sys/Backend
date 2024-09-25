@@ -1,4 +1,4 @@
-package com.systextil.relatorio.domain.dataBaseData;
+package com.systextil.relatorio.domain.data_base_data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -25,6 +26,8 @@ import java.util.Map;
 public class DataBaseDataController {
 
     private DataBaseDataRepository dataBaseDataRepository;
+    private FileWriter fileWriter;
+    private ObjectMapper objectMapper;
     
     @Value("${tables.json.file.path}")
 	private String tablesJsonFilePath;
@@ -33,16 +36,16 @@ public class DataBaseDataController {
     private String relationshipsJsonFilePath;
 
     // 0 para oracle e 1 para MySQL
-    private final int oracleMySQL = 0;
-    private final String fileNotFoundMessage = "Arquivo não encontrado ou não legível: ";
+    private static final int ORACLE_MYSQL = 0;
+    private static final String FILE_NOT_FOUND_MESSAGE = "Arquivo não encontrado ou não legível: ";
     
     @PostMapping
     public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws SQLException {
-        String finalQuery = SQLGenerator.generateFinalQuery(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
+        String finalQuery = SqlGenerator.generateFinalQuery(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
         String totalizersQuery = null;
         
         if (!queryData.totalizers().isEmpty()) {
-        	totalizersQuery = SQLGenerator.generateTotalizersQuery(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
+        	totalizersQuery = SqlGenerator.generateTotalizersQuery(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
         }
         ToLoadQueryData toLoadQueryData = new ToLoadQueryData(finalQuery, totalizersQuery, queryData.totalizers());
         TreatedLoadedQueryData treatedLoadedQueryData = loadQuery(toLoadQueryData);
@@ -58,27 +61,26 @@ public class DataBaseDataController {
     	dataBaseDataRepository = new DataBaseDataRepository();
     	int actualTime = 0;
     	
-    	if (oracleMySQL == 1) {
-    		String finalQueryAnalysis = SQLGenerator.generateFinalQueryAnalysisFromMySQLDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
+    	if (ORACLE_MYSQL == 1) {
+    		String finalQueryAnalysis = SqlGenerator.generateFinalQueryAnalysisFromMySQLDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
         	String totalizersQueryAnalysis = null;
         	
         	if (!queryData.totalizers().isEmpty()) {
-        		totalizersQueryAnalysis = SQLGenerator.generateTotalizersQueryAnalysisFromMySQLDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
+        		totalizersQueryAnalysis = SqlGenerator.generateTotalizersQueryAnalysisFromMySQLDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
         	}
         	actualTime = dataBaseDataRepository.getActualTimeFromQueriesAnalysisFromMySQLDataBase(finalQueryAnalysis, totalizersQueryAnalysis);
     	} else {
-    		String[] finalQueryAnaysis = SQLGenerator.generateFinalQueryAnalysisFromOracleDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
+    		String[] finalQueryAnaysis = SqlGenerator.generateFinalQueryAnalysisFromOracleDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
     		String[] totalizersQueryAnalysis = null;
     		
     		if (!queryData.totalizers().isEmpty()) {
-        		totalizersQueryAnalysis = SQLGenerator.generateTotalizersQueryAnalysisFromOracleDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
+        		totalizersQueryAnalysis = SqlGenerator.generateTotalizersQueryAnalysisFromOracleDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
         	}
     		actualTime = dataBaseDataRepository.getActualTimeFromQueriesAnalysisFromOracleDataBase(finalQueryAnaysis, totalizersQueryAnalysis);
     	}
     	
     	return actualTime;
     }
-
 
     @GetMapping("table")
     public ResponseEntity<Resource> getTablesAndColumns() throws IOException {
@@ -90,7 +92,7 @@ public class DataBaseDataController {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(resource);
         } else {
-            throw new RuntimeException(fileNotFoundMessage + filePath);
+            throw new FileNotFoundException(FILE_NOT_FOUND_MESSAGE + filePath);
         }
     }
 
@@ -104,7 +106,7 @@ public class DataBaseDataController {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(resource);
         } else {
-            throw new RuntimeException(fileNotFoundMessage + filePath);
+            throw new FileNotFoundException(FILE_NOT_FOUND_MESSAGE + filePath);
         }
     }
 
@@ -113,7 +115,7 @@ public class DataBaseDataController {
         dataBaseDataRepository = new DataBaseDataRepository();
         LoadedQueryData loadedQueryData = null;
         
-        if (oracleMySQL == 1) {
+        if (ORACLE_MYSQL == 1) {
         	loadedQueryData = dataBaseDataRepository.findDataByQueryFromMySQLDataBase(toLoadQueryData.finalQuery(), toLoadQueryData.totalizersQuery());
         } else {
         	loadedQueryData = dataBaseDataRepository.findDataByQueryFromOracleDataBase(toLoadQueryData.finalQuery(), toLoadQueryData.totalizersQuery());
@@ -123,18 +125,18 @@ public class DataBaseDataController {
     }
 
     @PutMapping("update/table")
-    public void setTablesAndColumnsFromDatabaseIntoJson() throws Exception {
+    public void setTablesAndColumnsFromDatabaseIntoJson() throws IOException, SQLException {
         Path filePath = Paths.get(tablesJsonFilePath);
         Resource resource = new UrlResource(filePath.toUri());
         
         if (resource.isReadable() && resource.exists()) {
         	dataBaseDataRepository = new DataBaseDataRepository();
-        	ObjectMapper objectMapper = new ObjectMapper();
-        	FileWriter fileWriter = new FileWriter(resource.getFile());
+        	objectMapper = new ObjectMapper();
+        	fileWriter = new FileWriter(resource.getFile());
           
         	Map<String, Map<String, String>> tablesAndColumns = null;
         	
-            if (oracleMySQL == 1) {
+            if (ORACLE_MYSQL == 1) {
             	tablesAndColumns = dataBaseDataRepository.getTablesAndColumnsFromMySQLDatabase();
             } else {
             	tablesAndColumns = dataBaseDataRepository.getTablesAndColumnsFromOracleDataBase();
@@ -143,22 +145,22 @@ public class DataBaseDataController {
         	fileWriter.write(json);
         	fileWriter.close();
         } else {
-        	throw new RuntimeException(fileNotFoundMessage + filePath);
+        	throw new FileNotFoundException(FILE_NOT_FOUND_MESSAGE + filePath);
         }
     }
 
     @PutMapping("update/relationship")
-    public void setRelationshipsFromDatabaseIntoJson() throws SQLException, ClassNotFoundException, IOException {
+    public void setRelationshipsFromDatabaseIntoJson() throws SQLException, IOException {
         Path filePath = Paths.get(relationshipsJsonFilePath);
         Resource resource = new UrlResource(filePath.toUri());
         
         if (resource.isReadable() && resource.exists()) {
         	dataBaseDataRepository = new DataBaseDataRepository();
-        	ObjectMapper objectMapper = new ObjectMapper();
-        	FileWriter fileWriter = new FileWriter(resource.getFile());
+        	objectMapper = new ObjectMapper();
+        	fileWriter = new FileWriter(resource.getFile());
         	ArrayList<RelationshipData> relationships = null;
         	
-        	if (oracleMySQL == 1) {
+        	if (ORACLE_MYSQL == 1) {
         		relationships = dataBaseDataRepository.getRelationshipsFromMySQLDataBase();
         	} else {
         		relationships = dataBaseDataRepository.getRelationshipsFromOracleDataBase();
@@ -167,7 +169,7 @@ public class DataBaseDataController {
         	fileWriter.write(json);
         	fileWriter.close();
         } else {
-        	throw new RuntimeException(fileNotFoundMessage + filePath);
+        	throw new FileNotFoundException(FILE_NOT_FOUND_MESSAGE + filePath);
         }
     }
     

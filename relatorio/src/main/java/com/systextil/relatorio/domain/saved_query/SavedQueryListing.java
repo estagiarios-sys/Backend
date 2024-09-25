@@ -1,4 +1,4 @@
-package com.systextil.relatorio.domain.savedQuery;
+package com.systextil.relatorio.domain.saved_query;
 
 import java.util.List;
 
@@ -20,5 +20,4 @@ record SavedQueryListing(
                 savedQuery.getTotalizers().stream().map(TotalizerListing::new).toList()
         );
     }
-
 }
