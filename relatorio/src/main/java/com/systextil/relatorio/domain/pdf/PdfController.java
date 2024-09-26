@@ -1,5 +1,8 @@
 package com.systextil.relatorio.domain.pdf;
 
+import java.net.URI;
+import java.time.LocalDateTime;
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -12,8 +15,15 @@ import org.springframework.web.client.RestTemplate;
 @RequestMapping("/pdf")
 public class PdfController {
 
+	private PdfRepository repository;
+	
+	public PdfController(PdfRepository repository) {
+		this.repository = repository;
+	}
+	
     @PostMapping("/generate")
-    public ResponseEntity<byte[]> generatePdf(@RequestBody PdfRequest pdfRequest) {
+    public ResponseEntity<Pdf> generatePdf(@RequestBody PdfSaving pdfSaving) {
+    	LocalDateTime requestTime = LocalDateTime.now();
         try {
             RestTemplate restTemplate = new RestTemplate();
 
@@ -21,8 +31,8 @@ public class PdfController {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            // Converte PdfRequest para JSON
-            HttpEntity<PdfRequest> request = new HttpEntity<>(pdfRequest, headers);
+            // Converte PdfSaving para JSON
+            HttpEntity<PdfSaving> request = new HttpEntity<>(pdfSaving, headers);
 
             // Faz a requisição POST para o microserviço Node.js
             ResponseEntity<byte[]> response = restTemplate.exchange(
@@ -31,12 +41,11 @@ public class PdfController {
                     request,
                     byte[].class
             );
+            LocalDateTime generatedPdfTime = LocalDateTime.now();
+            Pdf pdf = new Pdf(pdfSaving, requestTime, generatedPdfTime, response.getBody());
+            repository.save(pdf);
 
-            // Retorna o PDF como resposta
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_PDF)
-                    .body(response.getBody());
-
+            return ResponseEntity.created(new URI("")).body(pdf);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(null);
@@ -44,15 +53,14 @@ public class PdfController {
     }
 
     @PostMapping("/preview")
-    public ResponseEntity<byte[]> previewPdf(@RequestBody PdfRequest pdfRequest) {
+    public ResponseEntity<byte[]> previewPdf(@RequestBody PdfSaving pdfRequest) {
         try {
             RestTemplate restTemplate = new RestTemplate();
 
             // Configura os cabeçalhos da requisição
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<PdfRequest> request = new HttpEntity<>(pdfRequest, headers);
+            HttpEntity<PdfSaving> request = new HttpEntity<>(pdfRequest, headers);
 
             // Faz a requisição POST para o microserviço Node.js
             ResponseEntity<byte[]> response = restTemplate.exchange(
@@ -66,7 +74,6 @@ public class PdfController {
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_PDF)
                     .body(response.getBody());
-
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(null);
