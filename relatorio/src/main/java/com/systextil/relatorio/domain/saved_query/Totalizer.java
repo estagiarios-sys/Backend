@@ -27,7 +27,7 @@ public class Totalizer {
 	}
 	
 	public Totalizer(TotalizerSaving totalizerSaving) {
-		for (Map.Entry<String, String> totalizer : totalizerSaving.totalizers().entrySet()) {
+		for (Map.Entry<String, String> totalizer : totalizerSaving.totalizer().entrySet()) {
 			this.totalizerColumn = totalizer.getKey();
 			this.name = totalizer.getValue();
 		}

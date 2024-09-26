@@ -19,9 +19,9 @@ record SavedQuerySaving(
 ) {
 
 	private void validateTotalizerFields() {
-		if (this.totalizersQuery != null && (this.totalizers == null || this.totalizers.isEmpty())) {
+		if (!this.totalizersQuery.isBlank() && this.totalizers.isEmpty()) {
 			throw new TotalizerFieldsMismatchException("TotalizersQuery deve ser fornecido com totalizers");
-		} else if (this.totalizersQuery == null && !this.totalizers.isEmpty()) {
+		} else if (this.totalizersQuery.isBlank() && !this.totalizers.isEmpty()) {
 			throw new TotalizerFieldsMismatchException("Totalizers deve ser fornecido com totalizersQuery");
 		}
 	}
@@ -35,8 +35,8 @@ record SavedQuerySaving(
             @JsonProperty("totalizers") ArrayList<TotalizerSaving> totalizers) {
 		this.queryName = queryName;
 		this.finalQuery = finalQuery;
-		this.totalizersQuery = totalizersQuery;
-		this.totalizers = totalizers;
+		this.totalizersQuery = totalizersQuery == null ? "" : totalizersQuery;
+		this.totalizers = totalizers == null ? new ArrayList<>() : totalizers;
 		this.titlePDF = titlePDF;
 		validateTotalizerFields();
 	}

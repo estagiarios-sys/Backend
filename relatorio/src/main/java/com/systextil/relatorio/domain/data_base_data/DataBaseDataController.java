@@ -209,7 +209,7 @@ public class DataBaseDataController {
         Map<String, String> columnsAndTotalizersResult = new HashMap<>();
         
         for (ColumnAndTotalizer columnAndTotalizer : totalizers) {
-        	Entry<String, Totalizer> totalizerAndColumn = columnAndTotalizer.totalizers().entrySet().iterator().next();
+        	Entry<String, Totalizer> totalizerAndColumn = columnAndTotalizer.totalizer().entrySet().iterator().next();
         	String columnsAndTotalizersColumn = null;
         	
         	for (Map.Entry<String, String> columnNameAndNickName : loadedQueryData.columnsNameAndNickName().entrySet()) {
