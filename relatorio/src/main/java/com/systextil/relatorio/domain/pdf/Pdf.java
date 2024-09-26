@@ -31,6 +31,13 @@ public class Pdf {
 		this.totalizersQuery = pdfSaving.totalizersQuery();
 		this.body = body;
 	}
+	
+	public Pdf(Long id, String pdfTitle, LocalDateTime requestTime, LocalDateTime generatedPdfTime) {
+		this.id = id;
+		this.pdfTitle = pdfTitle;
+		this.requestTime = requestTime;
+		this.generatedPdfTime = generatedPdfTime;
+	}
 
 	public Long getId() {
 		return id;

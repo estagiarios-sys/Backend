@@ -2,6 +2,7 @@ package com.systextil.relatorio.domain.pdf;
 
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -53,14 +54,14 @@ public class PdfController {
     }
 
     @PostMapping("/preview")
-    public ResponseEntity<byte[]> previewPdf(@RequestBody PdfSaving pdfRequest) {
+    public ResponseEntity<byte[]> previewPdf(@RequestBody PdfSaving pdfSaving) {
         try {
             RestTemplate restTemplate = new RestTemplate();
 
             // Configura os cabeçalhos da requisição
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<PdfSaving> request = new HttpEntity<>(pdfRequest, headers);
+            HttpEntity<PdfSaving> request = new HttpEntity<>(pdfSaving, headers);
 
             // Faz a requisição POST para o microserviço Node.js
             ResponseEntity<byte[]> response = restTemplate.exchange(
@@ -79,4 +80,15 @@ public class PdfController {
             return ResponseEntity.status(500).body(null);
         }
     }
+    
+    @GetMapping("/list")
+    public ResponseEntity<List<PdfListing>> listPdfs() {
+    	List<PdfListing> pdfsList =  repository.findAttributesForList();
+    	return ResponseEntity.ok().body(pdfsList);
+    }
+    
+//    @GetMapping("/get/{id}")
+//    public ResponseEntity<byte[]> getPdfBody(@PathVariable Long id) {
+//    	return ResponseEntity.ok().body(repository.findBodyById(id));
+//    }
 }
