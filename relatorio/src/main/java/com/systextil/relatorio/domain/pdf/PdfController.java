@@ -87,8 +87,8 @@ public class PdfController {
     	return ResponseEntity.ok().body(pdfsList);
     }
     
-//    @GetMapping("/get/{id}")
-//    public ResponseEntity<byte[]> getPdfBody(@PathVariable Long id) {
-//    	return ResponseEntity.ok().body(repository.findBodyById(id));
-//    }
+    @GetMapping("/get/{id}")
+    public ResponseEntity<byte[]> getPdfBody(@PathVariable Long id) {
+    	return ResponseEntity.ok().body(repository.findBodyById(id));
+    }
 }
