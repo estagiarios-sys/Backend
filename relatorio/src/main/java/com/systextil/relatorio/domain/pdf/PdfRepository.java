@@ -13,4 +13,7 @@ interface PdfRepository extends JpaRepository<Pdf, Long> {
 	
 	@Query("SELECT p.body FROM Pdf p WHERE p.id = :id")
 	byte[] findBodyById(@Param("id") Long id);
+	
+//	@Query("SELECT COUNT(P")
+//	Long getNumberOfEntries();
 }

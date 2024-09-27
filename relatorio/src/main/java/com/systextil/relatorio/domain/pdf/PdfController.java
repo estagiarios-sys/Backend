@@ -82,6 +82,8 @@ public class PdfController {
     
     @GetMapping("/get/{id}")
     public ResponseEntity<byte[]> getPdfBody(@PathVariable Long id) {
-    	return ResponseEntity.ok().body(repository.findBodyById(id));
+    	return ResponseEntity.ok()
+    			.contentType(MediaType.APPLICATION_PDF)
+    			.body(repository.findBodyById(id));
     }
 }
