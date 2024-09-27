@@ -26,7 +26,6 @@ public class PdfController {
     @PostMapping("/generate")
     public ResponseEntity<Pdf> generatePdf(@RequestBody PdfSaving pdfSaving) throws URISyntaxException {
     	LocalDateTime requestTime = LocalDateTime.now();
-    	
     	if (repository.getNumberOfEntries() == 10) {
     		repository.deleteById(repository.getOldestEntry());
     	}

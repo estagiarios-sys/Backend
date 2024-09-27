@@ -2,9 +2,7 @@ package com.systextil.relatorio.domain.data_base_data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.systextil.relatorio.domain.ColumnAndTotalizer;
-import com.systextil.relatorio.domain.ToLoadQueryData;
 import com.systextil.relatorio.domain.TotalizerTypes;
-import com.systextil.relatorio.domain.TreatedLoadedQueryData;
 import com.systextil.relatorio.infra.exception_handler.CannotConnectToDataBaseException;
 
 import jakarta.validation.Valid;
