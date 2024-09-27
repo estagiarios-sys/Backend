@@ -1,11 +1,16 @@
 package com.systextil.relatorio.domain.pdf;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class Pdf {
@@ -19,6 +24,11 @@ public class Pdf {
 	private String finalQuery;
 	private String totalizersQuery;
 	private byte[] body;
+	@OneToMany(cascade = CascadeType.PERSIST,
+			orphanRemoval = true)
+	@Embedded
+	@JoinColumn(name = "pdf_id")
+	private List<PdfTotalizer> totalizers;
 	
 	public Pdf() {
 	}
@@ -30,6 +40,7 @@ public class Pdf {
 		this.finalQuery = pdfSaving.finalQuery();
 		this.totalizersQuery = pdfSaving.totalizersQuery();
 		this.body = body;
+		this.totalizers = pdfSaving.totalizers().stream().map(PdfTotalizer::new).toList();
 	}
 	
 	public Pdf(Long id, String pdfTitle, LocalDateTime requestTime, LocalDateTime generatedPdfTime) {
