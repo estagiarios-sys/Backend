@@ -2,9 +2,7 @@ package com.systextil.relatorio.domain.data_base_data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.systextil.relatorio.domain.ColumnAndTotalizer;
-import com.systextil.relatorio.domain.ToLoadQueryData;
 import com.systextil.relatorio.domain.TotalizerTypes;
-import com.systextil.relatorio.domain.TreatedLoadedQueryData;
 import com.systextil.relatorio.infra.exception_handler.CannotConnectToDataBaseException;
 
 import jakarta.validation.Valid;
@@ -48,6 +46,8 @@ public class DataBaseDataController {
     
     private static final String FILE_NOT_FOUND_MESSAGE = "Arquivo não encontrado ou não legível: ";
     private static final String NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE = "Tipo do banco de dados não configurado";
+    private static final String MYSQL = "mysql";
+    private static final String ORACLE = "oracle";
     
     public DataBaseDataController(OracleDataBaseDataRepository oracleDataBaseRepository, MySqlDataBaseDataRepository mySqlDataBaseRepository) {
     	this.oracleDataBaseRepository = oracleDataBaseRepository;
@@ -80,7 +80,7 @@ public class DataBaseDataController {
     public double getQueryAnalysis(@RequestBody @Valid QueryData queryData) throws SQLException {
     	int actualTime = 0;
     	
-    	if (dataBaseType.equals("mysql")) {
+    	if (dataBaseType.equals(MYSQL)) {
     		String finalQueryAnalysis = SqlGenerator.generateFinalQueryAnalysisFromMySQLDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
         	String totalizersQueryAnalysis = null;
         	
@@ -88,7 +88,7 @@ public class DataBaseDataController {
         		totalizersQueryAnalysis = SqlGenerator.generateTotalizersQueryAnalysisFromMySQLDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
         	}
         	actualTime = mySqlDataBaseRepository.getActualTimeFromQueriesAnalysisFromDataBase(finalQueryAnalysis, totalizersQueryAnalysis);
-    	} else if (dataBaseType.equals("oracle")) {
+    	} else if (dataBaseType.equals(ORACLE)) {
     		String[] finalQueryAnaysis = SqlGenerator.generateFinalQueryAnalysisFromOracleDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
     		String[] totalizersQueryAnalysis = null;
     		
@@ -135,9 +135,9 @@ public class DataBaseDataController {
     public TreatedLoadedQueryData loadQuery(@RequestBody ToLoadQueryData toLoadQueryData) throws SQLException {
         LoadedQueryData loadedQueryData = null;
         
-        if (dataBaseType.equals("mysql")) {
+        if (dataBaseType.equals(MYSQL)) {
         	loadedQueryData = mySqlDataBaseRepository.findDataByQuery(toLoadQueryData.finalQuery(), toLoadQueryData.totalizersQuery());
-        } else if (dataBaseType.equals("oracle")) {
+        } else if (dataBaseType.equals(ORACLE)) {
         	loadedQueryData = oracleDataBaseRepository.findDataByQuery(toLoadQueryData.finalQuery(), toLoadQueryData.totalizersQuery());
         } else {
     		throw new CannotConnectToDataBaseException(NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE);
@@ -157,9 +157,9 @@ public class DataBaseDataController {
           
         	Map<String, Map<String, String>> tablesAndColumns = null;
         	
-            if (dataBaseType.equals("mysql")) {
+            if (dataBaseType.equals(MYSQL)) {
             	tablesAndColumns = mySqlDataBaseRepository.getTablesAndColumnsFromDataBase();
-            } else if (dataBaseType.equals("oracle")) {
+            } else if (dataBaseType.equals(ORACLE)) {
             	tablesAndColumns = oracleDataBaseRepository.getTablesAndColumnsFromDataBase();
             } else {
         		throw new CannotConnectToDataBaseException(NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE);
@@ -182,9 +182,9 @@ public class DataBaseDataController {
         	fileWriter = new FileWriter(resource.getFile());
         	ArrayList<RelationshipData> relationships = null;
         	
-        	if (dataBaseType.equals("mysql")) {
+        	if (dataBaseType.equals(MYSQL)) {
         		relationships = mySqlDataBaseRepository.getRelationshipsFromDataBase();
-        	} else if (dataBaseType.equals("oracle")) {
+        	} else if (dataBaseType.equals(ORACLE)) {
         		relationships = oracleDataBaseRepository.getRelationshipsFromDataBase();
         	} else {
         		throw new CannotConnectToDataBaseException(NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE);
