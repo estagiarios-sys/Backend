@@ -1,6 +1,10 @@
 package com.systextil.relatorio.domain.data_base_data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.systextil.relatorio.domain.ColumnAndTotalizer;
+import com.systextil.relatorio.domain.ToLoadQueryData;
+import com.systextil.relatorio.domain.TotalizerTypes;
+import com.systextil.relatorio.domain.TreatedLoadedQueryData;
 import com.systextil.relatorio.infra.exception_handler.CannotConnectToDataBaseException;
 
 import jakarta.validation.Valid;
@@ -60,7 +64,7 @@ public class DataBaseDataController {
         }
         List<ColumnAndTotalizer> totalizers = new ArrayList<>();
         
-        for (Map.Entry<String, Totalizer> entry : queryData.totalizers().entrySet()) {
+        for (Map.Entry<String, TotalizerTypes> entry : queryData.totalizers().entrySet()) {
         	totalizers.add(new ColumnAndTotalizer(Map.of(entry.getKey(), entry.getValue())));
         }
         ToLoadQueryData toLoadQueryData = new ToLoadQueryData(finalQuery, totalizersQuery, totalizers);
@@ -209,7 +213,7 @@ public class DataBaseDataController {
         Map<String, String> columnsAndTotalizersResult = new HashMap<>();
         
         for (ColumnAndTotalizer columnAndTotalizer : totalizers) {
-        	Entry<String, Totalizer> totalizerAndColumn = columnAndTotalizer.totalizer().entrySet().iterator().next();
+        	Entry<String, TotalizerTypes> totalizerAndColumn = columnAndTotalizer.totalizer().entrySet().iterator().next();
         	String columnsAndTotalizersColumn = null;
         	
         	for (Map.Entry<String, String> columnNameAndNickName : loadedQueryData.columnsNameAndNickName().entrySet()) {

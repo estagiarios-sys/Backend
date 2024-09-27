@@ -2,6 +2,9 @@ package com.systextil.relatorio.domain.saved_query;
 
 import java.util.Map;
 
+import com.systextil.relatorio.domain.ColumnAndTotalizer;
+import com.systextil.relatorio.domain.TotalizerTypes;
+
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,10 +29,10 @@ public class Totalizer {
 	public Totalizer() {
 	}
 	
-	public Totalizer(TotalizerSaving totalizerSaving) {
-		for (Map.Entry<String, String> totalizer : totalizerSaving.totalizer().entrySet()) {
+	public Totalizer(ColumnAndTotalizer columnAndTotalizer) {
+		for (Map.Entry<String, TotalizerTypes> totalizer : columnAndTotalizer.totalizer().entrySet()) {
 			this.totalizerColumn = totalizer.getKey();
-			this.name = totalizer.getValue();
+			this.name = totalizer.getValue().toString();
 		}
 	}
 

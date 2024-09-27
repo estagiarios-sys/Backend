@@ -1,4 +1,4 @@
-package com.systextil.relatorio.domain.data_base_data;
+package com.systextil.relatorio.domain;
 
 import java.util.List;
 

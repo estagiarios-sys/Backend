@@ -1,10 +1,10 @@
-package com.systextil.relatorio.domain.data_base_data;
+package com.systextil.relatorio.domain;
 
-enum Totalizer {
+public enum TotalizerTypes {
 	
 	AVG, COUNT, MAX, MIN, SUM;
 	
-	String toPortuguese() {
+	public String toPortuguese() {
 		switch (this) {
 			case AVG:
 				return "Média";

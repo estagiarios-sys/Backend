@@ -3,6 +3,8 @@ package com.systextil.relatorio.domain.data_base_data;
 import java.util.ArrayList;
 import java.util.Map;
 
+import com.systextil.relatorio.domain.TotalizerTypes;
+
 class SqlGenerator {
 	
 	private SqlGenerator() {
@@ -33,11 +35,11 @@ class SqlGenerator {
         return query;
     }
     
-	static String generateTotalizersQuery(Map<String, Totalizer> totalizers, String table, String conditions, ArrayList<String> joins) {
+	static String generateTotalizersQuery(Map<String, TotalizerTypes> totalizers, String table, String conditions, ArrayList<String> joins) {
     	boolean firstTotalizer = true;
     	String query = "SELECT ";
     	
-    	for (Map.Entry<String, Totalizer> totalizer: totalizers.entrySet()) {
+    	for (Map.Entry<String, TotalizerTypes> totalizer: totalizers.entrySet()) {
     		
     		if (!firstTotalizer) {
     			query = query.concat(", ");
@@ -66,7 +68,7 @@ class SqlGenerator {
 		return "EXPLAIN ANALYZE " + finalQuery;
 	}
 	
-	static String generateTotalizersQueryAnalysisFromMySQLDataBase(Map<String, Totalizer> totalizers, String table, String conditions, ArrayList<String> joins) {
+	static String generateTotalizersQueryAnalysisFromMySQLDataBase(Map<String, TotalizerTypes> totalizers, String table, String conditions, ArrayList<String> joins) {
 		String totalizersQuery = generateTotalizersQuery(totalizers, table, conditions, joins);
 		
 		return "EXPLAIN ANALYZE " + totalizersQuery;
@@ -78,7 +80,7 @@ class SqlGenerator {
 		return new String[] {"EXPLAIN PLAN FOR " + finalQuery, "SELECT SUM(time) FROM plan_table"};
 	}
 	
-	static String[] generateTotalizersQueryAnalysisFromOracleDataBase(Map<String, Totalizer> totalizers, String table, String conditions, ArrayList<String> joins) {
+	static String[] generateTotalizersQueryAnalysisFromOracleDataBase(Map<String, TotalizerTypes> totalizers, String table, String conditions, ArrayList<String> joins) {
 		String totalizersQuery = generateTotalizersQuery(totalizers, table, conditions, joins);
 		
 		return new String[] {"EXPLAIN PLAN FOR " + totalizersQuery, "SELECT SUM(time) FROM plan_table"};

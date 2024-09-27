@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.systextil.relatorio.domain.ColumnAndTotalizer;
 import com.systextil.relatorio.infra.exception_handler.TotalizerFieldsMismatchException;
 
 import jakarta.validation.constraints.NotBlank;
@@ -15,7 +16,7 @@ record SavedQuerySaving(
 	String finalQuery,
 	String totalizersQuery,
 	String titlePDF,
-	ArrayList<TotalizerSaving> totalizers
+	ArrayList<ColumnAndTotalizer> totalizers
 ) {
 
 	private void validateTotalizerFields() {
@@ -32,7 +33,7 @@ record SavedQuerySaving(
 			@JsonProperty("finalQuery") String finalQuery,
             @JsonProperty("totalizersQuery") String totalizersQuery,
             @JsonProperty("titlePDF") String titlePDF,
-            @JsonProperty("totalizers") ArrayList<TotalizerSaving> totalizers) {
+            @JsonProperty("totalizers") ArrayList<ColumnAndTotalizer> totalizers) {
 		this.queryName = queryName;
 		this.finalQuery = finalQuery;
 		this.totalizersQuery = totalizersQuery == null ? "" : totalizersQuery;

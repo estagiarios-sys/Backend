@@ -13,8 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-import jakarta.validation.Valid;
-
 @RestController
 @RequestMapping("/pdf")
 public class PdfController {
@@ -26,7 +24,7 @@ public class PdfController {
 	}
 	
     @PostMapping("/generate")
-    public ResponseEntity<Pdf> generatePdf(@RequestBody @Valid PdfSaving pdfSaving) throws URISyntaxException {
+    public ResponseEntity<Pdf> generatePdf(@RequestBody PdfSaving pdfSaving) throws URISyntaxException {
     	LocalDateTime requestTime = LocalDateTime.now();
     	
     	if (repository.getNumberOfEntries() == 10) {
@@ -49,7 +47,7 @@ public class PdfController {
     			byte[].class
     			);
     	LocalDateTime generatedPdfTime = LocalDateTime.now();
-    	Pdf pdf = new Pdf(pdfSaving, requestTime, generatedPdfTime, response.getBody());
+    	Pdf pdf = new Pdf(pdfSaving.titlePDF(), requestTime, generatedPdfTime, response.getBody());
     	repository.save(pdf);
 
     	return ResponseEntity.created(new URI("")).body(pdf);
@@ -81,6 +79,7 @@ public class PdfController {
     @GetMapping("/list")
     public ResponseEntity<List<PdfListing>> listPdfs() {
     	List<PdfListing> pdfsList =  repository.findAttributesForList();
+    	
     	return ResponseEntity.ok().body(pdfsList);
     }
     
