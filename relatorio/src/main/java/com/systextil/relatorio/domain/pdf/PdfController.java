@@ -28,6 +28,10 @@ public class PdfController {
     @PostMapping("/generate")
     public ResponseEntity<Pdf> generatePdf(@RequestBody @Valid PdfSaving pdfSaving) throws URISyntaxException {
     	LocalDateTime requestTime = LocalDateTime.now();
+    	
+    	if (repository.getNumberOfEntries() == 10) {
+    		repository.deleteById(repository.getOldestEntry());
+    	}
     	RestTemplate restTemplate = new RestTemplate();
 
     	// Configura os cabeçalhos da requisição

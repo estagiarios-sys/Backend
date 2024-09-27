@@ -8,12 +8,15 @@ import org.springframework.data.repository.query.Param;
 
 interface PdfRepository extends JpaRepository<Pdf, Long> {
 	
-	@Query("SELECT new com.systextil.relatorio.domain.pdf.PdfListing(p.id, p.pdfTitle, p.requestTime, p.generatedPdfTime) FROM Pdf p")
+	@Query("SELECT new com.systextil.relatorio.domain.pdf.PdfListing(p.id, p.pdfTitle, p.requestTime, p.generatedPdfTime) FROM Pdf p ORDER BY p.id DESC")
     List<PdfListing> findAttributesForList();
 	
 	@Query("SELECT p.body FROM Pdf p WHERE p.id = :id")
 	byte[] findBodyById(@Param("id") Long id);
 	
-//	@Query("SELECT COUNT(P")
-//	Long getNumberOfEntries();
+	@Query("SELECT COUNT(p.id) FROM Pdf p")
+	int getNumberOfEntries();
+	
+	@Query("SELECT MIN(p.id) FROM Pdf p")
+	Long getOldestEntry();
 }
