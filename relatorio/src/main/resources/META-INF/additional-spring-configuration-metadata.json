@@ -1,15 +1,15 @@
 {"properties": [{
   "name": "database.type",
   "type": "java.lang.String",
-  "description": "A description for 'database.type'"
-} ,
+  "description": ""
+},
 {
   "name": "tables.json.file.path",
   "type": "java.lang.String",
-  "description": "A description for 'database.type'"
+  "description": ""
 },
 { 
   "name": "relationships.json.file.path",
   "type": "java.lang.String",
-  "description": "A description for 'database.type'"
+  "description": ""
 }]}
