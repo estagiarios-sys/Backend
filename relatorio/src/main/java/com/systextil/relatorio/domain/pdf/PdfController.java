@@ -11,6 +11,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @RestController
@@ -41,16 +42,21 @@ public class PdfController {
     	// Converte PdfSaving para JSON
     	HttpEntity<PdfSaving> request = new HttpEntity<>(pdfSaving, headers);
 
-    	// Faz a requisição POST para o microserviço Node.js
-    	ResponseEntity<byte[]> response = restTemplate.exchange(
-    			"http://localhost:3001/generate-pdf", // URL do microserviço Node.js
-    			HttpMethod.POST,
-    			request,
-    			byte[].class
-    			);
-    	LocalDateTime generatedPdfTime = LocalDateTime.now();
-    	pdf.update(generatedPdfTime, response.getBody());
-    	repository.save(pdf);
+    	try {
+    		ResponseEntity<byte[]> response = restTemplate.exchange(
+        			"http://localhost:3001/generate-pdf", // URL do microserviço Node.js
+        			HttpMethod.POST,
+        			request,
+        			byte[].class
+        			);
+        	LocalDateTime generatedPdfTime = LocalDateTime.now();
+        	pdf.update(generatedPdfTime, response.getBody());
+        	repository.save(pdf);
+    	} catch (HttpClientErrorException exception) {
+    		pdf.update();
+    		repository.save(pdf);
+    		throw new HttpClientErrorException(exception.getStatusCode(), exception.getLocalizedMessage());
+    	}
 
     	return ResponseEntity.created(new URI("")).body(pdf);
     }
