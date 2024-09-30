@@ -35,6 +35,10 @@ public class Pdf {
 		this.body = body;
 		this.status = StatusTypes.CONCLUIDO.toString();
 	}
+	
+	public void update() {
+		this.status = StatusTypes.ERRO.toString();
+	}
 
 	public Long getId() {
 		return id;

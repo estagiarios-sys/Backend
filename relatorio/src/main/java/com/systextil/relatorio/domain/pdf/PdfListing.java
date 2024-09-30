@@ -10,7 +10,7 @@ record PdfListing(
 		String status
 ) {
 	
-	public PdfListing(Pdf pdf) {
+	PdfListing(Pdf pdf) {
 		this(
 			pdf.getId(),
 			pdf.getPdfTitle(),
