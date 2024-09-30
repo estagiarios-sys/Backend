@@ -24,15 +24,27 @@ public class PdfController {
 		this.repository = repository;
 	}
 	
-    @PostMapping("/generate")
-    public ResponseEntity<Pdf> generatePdf(@RequestBody PdfSaving pdfSaving) throws URISyntaxException {
-    	LocalDateTime requestTime = LocalDateTime.now();
+	@PostMapping("/create-empty")
+	public ResponseEntity<Long> createNoDataPdf(@RequestBody String pdfTitle) throws URISyntaxException {
+		LocalDateTime requestTime = LocalDateTime.now();
+
+		if (pdfTitle == null || pdfTitle.isBlank()) {
+			pdfTitle = "Sem título";
+		}
     	
     	if (repository.count() == 10) {
     		repository.deleteById(repository.getOldestEntry());
     	}
-    	Pdf pdf = new Pdf(pdfSaving.titlePDF(), requestTime);
-    	repository.save(pdf);
+    	Pdf pdf = new Pdf(pdfTitle, requestTime);
+    	Long noDataPdfId = repository.save(pdf).getId();
+    	
+    	return ResponseEntity.created(new URI("")).body(noDataPdfId);
+	}
+	
+    @PutMapping("/set-data")
+    public ResponseEntity<Pdf> generatePdf(@RequestBody PdfSaving pdfSaving) {
+    	Pdf noDataPdf = repository.getReferenceById(pdfSaving.pdfId());
+    	MicroserviceRequest microserviceRequest = new MicroserviceRequest(pdfSaving.fullTableHTML(), noDataPdf.getPdfTitle(), pdfSaving.imgPDF());
     	RestTemplate restTemplate = new RestTemplate();
 
     	// Configura os cabeçalhos da requisição
@@ -40,7 +52,7 @@ public class PdfController {
     	headers.setContentType(MediaType.APPLICATION_JSON);
 
     	// Converte PdfSaving para JSON
-    	HttpEntity<PdfSaving> request = new HttpEntity<>(pdfSaving, headers);
+    	HttpEntity<MicroserviceRequest> request = new HttpEntity<>(microserviceRequest, headers);
 
     	try {
     		ResponseEntity<byte[]> response = restTemplate.exchange(
@@ -50,15 +62,15 @@ public class PdfController {
         			byte[].class
         			);
         	LocalDateTime generatedPdfTime = LocalDateTime.now();
-        	pdf.update(generatedPdfTime, response.getBody());
-        	repository.save(pdf);
+        	noDataPdf.update(generatedPdfTime, response.getBody());
+        	repository.save(noDataPdf);
     	} catch (HttpClientErrorException exception) {
-    		pdf.update();
-    		repository.save(pdf);
+    		noDataPdf.update();
+    		repository.save(noDataPdf);
     		throw new HttpClientErrorException(exception.getStatusCode(), exception.getLocalizedMessage());
     	}
 
-    	return ResponseEntity.created(new URI("")).body(pdf);
+    	return ResponseEntity.ok().build();
     }
 
     @PostMapping("/preview")
