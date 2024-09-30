@@ -6,7 +6,8 @@ record PdfListing(
 		Long id,
 		String pdfTitle,
 		LocalDateTime requestTime,
-		LocalDateTime generatedPdfTime
+		LocalDateTime generatedPdfTime,
+		String status
 ) {
 	
 	public PdfListing(Pdf pdf) {
@@ -14,7 +15,8 @@ record PdfListing(
 			pdf.getId(),
 			pdf.getPdfTitle(),
 			pdf.getRequestTime(),
-			pdf.getDataBaseSavingTime()
+			pdf.getGeneratedPdfTime(),
+			pdf.getStatus()
 		);
 	}
 	

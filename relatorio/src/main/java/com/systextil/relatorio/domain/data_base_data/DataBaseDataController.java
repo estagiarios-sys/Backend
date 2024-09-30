@@ -21,17 +21,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 @RestController
 @RequestMapping("find")
 public class DataBaseDataController {
 
-    private final OracleDataBaseDataRepository oracleDataBaseRepository;
-    private final MySqlDataBaseDataRepository mySqlDataBaseRepository;
+    private final OracleDataBaseDataRepository oracleRepository;
+    private final MySqlDataBaseDataRepository mySqlRepository;
     private FileWriter fileWriter;
     private ObjectMapper objectMapper;
     
@@ -50,8 +48,8 @@ public class DataBaseDataController {
     private static final String ORACLE = "oracle";
     
     public DataBaseDataController(OracleDataBaseDataRepository oracleDataBaseRepository, MySqlDataBaseDataRepository mySqlDataBaseRepository) {
-    	this.oracleDataBaseRepository = oracleDataBaseRepository;
-    	this.mySqlDataBaseRepository = mySqlDataBaseRepository;
+    	this.oracleRepository = oracleDataBaseRepository;
+    	this.mySqlRepository = mySqlDataBaseRepository;
     }
     
     @PostMapping
@@ -87,7 +85,7 @@ public class DataBaseDataController {
         	if (!queryData.totalizers().isEmpty()) {
         		totalizersQueryAnalysis = SqlGenerator.generateTotalizersQueryAnalysisFromMySQLDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
         	}
-        	actualTime = mySqlDataBaseRepository.getActualTimeFromQueriesAnalysisFromDataBase(finalQueryAnalysis, totalizersQueryAnalysis);
+        	actualTime = mySqlRepository.getActualTimeFromQueriesAnalysisFromDataBase(finalQueryAnalysis, totalizersQueryAnalysis);
     	} else if (dataBaseType.equals(ORACLE)) {
     		String[] finalQueryAnaysis = SqlGenerator.generateFinalQueryAnalysisFromOracleDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
     		String[] totalizersQueryAnalysis = null;
@@ -95,7 +93,7 @@ public class DataBaseDataController {
     		if (!queryData.totalizers().isEmpty()) {
         		totalizersQueryAnalysis = SqlGenerator.generateTotalizersQueryAnalysisFromOracleDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
         	}
-    		actualTime = oracleDataBaseRepository.getActualTimeFromQueriesAnalysisFromDataBase(finalQueryAnaysis, totalizersQueryAnalysis);
+    		actualTime = oracleRepository.getActualTimeFromQueriesAnalysisFromDataBase(finalQueryAnaysis, totalizersQueryAnalysis);
     	} else {
     		throw new CannotConnectToDataBaseException(NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE);
     	}
@@ -136,14 +134,14 @@ public class DataBaseDataController {
         LoadedQueryData loadedQueryData = null;
         
         if (dataBaseType.equals(MYSQL)) {
-        	loadedQueryData = mySqlDataBaseRepository.findDataByQuery(toLoadQueryData.finalQuery(), toLoadQueryData.totalizersQuery());
+        	loadedQueryData = mySqlRepository.findDataByQuery(toLoadQueryData.finalQuery(), toLoadQueryData.totalizersQuery());
         } else if (dataBaseType.equals(ORACLE)) {
-        	loadedQueryData = oracleDataBaseRepository.findDataByQuery(toLoadQueryData.finalQuery(), toLoadQueryData.totalizersQuery());
+        	loadedQueryData = oracleRepository.findDataByQuery(toLoadQueryData.finalQuery(), toLoadQueryData.totalizersQuery());
         } else {
     		throw new CannotConnectToDataBaseException(NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE);
         }
 
-        return treatLoadedQueryData(loadedQueryData, toLoadQueryData.totalizers());
+        return LoadedQueryDataTreater.treatLoadedQueryData(loadedQueryData, toLoadQueryData.totalizers());
     }
 
     @PutMapping("update/table")
@@ -158,9 +156,9 @@ public class DataBaseDataController {
         	Map<String, Map<String, String>> tablesAndColumns = null;
         	
             if (dataBaseType.equals(MYSQL)) {
-            	tablesAndColumns = mySqlDataBaseRepository.getTablesAndColumnsFromDataBase();
+            	tablesAndColumns = mySqlRepository.getTablesAndColumnsFromDataBase();
             } else if (dataBaseType.equals(ORACLE)) {
-            	tablesAndColumns = oracleDataBaseRepository.getTablesAndColumnsFromDataBase();
+            	tablesAndColumns = oracleRepository.getTablesAndColumnsFromDataBase();
             } else {
         		throw new CannotConnectToDataBaseException(NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE);
             }
@@ -183,9 +181,9 @@ public class DataBaseDataController {
         	ArrayList<RelationshipData> relationships = null;
         	
         	if (dataBaseType.equals(MYSQL)) {
-        		relationships = mySqlDataBaseRepository.getRelationshipsFromDataBase();
+        		relationships = mySqlRepository.getRelationshipsFromDataBase();
         	} else if (dataBaseType.equals(ORACLE)) {
-        		relationships = oracleDataBaseRepository.getRelationshipsFromDataBase();
+        		relationships = oracleRepository.getRelationshipsFromDataBase();
         	} else {
         		throw new CannotConnectToDataBaseException(NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE);
         	}
@@ -195,56 +193,5 @@ public class DataBaseDataController {
         } else {
         	throw new FileNotFoundException(FILE_NOT_FOUND_MESSAGE + filePath);
         }
-    }
-    
-    private TreatedLoadedQueryData treatLoadedQueryData(LoadedQueryData loadedQueryData, List<ColumnAndTotalizer> totalizers) {
-    	ArrayList<String> columnsNameOrNickName = columnsNameAndNickNameToColumnsNameOrNickName(loadedQueryData.columnsNameAndNickName());
-    	Map<String, String> columnsAndTotalizersResult = null;
-    	
-    	if (totalizers != null) {
-    		columnsAndTotalizersResult = joinColumnsAndTotalizersResult(loadedQueryData, totalizers);
-    	}
-    	
-    	return new TreatedLoadedQueryData(columnsNameOrNickName, loadedQueryData.foundObjects(), columnsAndTotalizersResult);
-    }
-    
-    private Map<String, String> joinColumnsAndTotalizersResult(LoadedQueryData loadedQueryData, List<ColumnAndTotalizer> totalizers) {
-    	int totalizersResultsCounter = 0;
-        Map<String, String> columnsAndTotalizersResult = new HashMap<>();
-        
-        for (ColumnAndTotalizer columnAndTotalizer : totalizers) {
-        	Entry<String, TotalizerTypes> totalizerAndColumn = columnAndTotalizer.totalizer().entrySet().iterator().next();
-        	String columnsAndTotalizersColumn = null;
-        	
-        	for (Map.Entry<String, String> columnNameAndNickName : loadedQueryData.columnsNameAndNickName().entrySet()) {
-        		
-        		if (totalizerAndColumn.getKey().equalsIgnoreCase(columnNameAndNickName.getKey())) {
-        			if (columnNameAndNickName.getValue() != null) {
-        				columnsAndTotalizersColumn = columnNameAndNickName.getValue();
-        			} else {
-        				columnsAndTotalizersColumn = columnNameAndNickName.getKey();
-        			}
-        		}
-        	}
-        	columnsAndTotalizersResult.put(columnsAndTotalizersColumn, totalizerAndColumn.getValue().toPortuguese() + ": " + loadedQueryData.totalizersResult().get(totalizersResultsCounter));
-        	totalizersResultsCounter++;
-        }
-        
-        return columnsAndTotalizersResult;
-    }
-    
-    private ArrayList<String> columnsNameAndNickNameToColumnsNameOrNickName(Map<String, String> columnsNameAndNickName) {
-    	ArrayList<String> columnsNameOrNickName = new ArrayList<>();
-    	
-    	for (Map.Entry<String, String> columnNameAndNickName : columnsNameAndNickName.entrySet()) {
-        	
-   			if (columnNameAndNickName.getValue() != null) {
-   				columnsNameOrNickName.add(columnNameAndNickName.getValue());
-   			} else {
-   				columnsNameOrNickName.add(columnNameAndNickName.getKey());
-    		}
-    	}
-    	    	
-    	return columnsNameOrNickName;
     }
 }

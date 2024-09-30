@@ -26,9 +26,12 @@ public class PdfController {
     @PostMapping("/generate")
     public ResponseEntity<Pdf> generatePdf(@RequestBody PdfSaving pdfSaving) throws URISyntaxException {
     	LocalDateTime requestTime = LocalDateTime.now();
-    	if (repository.getNumberOfEntries() == 10) {
+    	
+    	if (repository.count() == 10) {
     		repository.deleteById(repository.getOldestEntry());
     	}
+    	Pdf pdf = new Pdf(pdfSaving.titlePDF(), requestTime);
+    	repository.save(pdf);
     	RestTemplate restTemplate = new RestTemplate();
 
     	// Configura os cabeçalhos da requisição
@@ -46,7 +49,7 @@ public class PdfController {
     			byte[].class
     			);
     	LocalDateTime generatedPdfTime = LocalDateTime.now();
-    	Pdf pdf = new Pdf(pdfSaving.titlePDF(), requestTime, generatedPdfTime, response.getBody());
+    	pdf.update(generatedPdfTime, response.getBody());
     	repository.save(pdf);
 
     	return ResponseEntity.created(new URI("")).body(pdf);

@@ -17,22 +17,23 @@ public class Pdf {
 	private LocalDateTime requestTime;
 	private LocalDateTime generatedPdfTime;
 	private byte[] body;
+	private String status;
 	
 	public Pdf() {
 	}
 	
-	public Pdf(String pdfTitle, LocalDateTime requestTime, LocalDateTime generatedPdfTime, byte[] body) {
+	public Pdf(String pdfTitle, LocalDateTime requestTime) {
 		this.pdfTitle = pdfTitle;
 		this.requestTime = requestTime;
-		this.generatedPdfTime = generatedPdfTime;
-		this.body = body;
+		this.generatedPdfTime = null;
+		this.body = null;
+		this.status = StatusTypes.EM_ANDAMENTO.toString();
 	}
 	
-	public Pdf(Long id, String pdfTitle, LocalDateTime requestTime, LocalDateTime generatedPdfTime) {
-		this.id = id;
-		this.pdfTitle = pdfTitle;
-		this.requestTime = requestTime;
+	public void update(LocalDateTime generatedPdfTime, byte[] body) {
 		this.generatedPdfTime = generatedPdfTime;
+		this.body = body;
+		this.status = StatusTypes.CONCLUIDO.toString();
 	}
 
 	public Long getId() {
@@ -47,11 +48,15 @@ public class Pdf {
 		return requestTime;
 	}
 
-	public LocalDateTime getDataBaseSavingTime() {
+	public LocalDateTime getGeneratedPdfTime() {
 		return generatedPdfTime;
 	}
 
 	public byte[] getBody() {
 		return body;
-	}	
+	}
+
+	public String getStatus() {
+		return status;
+	}
 }
