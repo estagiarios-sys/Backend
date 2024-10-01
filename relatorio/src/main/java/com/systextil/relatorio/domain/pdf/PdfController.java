@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import jakarta.annotation.Nullable;
+
 @RestController
 @RequestMapping("/pdf")
 public class PdfController {
@@ -25,11 +27,11 @@ public class PdfController {
 	}
 	
 	@PostMapping("/create-empty")
-	public ResponseEntity<Long> createNoDataPdf(@RequestBody String pdfTitle) throws URISyntaxException {
+	public ResponseEntity<Long> createNoDataPdf(@RequestBody @Nullable String pdfTitle) throws URISyntaxException {
 		LocalDateTime requestTime = LocalDateTime.now();
 
-		if (pdfTitle.equals("\"\"")) {
-			pdfTitle = "Sem Título";
+		if (pdfTitle == null || pdfTitle.isBlank()) {
+			pdfTitle = "Sem título";
 		}
     	
     	if (repository.count() == 10) {
@@ -74,13 +76,13 @@ public class PdfController {
     }
 
     @PostMapping("/preview")
-    public ResponseEntity<byte[]> previewPdf(@RequestBody PdfSaving pdfSaving) {
+    public ResponseEntity<byte[]> previewPdf(@RequestBody MicroserviceRequest microserviceRequest) {
     	RestTemplate restTemplate = new RestTemplate();
 
     	// Configura os cabeçalhos da requisição
     	HttpHeaders headers = new HttpHeaders();
     	headers.setContentType(MediaType.APPLICATION_JSON);
-    	HttpEntity<PdfSaving> request = new HttpEntity<>(pdfSaving, headers);
+    	HttpEntity<MicroserviceRequest> request = new HttpEntity<>(microserviceRequest, headers);
 
     	// Faz a requisição POST para o microserviço Node.js
     	ResponseEntity<byte[]> response = restTemplate.exchange(
