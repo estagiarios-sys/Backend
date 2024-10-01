@@ -15,6 +15,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
 
 @RestController
 @RequestMapping("/pdf")
@@ -26,6 +27,7 @@ public class PdfController {
 		this.repository = repository;
 	}
 	
+	@Transactional
 	@PostMapping("/create-empty")
 	public ResponseEntity<Long> createNoDataPdf(@RequestBody @Nullable String pdfTitle) throws URISyntaxException {
 		LocalDateTime requestTime = LocalDateTime.now();
