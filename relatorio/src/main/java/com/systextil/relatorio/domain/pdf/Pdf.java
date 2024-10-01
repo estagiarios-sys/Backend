@@ -27,7 +27,7 @@ public class Pdf {
 		this.requestTime = requestTime;
 		this.generatedPdfTime = null;
 		this.body = null;
-		this.status = StatusTypes.EM_ANDAMENTO.toString();
+		this.status = StatusTypes.BUSCANDO_DADOS.toString();
 	}
 	
 	public void update(LocalDateTime generatedPdfTime, byte[] body) {
@@ -36,8 +36,8 @@ public class Pdf {
 		this.status = StatusTypes.CONCLUIDO.toString();
 	}
 	
-	public void update() {
-		this.status = StatusTypes.ERRO.toString();
+	public void update(StatusTypes status) {
+		this.status = status.toString();
 	}
 
 	public Long getId() {
