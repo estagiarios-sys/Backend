@@ -28,8 +28,8 @@ public class PdfController {
 	public ResponseEntity<Long> createNoDataPdf(@RequestBody String pdfTitle) throws URISyntaxException {
 		LocalDateTime requestTime = LocalDateTime.now();
 
-		if (pdfTitle == null || pdfTitle.isBlank()) {
-			pdfTitle = "Sem título";
+		if (pdfTitle.equals("\"\"")) {
+			pdfTitle = "Sem Título";
 		}
     	
     	if (repository.count() == 10) {
