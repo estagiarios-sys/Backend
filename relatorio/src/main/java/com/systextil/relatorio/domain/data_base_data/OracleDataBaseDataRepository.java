@@ -44,7 +44,7 @@ public class OracleDataBaseDataRepository extends DataBaseDataRepository {
 	Map<String, Map<String, String>> getTablesAndColumnsFromDataBase() throws SQLException {
         connectionOracle = new ConnectionOracle();
         connectionOracle.connect();
-		Map<String, Map<String, String>> tablesAndColumns = super.getTablesAndColumnsFromDataBase(connectionOracle.getIdConnection(), "ACADEMY", "%");
+		Map<String, Map<String, String>> tablesAndColumns = super.getTablesAndColumnsFromDataBase(connectionOracle.getIdConnection(), "deVS", "BASI%");
         connectionOracle.disconnect();
         
         return tablesAndColumns;
@@ -66,7 +66,9 @@ public class OracleDataBaseDataRepository extends DataBaseDataRepository {
                 "JOIN " +
                 "  USER_CONS_COLUMNS rc ON c.R_CONSTRAINT_NAME = rc.CONSTRAINT_NAME " +
                 "WHERE " +
-                "  c.CONSTRAINT_TYPE = 'R' " +
+				"uc.TABLE_NAME LIKE 'BASI%' " +
+				"AND rc.TABLE_NAME LIKE 'BASI%' " +
+                "AND c.CONSTRAINT_TYPE = 'R' " +
                 "ORDER BY " +
                 "  uc.TABLE_NAME, uc.COLUMN_NAME";
         ArrayList<RelationshipData> listRelationshipData = super.getRelationshipsFromDataBase(connectionOracle.getIdConnection(), sql);
