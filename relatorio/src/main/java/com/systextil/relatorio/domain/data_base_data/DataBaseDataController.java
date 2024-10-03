@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -53,8 +54,12 @@ public class DataBaseDataController {
     }
     
     @PostMapping
-    public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws SQLException {
+    public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws SQLException, ParseException {
         String finalQuery = SqlGenerator.generateFinalQuery(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
+        
+        if (dataBaseType.equals(ORACLE)) {
+        	finalQuery = SqlWithDateConverter.toSqlWithDdMMMyyyy(finalQuery);
+        }
         String totalizersQuery = null;
         
         if (!queryData.totalizers().isEmpty()) {
