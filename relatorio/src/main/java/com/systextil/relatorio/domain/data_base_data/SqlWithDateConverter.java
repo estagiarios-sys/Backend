@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,7 +51,7 @@ class SqlWithDateConverter {
 	
 	private static String toDdMMMyyyy(String yyyyMMdd) throws ParseException {
 		SimpleDateFormat yyyyMMddFormat = new SimpleDateFormat("yyyy-MM-dd");
-		SimpleDateFormat ddMMMyyyyFormat = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+		SimpleDateFormat ddMMMyyyyFormat = new SimpleDateFormat("dd-MM-yyyy");
 		Date yyyyMMddDate = yyyyMMddFormat.parse(yyyyMMdd);
 		
 		return ddMMMyyyyFormat.format(yyyyMMddDate);
