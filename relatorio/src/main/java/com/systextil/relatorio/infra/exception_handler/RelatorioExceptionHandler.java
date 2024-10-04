@@ -1,5 +1,6 @@
 package com.systextil.relatorio.infra.exception_handler;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -44,7 +45,7 @@ public class RelatorioExceptionHandler {
     	Map<String, String> errors = new HashMap<>();
     	errors.put(MESSAGE, exception.getLocalizedMessage());
     	
-    	return ResponseEntity.badRequest().body(errors);
+    	return ResponseEntity.status(HttpStatus.CONFLICT).body(errors);
     }
     
     @ExceptionHandler(TotalizerFieldsMismatchException.class)
