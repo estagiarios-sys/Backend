@@ -15,7 +15,7 @@ record SavedQueryListing(
                 savedQuery.getQueryName(),
                 savedQuery.getFinalQuery(),
                 savedQuery.getTotalizersQuery(),
-                savedQuery.getImgPDF(),
+                savedQuery.getImagePDF(),
                 savedQuery.getTitlePDF(),
                 savedQuery.getTotalizers().stream().map(TotalizerListing::new).toList()
         );

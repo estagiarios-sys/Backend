@@ -16,7 +16,7 @@ public class Pdf {
 	private String pdfTitle;
 	private LocalDateTime requestTime;
 	private LocalDateTime generatedPdfTime;
-	private byte[] body;
+	private String path;
 	private String status;
 	
 	public Pdf() {
@@ -26,13 +26,13 @@ public class Pdf {
 		this.pdfTitle = pdfTitle;
 		this.requestTime = requestTime;
 		this.generatedPdfTime = null;
-		this.body = null;
+		this.path = null;
 		this.status = StatusTypes.BUSCANDO_DADOS.toString();
 	}
 	
-	public void update(LocalDateTime generatedPdfTime, byte[] body) {
+	public void update(LocalDateTime generatedPdfTime, String path) {
 		this.generatedPdfTime = generatedPdfTime;
-		this.body = body;
+		this.path = path;
 		this.status = StatusTypes.CONCLUIDO.toString();
 	}
 	
@@ -56,8 +56,8 @@ public class Pdf {
 		return generatedPdfTime;
 	}
 
-	public byte[] getBody() {
-		return body;
+	public String getPath() {
+		return path;
 	}
 
 	public String getStatus() {

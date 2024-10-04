@@ -1,15 +1,16 @@
 {"properties": [{
-  "name": "database.type",
-  "type": "java.lang.String",
-  "description": ""
+	"name": "database.type",
+	"type": "java.lang.String"
 },
 {
-  "name": "tables.json.file.path",
-  "type": "java.lang.String",
-  "description": ""
+	"name": "tables.json.file.path",
+	"type": "java.lang.String"
 },
 { 
-  "name": "relationships.json.file.path",
-  "type": "java.lang.String",
-  "description": ""
+	"name": "relationships.json.file.path",
+	"type": "java.lang.String"
+},
+{
+	"name": "pdf.storage.location",
+	"type": "java.lang.String"
 }]}

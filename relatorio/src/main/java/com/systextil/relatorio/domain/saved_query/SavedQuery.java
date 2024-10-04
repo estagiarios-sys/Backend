@@ -14,8 +14,8 @@ public class SavedQuery {
     private String queryName;
     private String finalQuery;
     private String totalizersQuery;
-    @Column(name = "IMG_PDF")
-    private byte[] imgPDF;
+    @Column(name = "IMAGE_PDF")
+    private byte[] imagePDF;
     @Column(name = "TITLE_PDF")
     private String titlePDF;
     
@@ -28,11 +28,11 @@ public class SavedQuery {
     public SavedQuery() {
     }
     
-    public SavedQuery(SavedQuerySaving savedQuerySaving, byte[] imgPDF) {
+    public SavedQuery(SavedQuerySaving savedQuerySaving, byte[] imagePDF) {
     	this.queryName = savedQuerySaving.queryName();
     	this.finalQuery = savedQuerySaving.finalQuery();
     	this.totalizersQuery = savedQuerySaving.totalizersQuery();
-    	this.imgPDF = imgPDF;
+    	this.imagePDF = imagePDF;
         this.titlePDF = savedQuerySaving.titlePDF();
     	try {
     		this.totalizers = savedQuerySaving.totalizers().stream().map(Totalizer::new).toList();
@@ -57,8 +57,8 @@ public class SavedQuery {
 		return totalizersQuery;
 	}
 
-    public byte[] getImgPDF(){
-        return imgPDF;
+    public byte[] getImagePDF(){
+        return imagePDF;
     }
 	
     public String getTitlePDF(){
@@ -69,10 +69,10 @@ public class SavedQuery {
 		return totalizers;
 	}    
     
-    public void updateData(SavedQuerySaving savedQuerySaving, byte[] imgPDF) {
+    public void updateData(SavedQuerySaving savedQuerySaving, byte[] imagePDF) {
     	this.finalQuery = savedQuerySaving.finalQuery();
     	this.totalizersQuery = savedQuerySaving.totalizersQuery();
-    	this.imgPDF = imgPDF;
+    	this.imagePDF = imagePDF;
     	try {
     		this.totalizers = savedQuerySaving.totalizers().stream().map(Totalizer::new).toList();
     	} catch(NullPointerException exception) {
