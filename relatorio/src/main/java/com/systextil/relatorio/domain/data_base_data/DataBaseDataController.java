@@ -71,7 +71,17 @@ public class DataBaseDataController {
         	totalizers.add(new ColumnAndTotalizer(Map.of(entry.getKey(), entry.getValue())));
         }
         ToLoadQueryData toLoadQueryData = new ToLoadQueryData(finalQuery, totalizersQuery, totalizers);
-        TreatedLoadedQueryData treatedLoadedQueryData = loadQuery(toLoadQueryData);
+        LoadedQueryData loadedQueryData = null;
+        
+        if (dataBaseType.equals(MYSQL)) {
+        	loadedQueryData = mySqlRepository.findDataByQuery(toLoadQueryData.finalQuery(), toLoadQueryData.totalizersQuery());
+        } else if (dataBaseType.equals(ORACLE)) {
+        	loadedQueryData = oracleRepository.findDataByQuery(toLoadQueryData.finalQuery(), toLoadQueryData.totalizersQuery());
+        } else {
+    		throw new CannotConnectToDataBaseException(NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE);
+        }
+        
+        TreatedLoadedQueryData treatedLoadedQueryData = LoadedQueryDataTreater.treatLoadedQueryData(loadedQueryData, totalizers);
         ArrayList<String> columnsNameOrNickName = treatedLoadedQueryData.columnsNameOrNickName();
         ArrayList<Object[]> foundObjects = treatedLoadedQueryData.foundObjects();
         Map<String, String> columnsAndTotalizersResult = treatedLoadedQueryData.columnsAndTotalizersResult();
@@ -132,21 +142,6 @@ public class DataBaseDataController {
         } else {
             throw new FileNotFoundException(FILE_NOT_FOUND_MESSAGE + filePath);
         }
-    }
-
-    @PostMapping("loadedQuery")
-    public TreatedLoadedQueryData loadQuery(@RequestBody ToLoadQueryData toLoadQueryData) throws SQLException {
-        LoadedQueryData loadedQueryData = null;
-        
-        if (dataBaseType.equals(MYSQL)) {
-        	loadedQueryData = mySqlRepository.findDataByQuery(toLoadQueryData.finalQuery(), toLoadQueryData.totalizersQuery());
-        } else if (dataBaseType.equals(ORACLE)) {
-        	loadedQueryData = oracleRepository.findDataByQuery(toLoadQueryData.finalQuery(), toLoadQueryData.totalizersQuery());
-        } else {
-    		throw new CannotConnectToDataBaseException(NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE);
-        }
-
-        return LoadedQueryDataTreater.treatLoadedQueryData(loadedQueryData, toLoadQueryData.totalizers());
     }
 
     @PutMapping("update/table")
