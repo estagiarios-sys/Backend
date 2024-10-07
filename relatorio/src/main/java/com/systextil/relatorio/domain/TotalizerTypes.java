@@ -20,5 +20,27 @@ public enum TotalizerTypes {
 				return "Desconhecido";
 		}
 	}
+	
+	public static TotalizerTypes toTotalizerType(String totalizerString) {
+		switch (totalizerString) {
+			case "AVG": {
+				return TotalizerTypes.AVG;
+			}
+			case "COUNT": {
+				return TotalizerTypes.COUNT;
+			}
+			case "MAX": {
+				return TotalizerTypes.MAX;
+			}
+			case "MIN": {
+				return TotalizerTypes.MIN;
+			}
+			case "SUM": {
+				return TotalizerTypes.SUM;
+			}
+			default:
+				throw new IllegalArgumentException("Unexpected value: " + totalizerString);
+		}
+	}
 
 }

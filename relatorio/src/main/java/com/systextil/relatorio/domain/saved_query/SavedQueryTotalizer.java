@@ -5,47 +5,41 @@ import java.util.Map;
 import com.systextil.relatorio.domain.ColumnAndTotalizer;
 import com.systextil.relatorio.domain.TotalizerTypes;
 
-import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Entity
-@Embeddable
-public class Totalizer {
+public class SavedQueryTotalizer {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String totalizerColumn;
-	private String name;
+	private String totalizerType;
+	
 	@ManyToOne
-	@JoinColumn(name = "saved_query_id")
 	private SavedQuery savedQuery;
-	
-	public Totalizer() {
-	}
-	
-	public Totalizer(ColumnAndTotalizer columnAndTotalizer) {
-		for (Map.Entry<String, TotalizerTypes> totalizer : columnAndTotalizer.totalizer().entrySet()) {
-			this.totalizerColumn = totalizer.getKey();
-			this.name = totalizer.getValue().toString();
+
+	public SavedQueryTotalizer(ColumnAndTotalizer totalizer) {
+		for (Map.Entry<String, TotalizerTypes> columnAndTotalizer : totalizer.totalizer().entrySet()) {
+			this.totalizerColumn = columnAndTotalizer.getKey();
+			this.totalizerType = columnAndTotalizer.getValue().toString();
 		}
 	}
-
+	
 	public Long getId() {
 		return id;
 	}
 
-	public String getColumn() {
+	public String getTotalizerColumn() {
 		return totalizerColumn;
 	}
-	
-	public String getName() {
-		return name;
+
+	public String getTotalizerType() {
+		return totalizerType;
 	}
 
 	public SavedQuery getSavedQuery() {

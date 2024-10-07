@@ -18,20 +18,21 @@ import java.util.Optional;
 @RestController
 public class SavedQueryController {
 
-    private final SavedQueryRepository savedQueryRepository;
+    private final SavedQueryRepository repository;
     private ObjectMapper objectMapper;
     
     public SavedQueryController(SavedQueryRepository savedQueryRepository) {
-    	this.savedQueryRepository = savedQueryRepository;
+    	this.repository = savedQueryRepository;
     }
 
-    @GetMapping("find/saved-query")
-    public List<SavedQueryListing> getSQL() {
-        List<SavedQuery> queriesList = savedQueryRepository.findAll();
-
-        return queriesList.stream()
-                .map(SavedQueryListing::new)
-                .toList();
+    @GetMapping("list/saved-query")
+    public List<AllSavedQueriesListing> getSQL() {
+        return repository.findAllForListing();
+    }
+    
+    @GetMapping("get/saved-query/{id}")
+    public OneSavedQueryListing getSavedQueryById(@PathVariable Long id) {
+    	return new OneSavedQueryListing(repository.getReferenceById(id));
     }
 
     @PostMapping(value = "/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -49,14 +50,14 @@ public class SavedQueryController {
     	objectMapper = new ObjectMapper();
     	SavedQuerySaving savedQuerySaving = objectMapper.readValue(stringSavedQuerySaving, SavedQuerySaving.class);
     	SavedQuery savedQuery = new SavedQuery(savedQuerySaving, imgPDF);
-    	savedQueryRepository.save(savedQuery);
+    	repository.save(savedQuery);
 
     	return ResponseEntity.created(URI.create("")).body(savedQuery);
     }
 
     @DeleteMapping("delete/{queryName}")
     public ResponseEntity<Void> deleteSQL(@PathVariable String queryName) {
-    	savedQueryRepository.deleteByQueryName(queryName);
+    	repository.deleteByQueryName(queryName);
     	
     	return ResponseEntity.noContent().build();
     }
@@ -76,7 +77,7 @@ public class SavedQueryController {
     	}
     	objectMapper = new ObjectMapper();
     	SavedQuerySaving savedQuerySaving = objectMapper.readValue(stringSavedQuerySaving, SavedQuerySaving.class);
-    	Optional<SavedQuery> optionalSavedQuery = savedQueryRepository.findByQueryName(savedQuerySaving.queryName());
+    	Optional<SavedQuery> optionalSavedQuery = repository.findByQueryName(savedQuerySaving.queryName());
         	
         if (optionalSavedQuery.isPresent()) {
         	optionalSavedQuery.get().updateData(savedQuerySaving, imgPDF);
