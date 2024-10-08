@@ -11,6 +11,10 @@
 	"type": "java.lang.String"
 },
 {
+	"name": "relationships_with_joins.json.file.path",
+	"type": "java.lang.String"
+},
+{
 	"name": "pdf.storage.location",
 	"type": "java.lang.String"
 }]}

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
@@ -39,7 +40,10 @@ public class DataBaseDataController {
     
     @Value("${relationships.json.file.path}")
     private String relationshipsJsonFilePath;
-
+    
+    @Value("${relationships_with_joins.json.file.path}")
+    private String relationshipsWithJoinsJsonFilePath;
+    
     @Value("${database.type}")
     private String dataBaseType;
     
@@ -54,8 +58,8 @@ public class DataBaseDataController {
     }
     
     @PostMapping
-    public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws SQLException, ParseException {
-        String finalQuery = SqlGenerator.generateFinalQuery(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
+    public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws SQLException, ParseException, IOException {
+        String finalQuery = SqlGenerator.generateFinalQuery(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
         
         if (dataBaseType.equals(ORACLE)) {
         	finalQuery = SqlWithDateConverter.toSqlWithDdMMMyyyy(finalQuery);
@@ -63,7 +67,7 @@ public class DataBaseDataController {
         String totalizersQuery = null;
         
         if (!queryData.totalizers().isEmpty()) {
-        	totalizersQuery = SqlGenerator.generateTotalizersQuery(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
+        	totalizersQuery = SqlGenerator.generateTotalizersQuery(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.tablesPairs());
         }
         List<ColumnAndTotalizer> totalizers = new ArrayList<>();
         
@@ -94,19 +98,19 @@ public class DataBaseDataController {
     	int actualTime = 0;
     	
     	if (dataBaseType.equals(MYSQL)) {
-    		String finalQueryAnalysis = SqlGenerator.generateFinalQueryAnalysisFromMySQLDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
+    		String finalQueryAnalysis = SqlGenerator.generateFinalQueryAnalysisFromMySQLDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.tablesPairs());
         	String totalizersQueryAnalysis = null;
         	
         	if (!queryData.totalizers().isEmpty()) {
-        		totalizersQueryAnalysis = SqlGenerator.generateTotalizersQueryAnalysisFromMySQLDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
+        		totalizersQueryAnalysis = SqlGenerator.generateTotalizersQueryAnalysisFromMySQLDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.tablesPairs());
         	}
         	actualTime = mySqlRepository.getActualTimeFromQueriesAnalysisFromDataBase(finalQueryAnalysis, totalizersQueryAnalysis);
     	} else if (dataBaseType.equals(ORACLE)) {
-    		String[] finalQueryAnaysis = SqlGenerator.generateFinalQueryAnalysisFromOracleDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.joins());
+    		String[] finalQueryAnaysis = SqlGenerator.generateFinalQueryAnalysisFromOracleDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.tablesPairs());
     		String[] totalizersQueryAnalysis = null;
     		
     		if (!queryData.totalizers().isEmpty()) {
-        		totalizersQueryAnalysis = SqlGenerator.generateTotalizersQueryAnalysisFromOracleDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.joins());
+        		totalizersQueryAnalysis = SqlGenerator.generateTotalizersQueryAnalysisFromOracleDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.tablesPairs());
         	}
     		actualTime = oracleRepository.getActualTimeFromQueriesAnalysisFromDataBase(finalQueryAnaysis, totalizersQueryAnalysis);
     	} else {
@@ -173,11 +177,13 @@ public class DataBaseDataController {
     @PutMapping("update/relationship")
     public void setRelationshipsFromDatabaseIntoJson() throws SQLException, IOException {
         Path filePath = Paths.get(relationshipsJsonFilePath);
+        Path fileOfJoinsPath = Paths.get(relationshipsWithJoinsJsonFilePath);
         Resource resource = new UrlResource(filePath.toUri());
+        Resource resourceWithJoins = new UrlResource(fileOfJoinsPath.toUri());
         
-        if (resource.isReadable() && resource.exists()) {
+        if (resourceWithJoins.isReadable() && resourceWithJoins.exists()) {
         	objectMapper = new ObjectMapper();
-        	fileWriter = new FileWriter(resource.getFile());
+        	fileWriter = new FileWriter(resourceWithJoins.getFile());
         	ArrayList<RelationshipData> relationships = null;
         	
         	if (dataBaseType.equals(MYSQL)) {
@@ -187,11 +193,39 @@ public class DataBaseDataController {
         	} else {
         		throw new CannotConnectToDataBaseException(NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE);
         	}
-        	String json = objectMapper.writeValueAsString(relationships);
-        	fileWriter.write(json);
+        	fileWriter.write(objectMapper.writeValueAsString(relationships));
+        	fileWriter.close();
+        	ArrayList<String> tables = new ArrayList<>();
+        	for (RelationshipData relationship : relationships) {
+        		tables.add(relationship.tables());
+        	}
+        	fileWriter = new FileWriter(resource.getFile());
+        	fileWriter.write(objectMapper.writeValueAsString(tables));
         	fileWriter.close();
         } else {
         	throw new FileNotFoundException(FILE_NOT_FOUND_MESSAGE + filePath);
         }
+    }
+    
+    private List<String> findJoinsByTablesPairs(List<String> tablesPairs) throws IOException {
+    	objectMapper = new ObjectMapper();
+    	Path fileOfJoinsPath = Paths.get(relationshipsWithJoinsJsonFilePath);
+    	String json = Files.readString(fileOfJoinsPath);
+    	List<RelationshipData> relationshipData = objectMapper.readValue(
+    			json, objectMapper
+    			.getTypeFactory()
+    			.constructCollectionType(List.class, RelationshipData.class)
+    	);
+    	List<String> joins = new ArrayList<>();
+    	
+    	for (String tablesPair : tablesPairs) {
+    		for (RelationshipData tablesPairAndJoin : relationshipData) {
+    			if (tablesPair.equals(tablesPairAndJoin.tables())) {
+    				joins.add(tablesPairAndJoin.join());
+    			}
+    		}
+    	}
+    	
+    	return joins;
     }
 }

@@ -11,7 +11,7 @@ class SqlGenerator {
 		throw new IllegalStateException("Utility class");
 	}
 
-	static String generateFinalQuery(String table, List<String> columns, String conditions, String orderBy,  List<String> joins) {
+	static String generateFinalQuery(String table, List<String> columns, List<String> conditions, String orderBy,  List<String> joins) {
         String query = "SELECT ";
         query = query.concat(String.join(", ", columns));
         query = query.concat(" FROM ");
@@ -22,12 +22,12 @@ class SqlGenerator {
             query = query.concat(String.join(" ", joins));
         }
         
-        if (!conditions.isBlank()) {
+        if (!conditions.isEmpty()) {
             query = query.concat(" WHERE ");
-            query = query.concat(conditions);
+            query = query.concat(String.join(" AND ", conditions));
         }
         
-        if (!orderBy.isEmpty()) {
+        if (!orderBy.isBlank()) {
             query = query.concat(" ORDER BY ");
             query = query.concat(orderBy);
         }
@@ -35,7 +35,7 @@ class SqlGenerator {
         return query;
     }
     
-	static String generateTotalizersQuery(Map<String, TotalizerTypes> totalizers, String table, String conditions, List<String> joins) {
+	static String generateTotalizersQuery(Map<String, TotalizerTypes> totalizers, String table, List<String> conditions, List<String> joins) {
     	boolean firstTotalizer = true;
     	String query = "SELECT ";
     	
@@ -54,33 +54,33 @@ class SqlGenerator {
             query = query.concat(String.join(" ", joins));
         }
     	
-    	if (!conditions.isBlank()) {
+    	if (!conditions.isEmpty()) {
             query = query.concat(" WHERE ");
-            query = query.concat(conditions);
+            query = query.concat(String.join(" AND ", conditions));
         }
     	
     	return query;
     }
 	
-	static String generateFinalQueryAnalysisFromMySQLDataBase (String table, List<String> columns, String conditions, String orderBy,  List<String> joins) {
+	static String generateFinalQueryAnalysisFromMySQLDataBase (String table, List<String> columns, List<String> conditions, String orderBy,  List<String> joins) {
 		String finalQuery = generateFinalQuery(table, columns, conditions, orderBy, joins);
 		
 		return "EXPLAIN ANALYZE " + finalQuery;
 	}
 	
-	static String generateTotalizersQueryAnalysisFromMySQLDataBase(Map<String, TotalizerTypes> totalizers, String table, String conditions, List<String> joins) {
+	static String generateTotalizersQueryAnalysisFromMySQLDataBase(Map<String, TotalizerTypes> totalizers, String table, List<String> conditions, List<String> joins) {
 		String totalizersQuery = generateTotalizersQuery(totalizers, table, conditions, joins);
 		
 		return "EXPLAIN ANALYZE " + totalizersQuery;
 	}
 	
-	static String[] generateFinalQueryAnalysisFromOracleDataBase (String table, List<String> columns, String conditions, String orderBy,  List<String> joins) {
+	static String[] generateFinalQueryAnalysisFromOracleDataBase (String table, List<String> columns, List<String> conditions, String orderBy,  List<String> joins) {
 		String finalQuery = generateFinalQuery(table, columns, conditions, orderBy, joins);
 		
 		return new String[] {"EXPLAIN PLAN FOR " + finalQuery, "SELECT SUM(time) FROM plan_table"};
 	}
 	
-	static String[] generateTotalizersQueryAnalysisFromOracleDataBase(Map<String, TotalizerTypes> totalizers, String table, String conditions, List<String> joins) {
+	static String[] generateTotalizersQueryAnalysisFromOracleDataBase(Map<String, TotalizerTypes> totalizers, String table, List<String> conditions, List<String> joins) {
 		String totalizersQuery = generateTotalizersQuery(totalizers, table, conditions, joins);
 		
 		return new String[] {"EXPLAIN PLAN FOR " + totalizersQuery, "SELECT SUM(time) FROM plan_table"};

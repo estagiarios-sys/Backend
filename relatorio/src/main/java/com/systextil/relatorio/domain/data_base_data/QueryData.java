@@ -14,8 +14,8 @@ record QueryData(
     String table,
     @NotEmpty
     List<String> columns,
-    String conditions,
+    List<String> conditions,
     String orderBy,
-    List<String> joins,
+    List<String> tablesPairs,
     Map<String, TotalizerTypes> totalizers
 ) {}
