@@ -59,21 +59,21 @@ public class SavedQuery {
     			.toList();
     }
     
-    public void updateData(SavedQuerySaving savedQuerySaving, byte[] pdfImage) {
-    	this.mainTable = savedQuerySaving.mainTable();
-    	this.conditions = savedQuerySaving.conditions();
-    	this.orderBy = savedQuerySaving.orderBy();
-    	this.pdfTitle = savedQuerySaving.pdfTitle();
+    public void updateData(SavedQueryUpdating updating, byte[] pdfImage) {
+    	this.mainTable = updating.mainTable();
+    	this.conditions = updating.conditions();
+    	this.orderBy = updating.orderBy();
+    	this.pdfTitle = updating.pdfTitle();
     	this.pdfImage = pdfImage;
-    	this.savedQueryColumns = savedQuerySaving.columns()
+    	this.savedQueryColumns = updating.columns()
     			.stream()
     			.map(SavedQueryColumn::new)
     			.toList();
-    	this.savedQueryJoins = savedQuerySaving.joins()
+    	this.savedQueryJoins = updating.joins()
     			.stream()
     			.map(SavedQueryJoin::new)
     			.toList();
-    	this.savedQueryTotalizers = savedQuerySaving.totalizers()
+    	this.savedQueryTotalizers = updating.totalizers()
     			.stream()
     			.map(SavedQueryTotalizer::new)
     			.toList();

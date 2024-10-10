@@ -8,12 +8,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.systextil.relatorio.infra.exception_handler.SavedQueryQueryNameIsEmptyException;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 public class SavedQueryController {
@@ -37,7 +35,7 @@ public class SavedQueryController {
 
     @PostMapping(value = "/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SavedQuery> saveSQL(
-            @RequestParam String stringSavedQuerySaving,
+            @RequestParam SavedQuerySaving savedQuerySaving,
             @RequestParam(required = false, value = "imgPDF") MultipartFile file
     ) throws IOException {
     	byte[] imgPDF;
@@ -47,27 +45,19 @@ public class SavedQueryController {
     	} catch (NullPointerException exception) {
     		imgPDF = null;
     	}
-    	objectMapper = new ObjectMapper();
-    	SavedQuerySaving savedQuerySaving = objectMapper.readValue(stringSavedQuerySaving, SavedQuerySaving.class);
     	SavedQuery savedQuery = new SavedQuery(savedQuerySaving, imgPDF);
     	repository.save(savedQuery);
 
     	return ResponseEntity.created(URI.create("")).body(savedQuery);
     }
 
-    @DeleteMapping("delete/{queryName}")
-    public ResponseEntity<Void> deleteSQL(@PathVariable String queryName) {
-    	repository.deleteByQueryName(queryName);
-    	
-    	return ResponseEntity.noContent().build();
-    }
-
-    @PutMapping(value = "/update/saved-query", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/update/saved-query/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Transactional
     public ResponseEntity<Void> updateSQL(
-    		@RequestParam String stringSavedQuerySaving,
-            @RequestParam(required = false, value = "imgPDF") MultipartFile file
-    ) throws IOException, SavedQueryQueryNameIsEmptyException {
+    		@RequestParam String stringSavedQueryUpdating,
+            @RequestParam(required = false, value = "imgPDF") MultipartFile file,
+            @PathVariable Long id
+    ) throws IOException {
     	byte[] imgPDF;
     	
     	try {
@@ -76,15 +66,19 @@ public class SavedQueryController {
     		imgPDF = null;
     	}
     	objectMapper = new ObjectMapper();
-    	SavedQuerySaving savedQuerySaving = objectMapper.readValue(stringSavedQuerySaving, SavedQuerySaving.class);
-    	Optional<SavedQuery> optionalSavedQuery = repository.findByQueryName(savedQuerySaving.queryName());
+    	SavedQueryUpdating updating = objectMapper.readValue(stringSavedQueryUpdating, SavedQueryUpdating.class);
+    	SavedQuery savedQuery = repository.getReferenceById(id);
         	
-        if (optionalSavedQuery.isPresent()) {
-        	optionalSavedQuery.get().updateData(savedQuerySaving, imgPDF);
+        savedQuery.updateData(updating, imgPDF);
         		
-        	return ResponseEntity.ok().build();
-        } else {
-        	throw new SavedQueryQueryNameIsEmptyException();
-        }
+        return ResponseEntity.ok().build();
+        
+    }
+    
+    @DeleteMapping("delete/{id}")
+    public ResponseEntity<Void> deleteSQL(@PathVariable Long id) {
+    	repository.deleteById(id);
+    	
+    	return ResponseEntity.noContent().build();
     }
 }

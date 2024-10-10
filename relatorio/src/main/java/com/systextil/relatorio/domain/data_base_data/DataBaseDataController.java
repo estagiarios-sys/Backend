@@ -60,27 +60,26 @@ public class DataBaseDataController {
     @PostMapping
     public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws SQLException, ParseException, IOException {
         String finalQuery = SqlGenerator.generateFinalQuery(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
-        
+
         if (dataBaseType.equals(ORACLE)) {
         	finalQuery = SqlWithDateConverter.toSqlWithDdMMMyyyy(finalQuery);
         }
         String totalizersQuery = null;
         
         if (!queryData.totalizers().isEmpty()) {
-        	totalizersQuery = SqlGenerator.generateTotalizersQuery(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.tablesPairs());
+        	totalizersQuery = SqlGenerator.generateTotalizersQuery(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
         }
         List<ColumnAndTotalizer> totalizers = new ArrayList<>();
         
         for (Map.Entry<String, TotalizerTypes> entry : queryData.totalizers().entrySet()) {
         	totalizers.add(new ColumnAndTotalizer(Map.of(entry.getKey(), entry.getValue())));
         }
-        ToLoadQueryData toLoadQueryData = new ToLoadQueryData(finalQuery, totalizersQuery, totalizers);
         LoadedQueryData loadedQueryData = null;
         
         if (dataBaseType.equals(MYSQL)) {
-        	loadedQueryData = mySqlRepository.findDataByQuery(toLoadQueryData.finalQuery(), toLoadQueryData.totalizersQuery());
+        	loadedQueryData = mySqlRepository.findDataByQuery(finalQuery, totalizersQuery);
         } else if (dataBaseType.equals(ORACLE)) {
-        	loadedQueryData = oracleRepository.findDataByQuery(toLoadQueryData.finalQuery(), toLoadQueryData.totalizersQuery());
+        	loadedQueryData = oracleRepository.findDataByQuery(finalQuery, totalizersQuery);
         } else {
     		throw new CannotConnectToDataBaseException(NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE);
         }
@@ -94,23 +93,23 @@ public class DataBaseDataController {
     }
     
     @PostMapping("analysis")
-    public double getQueryAnalysis(@RequestBody @Valid QueryData queryData) throws SQLException {
+    public double getQueryAnalysis(@RequestBody @Valid QueryData queryData) throws SQLException, IOException {
     	int actualTime = 0;
     	
     	if (dataBaseType.equals(MYSQL)) {
-    		String finalQueryAnalysis = SqlGenerator.generateFinalQueryAnalysisFromMySQLDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.tablesPairs());
+    		String finalQueryAnalysis = SqlGenerator.generateFinalQueryAnalysisFromMySQLDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
         	String totalizersQueryAnalysis = null;
         	
         	if (!queryData.totalizers().isEmpty()) {
-        		totalizersQueryAnalysis = SqlGenerator.generateTotalizersQueryAnalysisFromMySQLDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.tablesPairs());
+        		totalizersQueryAnalysis = SqlGenerator.generateTotalizersQueryAnalysisFromMySQLDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
         	}
         	actualTime = mySqlRepository.getActualTimeFromQueriesAnalysisFromDataBase(finalQueryAnalysis, totalizersQueryAnalysis);
     	} else if (dataBaseType.equals(ORACLE)) {
-    		String[] finalQueryAnaysis = SqlGenerator.generateFinalQueryAnalysisFromOracleDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), queryData.tablesPairs());
+    		String[] finalQueryAnaysis = SqlGenerator.generateFinalQueryAnalysisFromOracleDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
     		String[] totalizersQueryAnalysis = null;
     		
     		if (!queryData.totalizers().isEmpty()) {
-        		totalizersQueryAnalysis = SqlGenerator.generateTotalizersQueryAnalysisFromOracleDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), queryData.tablesPairs());
+        		totalizersQueryAnalysis = SqlGenerator.generateTotalizersQueryAnalysisFromOracleDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
         	}
     		actualTime = oracleRepository.getActualTimeFromQueriesAnalysisFromDataBase(finalQueryAnaysis, totalizersQueryAnalysis);
     	} else {
@@ -197,7 +196,7 @@ public class DataBaseDataController {
         	fileWriter.close();
         	ArrayList<String> tables = new ArrayList<>();
         	for (RelationshipData relationship : relationships) {
-        		tables.add(relationship.tables());
+        		tables.add(relationship.tablesPair());
         	}
         	fileWriter = new FileWriter(resource.getFile());
         	fileWriter.write(objectMapper.writeValueAsString(tables));
@@ -220,7 +219,7 @@ public class DataBaseDataController {
     	
     	for (String tablesPair : tablesPairs) {
     		for (RelationshipData tablesPairAndJoin : relationshipData) {
-    			if (tablesPair.equals(tablesPairAndJoin.tables())) {
+    			if (tablesPair.equals(tablesPairAndJoin.tablesPair())) {
     				joins.add(tablesPairAndJoin.join());
     			}
     		}
