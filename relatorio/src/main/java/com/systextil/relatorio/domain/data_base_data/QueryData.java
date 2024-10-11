@@ -13,7 +13,7 @@ record QueryData(
     @NotBlank
     String table,
     @NotEmpty
-    List<String> columns,
+    List<QueryDataColumn> columns,
     List<String> conditions,
     String orderBy,
     List<String> tablesPairs,

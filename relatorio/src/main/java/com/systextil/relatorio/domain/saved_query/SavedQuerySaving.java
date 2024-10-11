@@ -6,11 +6,11 @@ import com.systextil.relatorio.domain.ColumnAndTotalizer;
 
 record SavedQuerySaving(
 	String queryName,
-	String mainTable,
-	String conditions,
+	String table,
 	String orderBy,
 	String pdfTitle,
-	List<String> columns,
-	List<String> joins,
+	List<SavedQueryColumnSavingListingAndUpdating> columns,
+	List<String> conditions,
+	List<String> tablesPairs,
 	List<ColumnAndTotalizer> totalizers
 ) {}

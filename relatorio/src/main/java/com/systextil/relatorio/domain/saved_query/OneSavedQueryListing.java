@@ -8,24 +8,27 @@ import com.systextil.relatorio.domain.TotalizerTypes;
 
 record OneSavedQueryListing(
 	String mainTable,
-	String conditions,
 	String orderBy,
 	String pdfTitle,
 	byte[] pdfImage,
 	List<String> columns,
-	List<String> joins,
+	List<String> conditions,
+	List<String> tablesPairs,
 	List<ColumnAndTotalizer> totalizers
 ) {
 	OneSavedQueryListing(SavedQuery savedQuery) {
 		this(
 			savedQuery.getMainTable(),
-			savedQuery.getConditions(),
 			savedQuery.getOrderBy(),
 			savedQuery.getPdfTitle(),
 			savedQuery.getPdfImage(),
 			savedQuery.getSavedQueryColumns()
 				.stream()
 				.map(c -> c.getColumnName())
+				.toList(),
+			savedQuery.getSavedQueryConditions()
+				.stream()
+				.map(c -> c.getConditionName())
 				.toList(),
 			savedQuery.getSavedQueryJoins()
 				.stream()

@@ -13,14 +13,18 @@ public class SavedQueryColumn {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String columnName;
+	private String columnNickName;
+	private String columnType;
 	
 	@ManyToOne
 	private SavedQuery savedQuery;
 
 	public SavedQueryColumn() {}
 	
-	public SavedQueryColumn(String column) {
-		this.columnName = column;
+	public SavedQueryColumn(SavedQueryColumnSavingListingAndUpdating saving) {
+		this.columnName = saving.name();
+		this.columnNickName = saving.nickName();
+		this.columnType = saving.type();
 	}
 	
 	public Long getId() {
@@ -29,6 +33,14 @@ public class SavedQueryColumn {
 
 	public String getColumnName() {
 		return columnName;
+	}
+	
+	public String getColumnNickName() {
+		return columnNickName;
+	}
+
+	public String getColumnType() {
+		return columnType;
 	}
 
 	public SavedQuery getSavedQuery() {

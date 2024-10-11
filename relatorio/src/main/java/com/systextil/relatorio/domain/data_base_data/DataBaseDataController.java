@@ -59,8 +59,8 @@ public class DataBaseDataController {
     
     @PostMapping
     public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws SQLException, ParseException, IOException {
-        String finalQuery = SqlGenerator.generateFinalQuery(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
-
+        String finalQuery = SqlGenerator.generateFinalQuery(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
+        
         if (dataBaseType.equals(ORACLE)) {
         	finalQuery = SqlWithDateConverter.toSqlWithDdMMMyyyy(finalQuery);
         }
@@ -97,7 +97,7 @@ public class DataBaseDataController {
     	int actualTime = 0;
     	
     	if (dataBaseType.equals(MYSQL)) {
-    		String finalQueryAnalysis = SqlGenerator.generateFinalQueryAnalysisFromMySQLDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
+    		String finalQueryAnalysis = SqlGenerator.generateFinalQueryAnalysisFromMySQLDataBase(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
         	String totalizersQueryAnalysis = null;
         	
         	if (!queryData.totalizers().isEmpty()) {
@@ -105,7 +105,7 @@ public class DataBaseDataController {
         	}
         	actualTime = mySqlRepository.getActualTimeFromQueriesAnalysisFromDataBase(finalQueryAnalysis, totalizersQueryAnalysis);
     	} else if (dataBaseType.equals(ORACLE)) {
-    		String[] finalQueryAnaysis = SqlGenerator.generateFinalQueryAnalysisFromOracleDataBase(queryData.table(), queryData.columns(), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
+    		String[] finalQueryAnaysis = SqlGenerator.generateFinalQueryAnalysisFromOracleDataBase(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
     		String[] totalizersQueryAnalysis = null;
     		
     		if (!queryData.totalizers().isEmpty()) {
@@ -204,6 +204,20 @@ public class DataBaseDataController {
         } else {
         	throw new FileNotFoundException(FILE_NOT_FOUND_MESSAGE + filePath);
         }
+    }
+    
+    private List<String> joinColumnsNameAndNickName(List<QueryDataColumn> columns) {
+    	List<String> joinedColumnsNameAndNickName = new ArrayList<>();
+    	
+    	for (QueryDataColumn column : columns) {
+    		if (column.nickName() == null || column.nickName().isBlank()) {
+    			joinedColumnsNameAndNickName.add(column.name());
+    		} else {
+    			joinedColumnsNameAndNickName.add(column.name() + " AS \"" + column.nickName() + "\"");
+    		}
+    	}
+    	
+    	return joinedColumnsNameAndNickName;
     }
     
     private List<String> findJoinsByTablesPairs(List<String> tablesPairs) throws IOException {

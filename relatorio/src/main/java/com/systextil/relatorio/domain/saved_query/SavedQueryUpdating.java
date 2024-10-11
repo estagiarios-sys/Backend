@@ -6,10 +6,10 @@ import com.systextil.relatorio.domain.ColumnAndTotalizer;
 
 record SavedQueryUpdating(
 	String mainTable,
-	String conditions,
 	String orderBy,
 	String pdfTitle,
-	List<String> columns,
-	List<String> joins,
+	List<SavedQueryColumnSavingListingAndUpdating> columns,
+	List<String> conditions,
+	List<String> tablesPairs,
 	List<ColumnAndTotalizer> totalizers
 ) {}
