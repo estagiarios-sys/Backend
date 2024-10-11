@@ -22,6 +22,8 @@ public class SavedQueryTotalizer {
 	
 	@ManyToOne
 	private SavedQuery savedQuery;
+	
+	public SavedQueryTotalizer() {}
 
 	public SavedQueryTotalizer(ColumnAndTotalizer totalizer) {
 		for (Map.Entry<String, TotalizerTypes> columnAndTotalizer : totalizer.totalizer().entrySet()) {

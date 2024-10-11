@@ -17,6 +17,8 @@ public class SavedQueryJoin {
 	@ManyToOne
 	private SavedQuery savedQuery;
 
+	public SavedQueryJoin() {}
+	
 	public SavedQueryJoin(String join) {
 		this.joinName = join;
 	}
