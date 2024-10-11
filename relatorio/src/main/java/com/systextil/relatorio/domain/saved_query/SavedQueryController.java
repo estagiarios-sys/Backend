@@ -34,8 +34,8 @@ public class SavedQueryController {
     }
 
     @PostMapping(value = "/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<SavedQuery> saveSQL(
-            @RequestParam SavedQuerySaving savedQuerySaving,
+    public ResponseEntity<SavedQuery> saveQuery(
+            @RequestParam String stringSavedQuerySaving,
             @RequestParam(required = false, value = "imgPDF") MultipartFile file
     ) throws IOException {
     	byte[] imgPDF;
@@ -45,6 +45,8 @@ public class SavedQueryController {
     	} catch (NullPointerException exception) {
     		imgPDF = null;
     	}
+    	objectMapper = new ObjectMapper();
+    	SavedQuerySaving savedQuerySaving = objectMapper.readValue(stringSavedQuerySaving, SavedQuerySaving.class);
     	SavedQuery savedQuery = new SavedQuery(savedQuerySaving, imgPDF);
     	repository.save(savedQuery);
 
@@ -53,7 +55,7 @@ public class SavedQueryController {
 
     @PutMapping(value = "/update/saved-query/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Transactional
-    public ResponseEntity<Void> updateSQL(
+    public ResponseEntity<Void> updateQuery(
     		@RequestParam String stringSavedQueryUpdating,
             @RequestParam(required = false, value = "imgPDF") MultipartFile file,
             @PathVariable Long id
@@ -76,7 +78,7 @@ public class SavedQueryController {
     }
     
     @DeleteMapping("delete/{id}")
-    public ResponseEntity<Void> deleteSQL(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteQuery(@PathVariable Long id) {
     	repository.deleteById(id);
     	
     	return ResponseEntity.noContent().build();

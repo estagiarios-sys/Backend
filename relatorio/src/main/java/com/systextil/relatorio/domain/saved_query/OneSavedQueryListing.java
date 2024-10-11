@@ -7,11 +7,11 @@ import com.systextil.relatorio.domain.ColumnAndTotalizer;
 import com.systextil.relatorio.domain.TotalizerTypes;
 
 record OneSavedQueryListing(
-	String mainTable,
+	String table,
 	String orderBy,
 	String pdfTitle,
 	byte[] pdfImage,
-	List<String> columns,
+	List<SavedQueryColumnSavingListingAndUpdating> columns,
 	List<String> conditions,
 	List<String> tablesPairs,
 	List<ColumnAndTotalizer> totalizers
@@ -24,7 +24,7 @@ record OneSavedQueryListing(
 			savedQuery.getPdfImage(),
 			savedQuery.getSavedQueryColumns()
 				.stream()
-				.map(c -> c.getColumnName())
+				.map(SavedQueryColumnSavingListingAndUpdating::new)
 				.toList(),
 			savedQuery.getSavedQueryConditions()
 				.stream()
