@@ -2,8 +2,8 @@ package com.systextil.relatorio.domain.saved_query;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import com.systextil.relatorio.domain.ColumnAndTotalizer;
 import com.systextil.relatorio.domain.TotalizerTypes;
 
 record OneSavedQueryListing(
@@ -14,7 +14,7 @@ record OneSavedQueryListing(
 	List<SavedQueryColumnSavingListingAndUpdating> columns,
 	List<String> conditions,
 	List<String> tablesPairs,
-	List<ColumnAndTotalizer> totalizers
+	Map<String, TotalizerTypes> totalizers
 ) {
 	OneSavedQueryListing(SavedQuery savedQuery) {
 		this(
@@ -36,8 +36,7 @@ record OneSavedQueryListing(
 				.toList(),
 			savedQuery.getSavedQueryTotalizers()
 				.stream()
-				.map(t -> new ColumnAndTotalizer(Map.of(t.getTotalizerColumn(), TotalizerTypes.toTotalizerType(t.getTotalizerType()))))
-				.toList()
+				.collect(Collectors.toMap(t -> t.getTotalizerColumn(), t -> TotalizerTypes.toTotalizerType(t.getTotalizerType())))
 		);
 	}
 }

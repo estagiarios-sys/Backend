@@ -1,10 +1,5 @@
 package com.systextil.relatorio.domain.saved_query;
 
-import java.util.Map;
-
-import com.systextil.relatorio.domain.ColumnAndTotalizer;
-import com.systextil.relatorio.domain.TotalizerTypes;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,11 +20,9 @@ public class SavedQueryTotalizer {
 	
 	public SavedQueryTotalizer() {}
 
-	public SavedQueryTotalizer(ColumnAndTotalizer totalizer) {
-		for (Map.Entry<String, TotalizerTypes> columnAndTotalizer : totalizer.totalizer().entrySet()) {
-			this.totalizerColumn = columnAndTotalizer.getKey();
-			this.totalizerType = columnAndTotalizer.getValue().toString();
-		}
+	public SavedQueryTotalizer(String column, String type) {
+		this.totalizerColumn = column;
+		this.totalizerType = type;
 	}
 	
 	public Long getId() {

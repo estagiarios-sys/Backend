@@ -1,15 +1,16 @@
 package com.systextil.relatorio.domain.saved_query;
 
 import java.util.List;
+import java.util.Map;
 
-import com.systextil.relatorio.domain.ColumnAndTotalizer;
+import com.systextil.relatorio.domain.TotalizerTypes;
 
 record SavedQueryUpdating(
-	String mainTable,
+	String table,
 	String orderBy,
 	String pdfTitle,
 	List<SavedQueryColumnSavingListingAndUpdating> columns,
 	List<String> conditions,
 	List<String> tablesPairs,
-	List<ColumnAndTotalizer> totalizers
+	Map<String, TotalizerTypes> totalizers
 ) {}

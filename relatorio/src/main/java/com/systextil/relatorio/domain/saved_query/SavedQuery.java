@@ -1,6 +1,10 @@
 package com.systextil.relatorio.domain.saved_query;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import com.systextil.relatorio.domain.TotalizerTypes;
 
 import jakarta.persistence.*;
 
@@ -16,23 +20,19 @@ public class SavedQuery {
     private String pdfTitle;
     private byte[] pdfImage;
     
-    @OneToMany(cascade = CascadeType.PERSIST,
-    		orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "saved_query_id")
     private List<SavedQueryColumn> savedQueryColumns;
     
-    @OneToMany(cascade = CascadeType.PERSIST,
-    		orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "saved_query_id")
     private List<SavedQueryCondition> savedQueryConditions; 
     
-    @OneToMany(cascade = CascadeType.PERSIST,
-    		orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "saved_query_id")
     private List<SavedQueryJoin> savedQueryJoins;
     
-    @OneToMany(cascade = CascadeType.PERSIST,
-    		orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "saved_query_id")
     private List<SavedQueryTotalizer> savedQueryTotalizers;
 
@@ -57,14 +57,17 @@ public class SavedQuery {
     			.stream()
     			.map(SavedQueryJoin::new)
     			.toList();
-    	this.savedQueryTotalizers = saving.totalizers()
-    			.stream()
-    			.map(SavedQueryTotalizer::new)
-    			.toList();
+    	
+    	List<SavedQueryTotalizer> totalizers = new ArrayList<>();
+    	for (Map.Entry<String, TotalizerTypes> totalizer : saving.totalizers().entrySet()) {
+    		totalizers.add(new SavedQueryTotalizer(totalizer.getKey(), totalizer.getValue().toString()));
+    	}
+    	
+    	this.savedQueryTotalizers = totalizers;
     }
     
     public void updateData(SavedQueryUpdating updating, byte[] pdfImage) {
-    	this.mainTable = updating.mainTable();
+    	this.mainTable = updating.table();
     	this.orderBy = updating.orderBy();
     	this.pdfTitle = updating.pdfTitle();
     	this.pdfImage = pdfImage;
@@ -80,10 +83,13 @@ public class SavedQuery {
     			.stream()
     			.map(SavedQueryJoin::new)
     			.toList();
-    	this.savedQueryTotalizers = updating.totalizers()
-    			.stream()
-    			.map(SavedQueryTotalizer::new)
-    			.toList();
+    	
+    	List<SavedQueryTotalizer> totalizers = new ArrayList<>();
+    	for (Map.Entry<String, TotalizerTypes> totalizer : updating.totalizers().entrySet()) {
+    		totalizers.add(new SavedQueryTotalizer(totalizer.getKey(), totalizer.getValue().toString()));
+    	}
+    	
+    	this.savedQueryTotalizers = totalizers;
     }
 
 	public Long getId() {
