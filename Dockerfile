@@ -1,6 +1,6 @@
 FROM openjdk:21-jdk-slim
 
-ARG JAR_FILE=target/*.jar
+ARG JAR_FILE=relatorio/target/*.jar
 
 COPY ${JAR_FILE} RelatorioApplication.jar
 
