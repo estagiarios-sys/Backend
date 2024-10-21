@@ -27,7 +27,7 @@ class SqlGenerator {
             query = query.concat(String.join(" AND ", conditions));
         }
         
-        if (!orderBy.isBlank()) {
+        if (orderBy != null && !orderBy.isBlank()) {
             query = query.concat(" ORDER BY ");
             query = query.concat(orderBy);
         }
