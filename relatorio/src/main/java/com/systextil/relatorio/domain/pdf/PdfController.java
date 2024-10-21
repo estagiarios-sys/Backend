@@ -60,7 +60,7 @@ public class PdfController {
     @PutMapping("set-data")
     public ResponseEntity<Pdf> generatePdf(@RequestBody PdfSaving pdfSaving) throws IOException {
     	Pdf noDataPdf = repository.getReferenceById(pdfSaving.pdfId());
-    	noDataPdf.update(StatusTypes.GERANDO_PDF);
+    	noDataPdf.update(PdfStatus.GERANDO_PDF);
     	repository.save(noDataPdf);
     	MicroserviceRequest microserviceRequest = new MicroserviceRequest(pdfSaving.fullTableHTML(), noDataPdf.getPdfTitle(), pdfSaving.imgPDF());
     	RestTemplate restTemplate = new RestTemplate();
@@ -80,7 +80,7 @@ public class PdfController {
         	noDataPdf.update(generatedPdfTime, filePath);
         	repository.save(noDataPdf);
     	} catch (HttpClientErrorException exception) {
-    		noDataPdf.update(StatusTypes.ERRO);
+    		noDataPdf.update(PdfStatus.ERRO);
     		repository.save(noDataPdf);
     		throw new HttpClientErrorException(exception.getStatusCode(), exception.getLocalizedMessage());
     	}

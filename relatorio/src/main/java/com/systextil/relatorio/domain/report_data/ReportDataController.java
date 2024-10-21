@@ -63,7 +63,7 @@ public class ReportDataController {
     		throw new CannotConnectToDataBaseException(NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE);
         }
         
-        TreatedReportData treatedLoadedQueryData = ReportDataTreater.treatLoadedQueryData(loadedQueryData, queryData.totalizers());
+        TreatedReportData treatedLoadedQueryData = ReportDataService.treatReportData(loadedQueryData, queryData.totalizers());
         ArrayList<String> columnsNameOrNickName = treatedLoadedQueryData.columnsNameOrNickName();
         ArrayList<Object[]> foundObjects = treatedLoadedQueryData.foundObjects();
         Map<String, String> columnsAndTotalizersResult = treatedLoadedQueryData.columnsAndTotalizersResult();

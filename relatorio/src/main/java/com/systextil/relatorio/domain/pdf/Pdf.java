@@ -27,16 +27,16 @@ public class Pdf {
 		this.requestTime = requestTime;
 		this.generatedPdfTime = null;
 		this.path = null;
-		this.status = StatusTypes.BUSCANDO_DADOS.toString();
+		this.status = PdfStatus.BUSCANDO_DADOS.toString();
 	}
 	
 	public void update(LocalDateTime generatedPdfTime, String path) {
 		this.generatedPdfTime = generatedPdfTime;
 		this.path = path;
-		this.status = StatusTypes.CONCLUIDO.toString();
+		this.status = PdfStatus.CONCLUIDO.toString();
 	}
 	
-	public void update(StatusTypes status) {
+	public void update(PdfStatus status) {
 		this.status = status.toString();
 	}
 

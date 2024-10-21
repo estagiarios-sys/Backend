@@ -6,31 +6,31 @@ import java.util.Map;
 
 import com.systextil.relatorio.domain.Totalizer;
 
-class ReportDataTreater {
+class ReportDataService {
 	
-	private ReportDataTreater() {
+	private ReportDataService() {
 		throw new IllegalStateException("Utility class");
 	}
 
-	static TreatedReportData treatLoadedQueryData(ReportData loadedQueryData, Map<String, Totalizer> totalizers) {
-    	ArrayList<String> columnsNameOrNickName = columnsNameAndNickNameToColumnsNameOrNickName(loadedQueryData.columnsNameAndNickName());
+	static TreatedReportData treatReportData(ReportData reportData, Map<String, Totalizer> totalizers) {
+    	ArrayList<String> columnsNameOrNickName = columnsNameAndNickNameToColumnsNameOrNickName(reportData.columnsNameAndNickName());
     	Map<String, String> columnsAndTotalizersResult = null;
     	
     	if (totalizers != null) {
-    		columnsAndTotalizersResult = joinColumnsAndTotalizersResult(loadedQueryData, totalizers);
+    		columnsAndTotalizersResult = joinColumnsAndTotalizersResult(reportData, totalizers);
     	}
     	
-    	return new TreatedReportData(columnsNameOrNickName, loadedQueryData.foundObjects(), columnsAndTotalizersResult);
+    	return new TreatedReportData(columnsNameOrNickName, reportData.foundObjects(), columnsAndTotalizersResult);
     }
     
-    private static Map<String, String> joinColumnsAndTotalizersResult(ReportData loadedQueryData, Map<String, Totalizer> totalizers) {
+    private static Map<String, String> joinColumnsAndTotalizersResult(ReportData reportData, Map<String, Totalizer> totalizers) {
     	int totalizersResultsCounter = 0;
         Map<String, String> columnsAndTotalizersResult = new HashMap<>();
         
         for (Map.Entry<String, Totalizer> totalizer : totalizers.entrySet()) {
         	String columnsAndTotalizersColumn = null;
         	
-        	for (Map.Entry<String, String> columnNameAndNickName : loadedQueryData.columnsNameAndNickName().entrySet()) {
+        	for (Map.Entry<String, String> columnNameAndNickName : reportData.columnsNameAndNickName().entrySet()) {
         		
         		if (totalizer.getKey().equalsIgnoreCase(columnNameAndNickName.getKey())) {
         			if (columnNameAndNickName.getValue() != null) {
@@ -40,7 +40,7 @@ class ReportDataTreater {
         			}
         		}
         	}
-        	columnsAndTotalizersResult.put(columnsAndTotalizersColumn, totalizer.getValue().toPortuguese() + ": " + loadedQueryData.totalizersResult().get(totalizersResultsCounter));
+        	columnsAndTotalizersResult.put(columnsAndTotalizersColumn, totalizer.getValue().toPortuguese() + ": " + reportData.totalizersResult().get(totalizersResultsCounter));
         	totalizersResultsCounter++;
         }
         

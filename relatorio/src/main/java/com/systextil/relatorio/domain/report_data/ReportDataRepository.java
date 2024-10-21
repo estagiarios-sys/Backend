@@ -8,9 +8,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 class ReportDataRepository {
-
-    private PreparedStatement command;
-    private ResultSet data;
     
     ReportData findDataByQuery(Connection idConnection, String finalQuery, String totalizersQuery) throws SQLException {
     	ReportData loadedQueryData = findDataByFinalQuery(idConnection, finalQuery);
@@ -37,46 +34,47 @@ class ReportDataRepository {
             tableNames.add(tableName);
             columnNames.add(columnName);
         }
-        command = idConnection.prepareStatement(sql);
-        data = command.executeQuery();
-        ResultSetMetaData metaData = data.getMetaData();
-        int columnsNumber = metaData.getColumnCount();
-
-        for (int i = 1; i <= columnsNumber; i++) {
-            String columnNickName = metaData.getColumnLabel(i);
-            String columnName = columnNames.get(i-1);
-
-            if (columnNickName.equalsIgnoreCase(columnName)) {
-                columnsNameAndNickName.put(tableNames.get(i-1) + "." + columnName, null);
-            } else {
-                columnsNameAndNickName.put(tableNames.get(i-1) + "." + columnName, columnNickName);
-            }
-        }
-
-        while (data.next()) {
-            Object[] object = new Object[columnsNumber];
+        try(PreparedStatement command = idConnection.prepareStatement(sql)) {
+        	ResultSet data = command.executeQuery();
+            ResultSetMetaData metaData = data.getMetaData();
+            int columnsNumber = metaData.getColumnCount();
 
             for (int i = 1; i <= columnsNumber; i++) {
-                object[i - 1] = data.getString(i);
+                String columnNickName = metaData.getColumnLabel(i);
+                String columnName = columnNames.get(i-1);
+
+                if (columnNickName.equalsIgnoreCase(columnName)) {
+                    columnsNameAndNickName.put(tableNames.get(i-1) + "." + columnName, null);
+                } else {
+                    columnsNameAndNickName.put(tableNames.get(i-1) + "." + columnName, columnNickName);
+                }
             }
-            listObjects.add(object);
+
+            while (data.next()) {
+                Object[] object = new Object[columnsNumber];
+
+                for (int i = 1; i <= columnsNumber; i++) {
+                    object[i - 1] = data.getString(i);
+                }
+                listObjects.add(object);
+            }
         }
-        
         return new ReportData(columnsNameAndNickName, listObjects, null);
     }
     
     private ArrayList<String> findDataByTotalizersQuery(Connection idConnection, String totalizersQuery) throws SQLException {
     	ArrayList<String> totalizersResults = new ArrayList<>();
-    	command = idConnection.prepareStatement(totalizersQuery);
-    	data = command.executeQuery();
-    	ResultSetMetaData metaData = data.getMetaData();
-    	int columnsNumber = metaData.getColumnCount();
-    	data.next();
     	
-    	for (int i = 1; i <= columnsNumber; i++) {
-    		totalizersResults.add(String.valueOf(data.getInt(i)));
-    	}
-    	    	
+    	try(PreparedStatement command = idConnection.prepareStatement(totalizersQuery)) {
+    		ResultSet data = command.executeQuery();
+        	ResultSetMetaData metaData = data.getMetaData();
+        	int columnsNumber = metaData.getColumnCount();
+        	data.next();
+        	
+        	for (int i = 1; i <= columnsNumber; i++) {
+        		totalizersResults.add(String.valueOf(data.getInt(i)));
+        	}
+    	}	
     	return totalizersResults;
     }
 }
