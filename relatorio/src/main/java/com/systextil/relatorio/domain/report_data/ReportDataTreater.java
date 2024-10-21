@@ -1,21 +1,18 @@
-package com.systextil.relatorio.domain.data_base_data;
+package com.systextil.relatorio.domain.report_data;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import com.systextil.relatorio.domain.ColumnAndTotalizer;
-import com.systextil.relatorio.domain.TotalizerTypes;
+import com.systextil.relatorio.domain.Totalizer;
 
-class LoadedQueryDataTreater {
+class ReportDataTreater {
 	
-	private LoadedQueryDataTreater() {
+	private ReportDataTreater() {
 		throw new IllegalStateException("Utility class");
 	}
 
-	static TreatedLoadedQueryData treatLoadedQueryData(LoadedQueryData loadedQueryData, List<ColumnAndTotalizer> totalizers) {
+	static TreatedReportData treatLoadedQueryData(ReportData loadedQueryData, Map<String, Totalizer> totalizers) {
     	ArrayList<String> columnsNameOrNickName = columnsNameAndNickNameToColumnsNameOrNickName(loadedQueryData.columnsNameAndNickName());
     	Map<String, String> columnsAndTotalizersResult = null;
     	
@@ -23,20 +20,19 @@ class LoadedQueryDataTreater {
     		columnsAndTotalizersResult = joinColumnsAndTotalizersResult(loadedQueryData, totalizers);
     	}
     	
-    	return new TreatedLoadedQueryData(columnsNameOrNickName, loadedQueryData.foundObjects(), columnsAndTotalizersResult);
+    	return new TreatedReportData(columnsNameOrNickName, loadedQueryData.foundObjects(), columnsAndTotalizersResult);
     }
     
-    private static Map<String, String> joinColumnsAndTotalizersResult(LoadedQueryData loadedQueryData, List<ColumnAndTotalizer> totalizers) {
+    private static Map<String, String> joinColumnsAndTotalizersResult(ReportData loadedQueryData, Map<String, Totalizer> totalizers) {
     	int totalizersResultsCounter = 0;
         Map<String, String> columnsAndTotalizersResult = new HashMap<>();
         
-        for (ColumnAndTotalizer columnAndTotalizer : totalizers) {
-        	Entry<String, TotalizerTypes> totalizerAndColumn = columnAndTotalizer.totalizer().entrySet().iterator().next();
+        for (Map.Entry<String, Totalizer> totalizer : totalizers.entrySet()) {
         	String columnsAndTotalizersColumn = null;
         	
         	for (Map.Entry<String, String> columnNameAndNickName : loadedQueryData.columnsNameAndNickName().entrySet()) {
         		
-        		if (totalizerAndColumn.getKey().equalsIgnoreCase(columnNameAndNickName.getKey())) {
+        		if (totalizer.getKey().equalsIgnoreCase(columnNameAndNickName.getKey())) {
         			if (columnNameAndNickName.getValue() != null) {
         				columnsAndTotalizersColumn = columnNameAndNickName.getValue();
         			} else {
@@ -44,7 +40,7 @@ class LoadedQueryDataTreater {
         			}
         		}
         	}
-        	columnsAndTotalizersResult.put(columnsAndTotalizersColumn, totalizerAndColumn.getValue().toPortuguese() + ": " + loadedQueryData.totalizersResult().get(totalizersResultsCounter));
+        	columnsAndTotalizersResult.put(columnsAndTotalizersColumn, totalizer.getValue().toPortuguese() + ": " + loadedQueryData.totalizersResult().get(totalizersResultsCounter));
         	totalizersResultsCounter++;
         }
         

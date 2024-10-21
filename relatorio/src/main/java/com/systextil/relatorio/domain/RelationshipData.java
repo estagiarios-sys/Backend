@@ -1,7 +1,7 @@
-package com.systextil.relatorio.domain.data_base_data;
+package com.systextil.relatorio.domain;
 
 /** Record que carrega as relações das tabelas no banco */
-record RelationshipData(
+public record RelationshipData(
 		String tablesPair,
 		String join
 ) {}

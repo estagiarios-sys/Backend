@@ -3,7 +3,7 @@ package com.systextil.relatorio.domain.saved_query;
 import java.util.List;
 import java.util.Map;
 
-import com.systextil.relatorio.domain.TotalizerTypes;
+import com.systextil.relatorio.domain.Totalizer;
 
 record SavedQuerySaving(
 	String queryName,
@@ -13,5 +13,5 @@ record SavedQuerySaving(
 	List<SavedQueryColumnSavingListingAndUpdating> columns,
 	List<String> conditions,
 	List<String> tablesPairs,
-	Map<String, TotalizerTypes> totalizers
+	Map<String, Totalizer> totalizers
 ) {}

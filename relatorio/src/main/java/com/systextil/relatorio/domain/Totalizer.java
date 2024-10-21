@@ -1,6 +1,6 @@
 package com.systextil.relatorio.domain;
 
-public enum TotalizerTypes {
+public enum Totalizer {
 	
 	AVG, COUNT, MAX, MIN, SUM;
 	
@@ -21,22 +21,22 @@ public enum TotalizerTypes {
 		}
 	}
 	
-	public static TotalizerTypes toTotalizerType(String totalizerString) {
+	public static Totalizer toTotalizerType(String totalizerString) {
 		switch (totalizerString) {
 			case "AVG": {
-				return TotalizerTypes.AVG;
+				return Totalizer.AVG;
 			}
 			case "COUNT": {
-				return TotalizerTypes.COUNT;
+				return Totalizer.COUNT;
 			}
 			case "MAX": {
-				return TotalizerTypes.MAX;
+				return Totalizer.MAX;
 			}
 			case "MIN": {
-				return TotalizerTypes.MIN;
+				return Totalizer.MIN;
 			}
 			case "SUM": {
-				return TotalizerTypes.SUM;
+				return Totalizer.SUM;
 			}
 			default:
 				throw new IllegalArgumentException("Unexpected value: " + totalizerString);

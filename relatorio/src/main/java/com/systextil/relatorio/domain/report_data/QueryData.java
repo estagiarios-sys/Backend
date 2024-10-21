@@ -1,4 +1,4 @@
-package com.systextil.relatorio.domain.data_base_data;
+package com.systextil.relatorio.domain.report_data;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 import java.util.Map;
 
-import com.systextil.relatorio.domain.TotalizerTypes;
+import com.systextil.relatorio.domain.Totalizer;
 
 /** Record com os dados necessários para a geração do SQL */
 record QueryData(
@@ -17,5 +17,5 @@ record QueryData(
     List<String> conditions,
     String orderBy,
     List<String> tablesPairs,
-    Map<String, TotalizerTypes> totalizers
+    Map<String, Totalizer> totalizers
 ) {}

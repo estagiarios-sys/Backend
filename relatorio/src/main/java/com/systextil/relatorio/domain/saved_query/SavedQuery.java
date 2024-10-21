@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.systextil.relatorio.domain.TotalizerTypes;
+import com.systextil.relatorio.domain.Totalizer;
 
 import jakarta.persistence.*;
 
@@ -59,7 +59,7 @@ public class SavedQuery {
     			.toList();
     	
     	List<SavedQueryTotalizer> totalizers = new ArrayList<>();
-    	for (Map.Entry<String, TotalizerTypes> totalizer : saving.totalizers().entrySet()) {
+    	for (Map.Entry<String, Totalizer> totalizer : saving.totalizers().entrySet()) {
     		totalizers.add(new SavedQueryTotalizer(totalizer.getKey(), totalizer.getValue().toString()));
     	}
     	
@@ -85,7 +85,7 @@ public class SavedQuery {
     			.toList();
     	
     	List<SavedQueryTotalizer> totalizers = new ArrayList<>();
-    	for (Map.Entry<String, TotalizerTypes> totalizer : updating.totalizers().entrySet()) {
+    	for (Map.Entry<String, Totalizer> totalizer : updating.totalizers().entrySet()) {
     		totalizers.add(new SavedQueryTotalizer(totalizer.getKey(), totalizer.getValue().toString()));
     	}
     	

@@ -1,9 +1,9 @@
-package com.systextil.relatorio.domain.data_base_data;
+package com.systextil.relatorio.domain.report_data;
 
 import java.util.ArrayList;
 import java.util.Map;
 
-record TreatedLoadedQueryData(
+record TreatedReportData(
 		ArrayList<String> columnsNameOrNickName,
 		ArrayList<Object[]> foundObjects,
 		Map<String, String> columnsAndTotalizersResult
