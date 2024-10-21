@@ -28,3 +28,31 @@ Obs: as rotas estão configuradas para que o projeto seja aberto na pasta "relat
 - `Gerenciador de dependências`: Maven
 - `IDE`: Intellij
 - `Banco de dados`: MySQL e Oracle
+
+# 🐾 Caminhos / Endpoints
+
+- report-data
+  - / POST
+  - /analyze POST
+
+- tables
+  - / GET
+  - / PUT
+
+- relationships
+  - / GET
+  - / PUT
+
+- saved-query
+  - / GET
+  - /{id} GET
+  - / POST
+  - /{id} PUT
+  - /{id} DELETE
+
+- pdf
+  - /create-empty POST
+  - /set-data PUT
+  - /preview POST
+  - / GET
+  - /{id} GET
