@@ -6,4 +6,4 @@ COPY ${JAR_FILE} RelatorioApplication.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+ENTRYPOINT ["java", "-jar", "/RelatorioApplication.jar"]
