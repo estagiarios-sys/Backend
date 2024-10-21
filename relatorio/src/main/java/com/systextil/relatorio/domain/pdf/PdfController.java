@@ -22,7 +22,7 @@ import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 
 @RestController
-@RequestMapping("/pdf")
+@RequestMapping("pdf")
 public class PdfController {
 
 	private PdfRepository repository;
@@ -34,7 +34,7 @@ public class PdfController {
 	}
 	
 	@Transactional
-	@PostMapping("/create-empty")
+	@PostMapping("create-empty")
 	public ResponseEntity<Long> createNoDataPdf(@RequestBody @Nullable String pdfTitle) throws URISyntaxException, IOException {
 		LocalDateTime requestTime = LocalDateTime.now();
 
@@ -57,7 +57,7 @@ public class PdfController {
     	return ResponseEntity.created(new URI("")).body(noDataPdfId);
 	}
 	
-    @PutMapping("/set-data")
+    @PutMapping("set-data")
     public ResponseEntity<Pdf> generatePdf(@RequestBody PdfSaving pdfSaving) throws IOException {
     	Pdf noDataPdf = repository.getReferenceById(pdfSaving.pdfId());
     	noDataPdf.update(StatusTypes.GERANDO_PDF);
@@ -88,7 +88,7 @@ public class PdfController {
     	return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/preview")
+    @PostMapping("preview")
     public ResponseEntity<byte[]> previewPdf(@RequestBody MicroserviceRequest microserviceRequest) {
     	RestTemplate restTemplate = new RestTemplate();
 
@@ -111,14 +111,14 @@ public class PdfController {
     			.body(response.getBody());
     }
     
-    @GetMapping("/list")
+    @GetMapping
     public ResponseEntity<List<PdfListing>> listPdfs() {
     	List<PdfListing> pdfsList =  repository.findAttributesForList();
     	
     	return ResponseEntity.ok().body(pdfsList);
     }
     
-    @GetMapping("/get/{id}")
+    @GetMapping("{id}")
     public ResponseEntity<byte[]> getPdfBody(@PathVariable Long id) throws IOException {
         String pdfPath = repository.findPathById(id);
         Path filePath = Paths.get(pdfPath);

@@ -14,6 +14,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
+@RequestMapping("saved-query")
 public class SavedQueryController {
 
     private final SavedQueryRepository repository;
@@ -23,17 +24,17 @@ public class SavedQueryController {
     	this.repository = savedQueryRepository;
     }
 
-    @GetMapping("list/saved-query")
+    @GetMapping
     public List<AllSavedQueriesListing> getSQL() {
         return repository.findAllForListing();
     }
     
-    @GetMapping("get/saved-query/{id}")
+    @GetMapping("{id}")
     public OneSavedQueryListing getSavedQueryById(@PathVariable Long id) {
     	return new OneSavedQueryListing(repository.getReferenceById(id));
     }
 
-    @PostMapping(value = "/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SavedQuery> saveQuery(
             @RequestParam String stringSavedQuerySaving,
             @RequestParam(required = false, value = "imgPDF") MultipartFile file
@@ -53,7 +54,7 @@ public class SavedQueryController {
     	return ResponseEntity.created(URI.create("")).body(savedQuery);
     }
 
-    @PutMapping(value = "/update/saved-query/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Transactional
     public ResponseEntity<Void> updateQuery(
     		@RequestParam String stringSavedQueryUpdating,
@@ -77,7 +78,7 @@ public class SavedQueryController {
         
     }
     
-    @DeleteMapping("delete/{id}")
+    @DeleteMapping("{id}")
     public ResponseEntity<Void> deleteQuery(@PathVariable Long id) {
     	repository.deleteById(id);
     	
