@@ -19,7 +19,6 @@ class ReportDataService {
     	if (totalizers != null) {
     		columnsAndTotalizersResult = joinColumnsAndTotalizersResult(reportData, totalizers);
     	}
-    	
     	return new TreatedReportData(columnsNameOrNickName, reportData.foundObjects(), columnsAndTotalizersResult);
     }
     
@@ -31,7 +30,6 @@ class ReportDataService {
         	String columnsAndTotalizersColumn = null;
         	
         	for (Map.Entry<String, String> columnNameAndNickName : reportData.columnsNameAndNickName().entrySet()) {
-        		
         		if (totalizer.getKey().equalsIgnoreCase(columnNameAndNickName.getKey())) {
         			if (columnNameAndNickName.getValue() != null) {
         				columnsAndTotalizersColumn = columnNameAndNickName.getValue();
@@ -43,7 +41,6 @@ class ReportDataService {
         	columnsAndTotalizersResult.put(columnsAndTotalizersColumn, totalizer.getValue().toPortuguese() + ": " + reportData.totalizersResult().get(totalizersResultsCounter));
         	totalizersResultsCounter++;
         }
-        
         return columnsAndTotalizersResult;
     }
     
@@ -51,14 +48,12 @@ class ReportDataService {
     	ArrayList<String> columnsNameOrNickName = new ArrayList<>();
     	
     	for (Map.Entry<String, String> columnNameAndNickName : columnsNameAndNickName.entrySet()) {
-        	
    			if (columnNameAndNickName.getValue() != null) {
    				columnsNameOrNickName.add(columnNameAndNickName.getValue());
    			} else {
    				columnsNameOrNickName.add(columnNameAndNickName.getKey());
     		}
     	}
-    	    	
     	return columnsNameOrNickName;
     }	
 }

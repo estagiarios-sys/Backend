@@ -45,7 +45,7 @@ public class OracleRepository extends ReportDataRepository {
 	    	explainPlanForCommand.execute();
 	    	ResultSet data = planDisplayCommand.executeQuery();
 	    	data.next();
-	    	    	
+
 	    	return data.getInt(1);
 		} catch (SQLException exception) {
 			throw new SQLException(exception.getLocalizedMessage());

@@ -46,15 +46,15 @@ public class MysqlRepository extends ReportDataRepository {
         	ResultSet data = command.executeQuery();
         	data.next();
         	String allData = data.getString(1);
-        	String firstLineData = allData.split("\n", 0)[1];
+        	String firstLineData = allData.split("\n", 0)[0];
         	Pattern pattern = Pattern.compile("actual time=(\\d+\\.\\d+)\\.\\.(\\d+\\.\\d+)");
         	Matcher matcher = pattern.matcher(firstLineData);
         	int startTime = 0;
         	int endTime = 0;
         	
         	if (matcher.find()) {
-        		startTime = Integer.parseInt(matcher.group(1));
-            	endTime = Integer.parseInt(matcher.group(2));
+        		startTime = (int) Double.parseDouble(matcher.group(1));
+            	endTime = (int) Double.parseDouble(matcher.group(2));
         	}
         	
         	return (startTime + endTime) / 2;
