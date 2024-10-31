@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 class MysqlRepositoryTest {
 
 	@Test
-	@DisplayName("getActualTimeFromQuery: Deveria retornar os dados corretamente")
+	@DisplayName("getActualTimeFromQuery")
 	void cenario1() throws SQLException, NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
 		Connection mockConnection = mock(Connection.class);
 		

@@ -2,6 +2,7 @@ package com.systextil.relatorio.domain.report_data;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.systextil.relatorio.domain.Totalizer;
@@ -13,7 +14,7 @@ class ReportDataService {
 	}
 
 	static TreatedReportData treatReportData(ReportData reportData, Map<String, Totalizer> totalizers) {
-    	ArrayList<String> columnsNameOrNickName = columnsNameAndNickNameToColumnsNameOrNickName(reportData.columnsNameAndNickName());
+    	List<String> columnsNameOrNickName = columnsNameAndNickNameToColumnsNameOrNickName(reportData.columnsNameAndNickName());
     	Map<String, String> columnsAndTotalizersResult = null;
     	
     	if (totalizers != null) {

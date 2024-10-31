@@ -64,8 +64,8 @@ public class ReportDataController {
         }
         
         TreatedReportData treatedLoadedQueryData = ReportDataService.treatReportData(loadedQueryData, queryData.totalizers());
-        ArrayList<String> columnsNameOrNickName = treatedLoadedQueryData.columnsNameOrNickName();
-        ArrayList<Object[]> foundObjects = treatedLoadedQueryData.foundObjects();
+        List<String> columnsNameOrNickName = treatedLoadedQueryData.columnsNameOrNickName();
+        List<Object[]> foundObjects = treatedLoadedQueryData.foundObjects();
         Map<String, String> columnsAndTotalizersResult = treatedLoadedQueryData.columnsAndTotalizersResult();
         
         return new Object[]{finalQuery, totalizersQuery, columnsNameOrNickName, foundObjects, columnsAndTotalizersResult};
@@ -76,19 +76,19 @@ public class ReportDataController {
     	int actualTime = 0;
     	
     	if (dataBaseType.equals(MYSQL)) {
-    		String finalQueryAnalysis = SqlGenerator.generateFinalQueryAnalysisFromMySQLDataBase(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
+    		String finalQueryAnalysis = SqlGenerator.generateFinalQueryAnalysisFromMysql(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
         	String totalizersQueryAnalysis = null;
         	
         	if (!queryData.totalizers().isEmpty()) {
-        		totalizersQueryAnalysis = SqlGenerator.generateTotalizersQueryAnalysisFromMySQLDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
+        		totalizersQueryAnalysis = SqlGenerator.generateTotalizersQueryAnalysisFromMysql(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
         	}
         	actualTime = mySqlRepository.getActualTimeFromQueries(finalQueryAnalysis, totalizersQueryAnalysis);
     	} else if (dataBaseType.equals(ORACLE)) {
-    		String[] finalQueryAnaysis = SqlGenerator.generateFinalQueryAnalysisFromOracleDataBase(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
+    		String[] finalQueryAnaysis = SqlGenerator.generateFinalQueryAnalysisFromOracle(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
     		String[] totalizersQueryAnalysis = null;
     		
     		if (!queryData.totalizers().isEmpty()) {
-        		totalizersQueryAnalysis = SqlGenerator.generateTotalizersQueryAnalysisFromOracleDataBase(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
+        		totalizersQueryAnalysis = SqlGenerator.generateTotalizersQueryAnalysisFromOracle(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
         	}
     		actualTime = oracleRepository.getActualTimeFromQueries(finalQueryAnaysis, totalizersQueryAnalysis);
     	} else {

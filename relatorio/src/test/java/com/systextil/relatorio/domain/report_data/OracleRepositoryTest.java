@@ -16,7 +16,7 @@ import java.sql.SQLException;
 class OracleRepositoryTest {
 
 	@Test
-	@DisplayName("getActualTimeFromQuery: Deveria retornar os dados corretamente")
+	@DisplayName("getActualTimeFromQuery")
 	void cenario1() throws SQLException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		Connection mockConnection = mock(Connection.class);
 		

@@ -39,7 +39,7 @@ class ReportDataRepositoryTest {
 	}
 	
 	@Test
-	@DisplayName("findDataByFinalQuery: Deveria retornar os dados corretamente")
+	@DisplayName("findDataByFinalQuery")
 	void cenario1() throws SQLException, NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
         when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
 
@@ -75,7 +75,7 @@ class ReportDataRepositoryTest {
 	}
 	
 	@Test
-	@DisplayName("findDataByTotalizersQuery: Deveria retornar os dados corretamente")
+	@DisplayName("findDataByTotalizersQuery")
 	void cenario2() throws SQLException, NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
 		when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
 		

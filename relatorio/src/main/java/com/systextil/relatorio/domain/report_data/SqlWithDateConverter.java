@@ -18,7 +18,7 @@ class SqlWithDateConverter {
 		
 		if (sqlHasYyyyMMdd(sqlWithYyyyMMdd)) {
 			List<String> yyyyMMddDates = new ArrayList<>();
-			List<String> ddMMMyyyyDates = new ArrayList<>();
+			List<String> ddMMyyyyDates = new ArrayList<>();
 			String sqlWithDdMMMyyyy = null;
 			Pattern pattern = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
 			Matcher matcher = pattern.matcher(sqlWithYyyyMMdd);
@@ -28,12 +28,12 @@ class SqlWithDateConverter {
 			}
 			
 			for (String yyyyMMddDate : yyyyMMddDates) {
-				ddMMMyyyyDates.add(toDdMMMyyyy(yyyyMMddDate));
+				ddMMyyyyDates.add(toDdMMMyyyy(yyyyMMddDate));
 			}
 			sqlWithDdMMMyyyy = sqlWithYyyyMMdd;
 			
 			for (int i = 0; i < yyyyMMddDates.size(); i++) {
-				 sqlWithDdMMMyyyy = sqlWithDdMMMyyyy.replace(yyyyMMddDates.get(i), ddMMMyyyyDates.get(i));
+				 sqlWithDdMMMyyyy = sqlWithDdMMMyyyy.replace(yyyyMMddDates.get(i), ddMMyyyyDates.get(i));
 			}
 			
 			return sqlWithDdMMMyyyy;
@@ -51,9 +51,9 @@ class SqlWithDateConverter {
 	
 	private static String toDdMMMyyyy(String yyyyMMdd) throws ParseException {
 		SimpleDateFormat yyyyMMddFormat = new SimpleDateFormat("yyyy-MM-dd");
-		SimpleDateFormat ddMMMyyyyFormat = new SimpleDateFormat("dd-MM-yyyy");
+		SimpleDateFormat ddMMyyyyFormat = new SimpleDateFormat("dd-MM-yyyy");
 		Date yyyyMMddDate = yyyyMMddFormat.parse(yyyyMMdd);
 		
-		return ddMMMyyyyFormat.format(yyyyMMddDate);
+		return ddMMyyyyFormat.format(yyyyMMddDate);
 	}
 }
