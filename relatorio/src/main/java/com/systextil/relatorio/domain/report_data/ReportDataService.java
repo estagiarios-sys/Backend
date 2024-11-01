@@ -14,7 +14,7 @@ class ReportDataService {
 	}
 
 	static TreatedReportData treatReportData(ReportData reportData, Map<String, Totalizer> totalizers) {
-    	List<String> columnsNameOrNickName = columnsNameAndNickNameToColumnsNameOrNickName(reportData.columnsNameAndNickName());
+    	List<String> columnsNameOrNickName = toColumnsNameOrNickName(reportData.columnsNameAndNickName());
     	Map<String, String> columnsAndTotalizersResult = null;
     	
     	if (totalizers != null) {
@@ -32,7 +32,7 @@ class ReportDataService {
         	
         	for (Map.Entry<String, String> columnNameAndNickName : reportData.columnsNameAndNickName().entrySet()) {
         		if (totalizer.getKey().equalsIgnoreCase(columnNameAndNickName.getKey())) {
-        			if (columnNameAndNickName.getValue() != null) {
+        			if (columnNameAndNickName.getValue() != null && !columnNameAndNickName.getValue().isBlank()) {
         				columnsAndTotalizersColumn = columnNameAndNickName.getValue();
         			} else {
         				columnsAndTotalizersColumn = columnNameAndNickName.getKey();
@@ -45,8 +45,8 @@ class ReportDataService {
         return columnsAndTotalizersResult;
     }
     
-    private static ArrayList<String> columnsNameAndNickNameToColumnsNameOrNickName(Map<String, String> columnsNameAndNickName) {
-    	ArrayList<String> columnsNameOrNickName = new ArrayList<>();
+    private static List<String> toColumnsNameOrNickName(Map<String, String> columnsNameAndNickName) {
+    	List<String> columnsNameOrNickName = new ArrayList<>();
     	
     	for (Map.Entry<String, String> columnNameAndNickName : columnsNameAndNickName.entrySet()) {
    			if (columnNameAndNickName.getValue() != null) {

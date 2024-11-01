@@ -3,6 +3,7 @@ package com.systextil.relatorio.domain.report_data;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,7 +14,7 @@ class ReportDataRepository {
     	ReportData loadedQueryData = findDataByFinalQuery(idConnection, finalQuery);
     	
     	if (totalizersQuery != null && !totalizersQuery.isBlank()) {
-    		ArrayList<String> totalizersResults = findDataByTotalizersQuery(idConnection, totalizersQuery);
+    		List<String> totalizersResults = findDataByTotalizersQuery(idConnection, totalizersQuery);
         	return new ReportData(loadedQueryData.columnsNameAndNickName(), loadedQueryData.foundObjects(), totalizersResults);
     	}
     	
@@ -62,8 +63,8 @@ class ReportDataRepository {
         return new ReportData(columnsNameAndNickName, listObjects, null);
     }
     
-    private ArrayList<String> findDataByTotalizersQuery(Connection idConnection, String totalizersQuery) throws SQLException {
-    	ArrayList<String> totalizersResults = new ArrayList<>();
+    private List<String> findDataByTotalizersQuery(Connection idConnection, String totalizersQuery) throws SQLException {
+    	List<String> totalizersResults = new ArrayList<>();
     	
     	try(PreparedStatement command = idConnection.prepareStatement(totalizersQuery)) {
     		ResultSet data = command.executeQuery();
