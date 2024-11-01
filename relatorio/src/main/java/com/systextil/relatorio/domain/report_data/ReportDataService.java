@@ -38,9 +38,9 @@ class ReportDataService {
     private static final String MYSQL = "mysql";
     private static final String ORACLE = "oracle";
     
-    ReportDataService(OracleRepository oracleDataBaseRepository, MysqlRepository mySqlDataBaseRepository) {
-    	this.oracleRepository = oracleDataBaseRepository;
-    	this.mySqlRepository = mySqlDataBaseRepository;
+    ReportDataService(OracleRepository oracleRepository, MysqlRepository mySqlRepository) {
+    	this.oracleRepository = oracleRepository;
+    	this.mySqlRepository = mySqlRepository;
     }
 
     Object[] getQueryReturn(QueryData queryData) throws ParseException, IOException, SQLException {
@@ -76,25 +76,24 @@ class ReportDataService {
     	int actualTime = 0;
     	
     	if (dataBaseType.equals(MYSQL)) {
-    		String finalQueryAnalysis = SqlGenerator.generateFinalQueryAnalysisFromMysql(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
+    		String finalQueryAnalysis = MysqlSqlGenerator.generateFinalQueryAnalysis(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
         	String totalizersQueryAnalysis = null;
         	
         	if (!queryData.totalizers().isEmpty()) {
-        		totalizersQueryAnalysis = SqlGenerator.generateTotalizersQueryAnalysisFromMysql(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
+        		totalizersQueryAnalysis = MysqlSqlGenerator.generateTotalizersQueryAnalysis(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
         	}
         	actualTime = mySqlRepository.getActualTimeFromQueries(finalQueryAnalysis, totalizersQueryAnalysis);
     	} else if (dataBaseType.equals(ORACLE)) {
-    		String[] finalQueryAnaysis = SqlGenerator.generateFinalQueryAnalysisFromOracle(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
+    		String[] finalQueryAnaysis = OracleSqlGenerator.generateFinalQueryAnalysis(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
     		String[] totalizersQueryAnalysis = null;
     		
     		if (!queryData.totalizers().isEmpty()) {
-        		totalizersQueryAnalysis = SqlGenerator.generateTotalizersQueryAnalysisFromOracle(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
+        		totalizersQueryAnalysis = OracleSqlGenerator.generateTotalizersQueryAnalysis(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
         	}
     		actualTime = oracleRepository.getActualTimeFromQueries(finalQueryAnaysis, totalizersQueryAnalysis);
     	} else {
     		throw new CannotConnectToDataBaseException(NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE);
     	}
-    	
     	return actualTime;
     }
     
@@ -108,7 +107,7 @@ class ReportDataService {
     	return new TreatedReportData(columnsNameOrNickName, reportData.foundObjects(), columnsAndTotalizersResult);
     }
     
-    private static Map<String, String> joinColumnsAndTotalizersResult(ReportData reportData, Map<String, Totalizer> totalizers) {
+    private Map<String, String> joinColumnsAndTotalizersResult(ReportData reportData, Map<String, Totalizer> totalizers) {
     	int totalizersResultsCounter = 0;
         Map<String, String> columnsAndTotalizersResult = new HashMap<>();
         
@@ -130,7 +129,7 @@ class ReportDataService {
         return columnsAndTotalizersResult;
     }
     
-    private static List<String> toColumnsNameOrNickName(Map<String, String> columnsNameAndNickName) {
+    private List<String> toColumnsNameOrNickName(Map<String, String> columnsNameAndNickName) {
     	List<String> columnsNameOrNickName = new ArrayList<>();
     	
     	for (Map.Entry<String, String> columnNameAndNickName : columnsNameAndNickName.entrySet()) {

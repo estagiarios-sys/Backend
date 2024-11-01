@@ -8,9 +8,9 @@ import com.systextil.relatorio.domain.Totalizer;
 class SqlGenerator {
 	
 	private SqlGenerator() {
-		throw new IllegalStateException("Utility class");
+		throw new IllegalStateException("Classe utilitária");
 	}
-
+	
 	static String generateFinalQuery(String table, List<String> columns, List<String> conditions, String orderBy,  List<String> joins) {
         String query = "SELECT ";
         query = query.concat(String.join(", ", columns));
@@ -58,28 +58,4 @@ class SqlGenerator {
         }
     	return query;
     }
-	
-	static String generateFinalQueryAnalysisFromMysql(String table, List<String> columns, List<String> conditions, String orderBy,  List<String> joins) {
-		String finalQuery = generateFinalQuery(table, columns, conditions, orderBy, joins);
-		
-		return "EXPLAIN ANALYZE " + finalQuery;
-	}
-	
-	static String generateTotalizersQueryAnalysisFromMysql(Map<String, Totalizer> totalizers, String table, List<String> conditions, List<String> joins) {
-		String totalizersQuery = generateTotalizersQuery(totalizers, table, conditions, joins);
-		
-		return "EXPLAIN ANALYZE " + totalizersQuery;
-	}
-	
-	static String[] generateFinalQueryAnalysisFromOracle(String table, List<String> columns, List<String> conditions, String orderBy,  List<String> joins) {
-		String finalQuery = generateFinalQuery(table, columns, conditions, orderBy, joins);
-		
-		return new String[] {"EXPLAIN PLAN FOR " + finalQuery, "SELECT SUM(time) FROM plan_table"};
-	}
-	
-	static String[] generateTotalizersQueryAnalysisFromOracle(Map<String, Totalizer> totalizers, String table, List<String> conditions, List<String> joins) {
-		String totalizersQuery = generateTotalizersQuery(totalizers, table, conditions, joins);
-		
-		return new String[] {"EXPLAIN PLAN FOR " + totalizersQuery, "SELECT SUM(time) FROM plan_table"};
-	}
 }

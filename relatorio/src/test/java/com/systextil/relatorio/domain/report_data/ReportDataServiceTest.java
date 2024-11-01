@@ -11,13 +11,19 @@ import java.util.Map;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import com.systextil.relatorio.domain.Totalizer;
 
+@SpringBootTest
 class ReportDataServiceTest {
 
-	private static final Class<ReportDataService> SERVICE = ReportDataService.class;
-	
+	private static final Class<ReportDataService> SERVICE_CLASS = ReportDataService.class;
+
+	@Autowired
+	private ReportDataService service;
+
 	@Test
 	@DisplayName("joinColumnsAndTotalizersResult")
 	void cenario1() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
@@ -34,11 +40,11 @@ class ReportDataServiceTest {
 		
 		ReportData reportData = new ReportData(columnsNameAndNickName, null, totalizersResults);
 		
-		Method joinColumnsAndTotalizersResult = SERVICE.getDeclaredMethod("joinColumnsAndTotalizersResult", ReportData.class, Map.class);
+		Method joinColumnsAndTotalizersResult = SERVICE_CLASS.getDeclaredMethod("joinColumnsAndTotalizersResult", ReportData.class, Map.class);
 		joinColumnsAndTotalizersResult.setAccessible(true);
 		
 		@SuppressWarnings("unchecked")
-		Map<String, String> columnsAndTotalizersResult = (Map<String, String>) joinColumnsAndTotalizersResult.invoke(SERVICE, reportData, totalizers);
+		Map<String, String> columnsAndTotalizersResult = (Map<String, String>) joinColumnsAndTotalizersResult.invoke(service, reportData, totalizers);
 		
 		Map<String, String> expectedColumnsAdnTotalizersResult = new LinkedHashMap<>();
 		expectedColumnsAdnTotalizersResult.put("IDADE", "Soma: 100");
@@ -55,11 +61,11 @@ class ReportDataServiceTest {
 		columnsNameAndNickName.put("IDADE", null);
 		columnsNameAndNickName.put("SALARIO", "PAGAMENTO_MENSAL");
 		
-		Method toColumnsNameOrNickName = SERVICE.getDeclaredMethod("toColumnsNameOrNickName", Map.class);
+		Method toColumnsNameOrNickName = SERVICE_CLASS.getDeclaredMethod("toColumnsNameOrNickName", Map.class);
 		toColumnsNameOrNickName.setAccessible(true);
 		
 		@SuppressWarnings("unchecked")
-		List<String> columnsNameOrNickName = (List<String>) toColumnsNameOrNickName.invoke(SERVICE, columnsNameAndNickName);
+		List<String> columnsNameOrNickName = (List<String>) toColumnsNameOrNickName.invoke(service, columnsNameAndNickName);
 		
 		List<String> expectedColumnsNameOrNickName = new ArrayList<>();
 		expectedColumnsNameOrNickName.add("NOME_CLIENTE");
@@ -67,5 +73,27 @@ class ReportDataServiceTest {
 		expectedColumnsNameOrNickName.add("PAGAMENTO_MENSAL");
 		
 		assertEquals(expectedColumnsNameOrNickName, columnsNameOrNickName);
+	}
+	
+	@Test
+	@DisplayName("joinColumnsNameAndNickName")
+	void cenario3() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
+		QueryDataColumn column1 = new QueryDataColumn("NOME", "NOME_CLIENTE");
+		QueryDataColumn column2 = new QueryDataColumn("IDADE", null);
+		QueryDataColumn column3 = new QueryDataColumn("SALARIO", "PAGAMENTO_MENSAL");
+		List<QueryDataColumn> columns = List.of(column1, column2, column3);
+		
+		Method joinColumnsNameAndNickName = SERVICE_CLASS.getDeclaredMethod("joinColumnsNameAndNickName", List.class);
+		joinColumnsNameAndNickName.setAccessible(true);
+				
+		@SuppressWarnings("unchecked")
+		List<String> joinedColumnsNameAndNickName = (List<String>) joinColumnsNameAndNickName.invoke(service, columns);
+		
+		List<String> expectedJoinedColumnsNameAndNickName = new ArrayList<>();
+		expectedJoinedColumnsNameAndNickName.add("NOME AS \"NOME_CLIENTE\"");
+		expectedJoinedColumnsNameAndNickName.add("IDADE");
+		expectedJoinedColumnsNameAndNickName.add("SALARIO AS \"PAGAMENTO_MENSAL\"");
+		
+		assertEquals(expectedJoinedColumnsNameAndNickName, joinedColumnsNameAndNickName);
 	}
 }

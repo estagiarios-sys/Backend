@@ -28,10 +28,10 @@ import com.systextil.relatorio.infra.exception_handler.CannotConnectToDataBaseEx
 public class RelationshipController {
 	
 	@Value("${relationships.json.file.path}")
-    private String relationshipsJsonFilePath;
+    private String relationshipsJsonPath;
     
     @Value("${relationships_with_joins.json.file.path}")
-    private String relationshipsWithJoinsJsonFilePath;
+    private String relationshipsWithJoinsJsonPath;
 
     @Value("${database.type}")
     private String dataBaseType;
@@ -43,7 +43,7 @@ public class RelationshipController {
 
 	@GetMapping
     public ResponseEntity<Resource> getRelationships() throws IOException {
-        Path filePath = Paths.get(relationshipsJsonFilePath);
+        Path filePath = Paths.get(relationshipsJsonPath);
         Resource resource = new UrlResource(filePath.toUri());
 
         if (resource.exists() && resource.isReadable()) {
@@ -57,8 +57,8 @@ public class RelationshipController {
 	
 	@PutMapping
     public void setRelationshipsFromDatabaseIntoJson() throws SQLException, IOException {
-        Path filePath = Paths.get(relationshipsJsonFilePath);
-        Path fileOfJoinsPath = Paths.get(relationshipsWithJoinsJsonFilePath);
+        Path filePath = Paths.get(relationshipsJsonPath);
+        Path fileOfJoinsPath = Paths.get(relationshipsWithJoinsJsonPath);
         Resource resource = new UrlResource(filePath.toUri());
         Resource resourceWithJoins = new UrlResource(fileOfJoinsPath.toUri());
         
