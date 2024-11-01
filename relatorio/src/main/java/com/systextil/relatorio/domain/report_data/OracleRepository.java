@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import com.systextil.relatorio.infra.data_base_connection.OracleConnection;
 
 @Repository
-public class OracleRepository extends ReportDataRepository {
+class OracleRepository extends ReportDataRepository {
 
     private OracleConnection connectionOracle;
 	

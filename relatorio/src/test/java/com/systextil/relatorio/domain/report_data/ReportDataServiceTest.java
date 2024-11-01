@@ -16,6 +16,8 @@ import com.systextil.relatorio.domain.Totalizer;
 
 class ReportDataServiceTest {
 
+	private static final Class<ReportDataService> SERVICE = ReportDataService.class;
+	
 	@Test
 	@DisplayName("joinColumnsAndTotalizersResult")
 	void cenario1() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
@@ -32,11 +34,11 @@ class ReportDataServiceTest {
 		
 		ReportData reportData = new ReportData(columnsNameAndNickName, null, totalizersResults);
 		
-		Method joinColumnsAndTotalizersResult = ReportDataService.class.getDeclaredMethod("joinColumnsAndTotalizersResult", ReportData.class, Map.class);
+		Method joinColumnsAndTotalizersResult = SERVICE.getDeclaredMethod("joinColumnsAndTotalizersResult", ReportData.class, Map.class);
 		joinColumnsAndTotalizersResult.setAccessible(true);
 		
 		@SuppressWarnings("unchecked")
-		Map<String, String> columnsAndTotalizersResult = (Map<String, String>) joinColumnsAndTotalizersResult.invoke(ReportDataService.class, reportData, totalizers);
+		Map<String, String> columnsAndTotalizersResult = (Map<String, String>) joinColumnsAndTotalizersResult.invoke(SERVICE, reportData, totalizers);
 		
 		Map<String, String> expectedColumnsAdnTotalizersResult = new LinkedHashMap<>();
 		expectedColumnsAdnTotalizersResult.put("IDADE", "Soma: 100");
@@ -53,11 +55,11 @@ class ReportDataServiceTest {
 		columnsNameAndNickName.put("IDADE", null);
 		columnsNameAndNickName.put("SALARIO", "PAGAMENTO_MENSAL");
 		
-		Method toColumnsNameOrNickName = ReportDataService.class.getDeclaredMethod("toColumnsNameOrNickName", Map.class);
+		Method toColumnsNameOrNickName = SERVICE.getDeclaredMethod("toColumnsNameOrNickName", Map.class);
 		toColumnsNameOrNickName.setAccessible(true);
 		
 		@SuppressWarnings("unchecked")
-		List<String> columnsNameOrNickName = (List<String>) toColumnsNameOrNickName.invoke(ReportDataService.class, columnsNameAndNickName);
+		List<String> columnsNameOrNickName = (List<String>) toColumnsNameOrNickName.invoke(SERVICE, columnsNameAndNickName);
 		
 		List<String> expectedColumnsNameOrNickName = new ArrayList<>();
 		expectedColumnsNameOrNickName.add("NOME_CLIENTE");
@@ -66,5 +68,4 @@ class ReportDataServiceTest {
 		
 		assertEquals(expectedColumnsNameOrNickName, columnsNameOrNickName);
 	}
-	
 }

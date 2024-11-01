@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 import com.systextil.relatorio.infra.data_base_connection.MysqlConnection;
 
 @Repository
-public class MysqlRepository extends ReportDataRepository {
+class MysqlRepository extends ReportDataRepository {
 	
     private MysqlConnection connectionMySQL;
     
