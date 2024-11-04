@@ -13,14 +13,11 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.systextil.relatorio.domain.RelationshipData;
 import com.systextil.relatorio.domain.Totalizer;
 import com.systextil.relatorio.infra.exception_handler.CannotConnectToDataBaseException;
-
-import jakarta.validation.Valid;
 
 @Service
 class ReportDataService {
@@ -29,10 +26,10 @@ class ReportDataService {
     private final MysqlRepository mySqlRepository;
 
     @Value("${relationships_with_joins.json.file.path}")
-    private String relationshipsWithJoinsJsonFilePath;
+    private final String relationshipsWithJoinsJsonFilePath;
     
     @Value("${database.type}")
-    private String dataBaseType;
+    private final String dataBaseType;
     
     private static final String NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE = "Tipo do banco de dados não configurado";
     private static final String MYSQL = "mysql";
@@ -41,6 +38,8 @@ class ReportDataService {
     ReportDataService(OracleRepository oracleRepository, MysqlRepository mySqlRepository) {
     	this.oracleRepository = oracleRepository;
     	this.mySqlRepository = mySqlRepository;
+    	this.relationshipsWithJoinsJsonFilePath = null;
+    	this.dataBaseType = null;
     }
 
     Object[] getQueryReturn(QueryData queryData) throws ParseException, IOException, SQLException {
@@ -54,25 +53,24 @@ class ReportDataService {
         if (!queryData.totalizers().isEmpty()) {
         	totalizersQuery = SqlGenerator.generateTotalizersQuery(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
         }
-        ReportData loadedQueryData = null;
+        ReportData reportData = null;
         
         if (dataBaseType.equals(MYSQL)) {
-        	loadedQueryData = mySqlRepository.findDataByQuery(finalQuery, totalizersQuery);
+        	reportData = mySqlRepository.findDataByQuery(finalQuery, totalizersQuery);
         } else if (dataBaseType.equals(ORACLE)) {
-        	loadedQueryData = oracleRepository.findDataByQuery(finalQuery, totalizersQuery);
+        	reportData = oracleRepository.findDataByQuery(finalQuery, totalizersQuery);
         } else {
     		throw new CannotConnectToDataBaseException(NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE);
         }
-        
-        TreatedReportData treatedLoadedQueryData = treatReportData(loadedQueryData, queryData.totalizers());
-        List<String> columnsNameOrNickName = treatedLoadedQueryData.columnsNameOrNickName();
-        List<Object[]> foundObjects = treatedLoadedQueryData.foundObjects();
-        Map<String, String> columnsAndTotalizersResult = treatedLoadedQueryData.columnsAndTotalizersResult();
+        TreatedReportData treatedReportData = treatReportData(reportData, queryData.totalizers());
+        List<String> columnsNameOrNickName = treatedReportData.columnsNameOrNickName();
+        List<Object[]> foundObjects = treatedReportData.foundObjects();
+        Map<String, String> columnsAndTotalizersResult = treatedReportData.columnsAndTotalizersResult();
         
         return new Object[]{finalQuery, totalizersQuery, columnsNameOrNickName, foundObjects, columnsAndTotalizersResult};
     }
     
-    double getQueryAnalysis(@RequestBody @Valid QueryData queryData) throws SQLException, IOException {
+    double getQueryAnalysis(QueryData queryData) throws SQLException, IOException {
     	int actualTime = 0;
     	
     	if (dataBaseType.equals(MYSQL)) {

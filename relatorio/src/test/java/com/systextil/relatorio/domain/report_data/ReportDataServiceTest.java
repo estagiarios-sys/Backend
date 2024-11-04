@@ -1,6 +1,7 @@
 package com.systextil.relatorio.domain.report_data;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -13,20 +14,48 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
 
 import com.systextil.relatorio.domain.Totalizer;
+import com.systextil.relatorio.infra.exception_handler.CannotConnectToDataBaseException;
 
 @SpringBootTest
+@TestPropertySource(properties = "database.type=sqlserver")
 class ReportDataServiceTest {
 
 	private static final Class<ReportDataService> SERVICE_CLASS = ReportDataService.class;
 
 	@Autowired
 	private ReportDataService service;
+	
+	@MockBean
+	private QueryData queryData;
+	
+	@MockBean
+	Map<String, Totalizer> mockTotalizers;
 
 	@Test
+	@DisplayName("getQueryReturn")
+	void cenario1() {
+		mockStatic(SqlGenerator.class);
+		when(SqlGenerator.generateFinalQuery(anyString(), anyList(), anyList(), anyString(), anyList())).thenReturn("");
+		
+		when(queryData.totalizers()).thenReturn(mockTotalizers);
+		when(queryData.totalizers().isEmpty()).thenReturn(true);
+		
+		assertThrows(CannotConnectToDataBaseException.class, () -> service.getQueryReturn(queryData));
+	}
+	
+	@Test
+	@DisplayName("getQueryAnalysis")
+	void cenario2() {
+		assertThrows(CannotConnectToDataBaseException.class, () -> service.getQueryAnalysis(queryData));
+	}
+	
+	@Test
 	@DisplayName("joinColumnsAndTotalizersResult")
-	void cenario1() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
+	void cenario3() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
 		Map<String, String> columnsNameAndNickName = new LinkedHashMap<>();
 		columnsNameAndNickName.put("NOME", "NOME_CLIENTE");
 		columnsNameAndNickName.put("IDADE", "");
@@ -55,7 +84,7 @@ class ReportDataServiceTest {
 
 	@Test
 	@DisplayName("toColumnsNameOrNickName")
-	void cenario2() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
+	void cenario4() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
 		Map<String, String> columnsNameAndNickName = new LinkedHashMap<>();
 		columnsNameAndNickName.put("NOME", "NOME_CLIENTE");
 		columnsNameAndNickName.put("IDADE", null);
@@ -77,7 +106,7 @@ class ReportDataServiceTest {
 	
 	@Test
 	@DisplayName("joinColumnsNameAndNickName")
-	void cenario3() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
+	void cenario5() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
 		QueryDataColumn column1 = new QueryDataColumn("NOME", "NOME_CLIENTE");
 		QueryDataColumn column2 = new QueryDataColumn("IDADE", null);
 		QueryDataColumn column3 = new QueryDataColumn("SALARIO", "PAGAMENTO_MENSAL");
