@@ -10,15 +10,22 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class OracleSqlGeneratorTest {
 
 	@BeforeAll
 	static void setUp() {
 		mockStatic(SqlGenerator.class);
+	}
+	
+	@AfterAll
+	static void clean() {
+		Mockito.clearAllCaches();
 	}
 	
 	@Test

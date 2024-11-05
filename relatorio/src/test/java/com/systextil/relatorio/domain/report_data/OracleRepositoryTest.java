@@ -14,7 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 class OracleRepositoryTest {
-
+	
 	@Test
 	@DisplayName("getActualTimeFromQuery")
 	void cenario1() throws SQLException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {

@@ -10,8 +10,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -34,6 +36,11 @@ class ReportDataServiceTest {
 	
 	@MockBean
 	Map<String, Totalizer> mockTotalizers;
+	
+	@AfterAll
+	static void clean() {
+		Mockito.clearAllCaches();
+	}
 
 	@Test
 	@DisplayName("getQueryReturn")
