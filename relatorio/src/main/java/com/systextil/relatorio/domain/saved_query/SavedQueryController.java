@@ -7,8 +7,6 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
@@ -17,10 +15,11 @@ import java.util.List;
 @RequestMapping("saved-query")
 public class SavedQueryController {
 
+	private final SavedQueryService service;
     private final SavedQueryRepository repository;
-    private ObjectMapper objectMapper;
     
-    public SavedQueryController(SavedQueryRepository savedQueryRepository) {
+    public SavedQueryController(SavedQueryService service, SavedQueryRepository savedQueryRepository) {
+    	this.service = service;
     	this.repository = savedQueryRepository;
     }
 
@@ -39,17 +38,7 @@ public class SavedQueryController {
             @RequestParam String stringSavedQuerySaving,
             @RequestParam(required = false, value = "imgPDF") MultipartFile file
     ) throws IOException {
-    	byte[] imgPDF;
-    	
-    	try {
-    		imgPDF = file.getBytes();
-    	} catch (NullPointerException exception) {
-    		imgPDF = null;
-    	}
-    	objectMapper = new ObjectMapper();
-    	SavedQuerySaving savedQuerySaving = objectMapper.readValue(stringSavedQuerySaving, SavedQuerySaving.class);
-    	SavedQuery savedQuery = new SavedQuery(savedQuerySaving, imgPDF);
-    	repository.save(savedQuery);
+    	SavedQuery savedQuery = service.saveQuery(stringSavedQuerySaving, file);
 
     	return ResponseEntity.created(URI.create("")).body(savedQuery);
     }
@@ -61,18 +50,7 @@ public class SavedQueryController {
             @RequestParam(required = false, value = "imgPDF") MultipartFile file,
             @PathVariable Long id
     ) throws IOException {
-    	byte[] imgPDF;
-    	
-    	try {
-    		imgPDF = file.getBytes();
-    	} catch (NullPointerException exception) {
-    		imgPDF = null;
-    	}
-    	objectMapper = new ObjectMapper();
-    	SavedQueryUpdating updating = objectMapper.readValue(stringSavedQueryUpdating, SavedQueryUpdating.class);
-    	SavedQuery savedQuery = repository.getReferenceById(id);
-        	
-        savedQuery.updateData(updating, imgPDF);
+    	service.updateQuery(stringSavedQueryUpdating, file, id);
         		
         return ResponseEntity.ok().build();
         
