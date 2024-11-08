@@ -19,7 +19,7 @@ record OneSavedQueryListing(
 	OneSavedQueryListing(SavedQuery savedQuery) {
 		this(
 			savedQuery.getMainTable(),
-			savedQuery.getOrderBy(),
+			savedQuery.getOrderBy() != null ? savedQuery.getOrderBy() : "", 
 			savedQuery.getPdfTitle(),
 			savedQuery.getPdfImage(),
 			savedQuery.getSavedQueryColumns()
