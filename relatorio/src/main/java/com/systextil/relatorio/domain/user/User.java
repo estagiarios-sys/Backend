@@ -7,12 +7,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-public class Usuario implements UserDetails {
+public class User implements UserDetails {
 
-    private String login;
+	private static final long serialVersionUID = 1L;
+	
+	private String login;
     private String senha;
 
-    public Usuario(UserRequest request) {
+    public User(UserRequest request) {
         this.login = request.login();
         this.senha = request.senha();
     }

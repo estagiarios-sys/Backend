@@ -70,31 +70,6 @@ class ReportDataService {
         return new Object[]{finalQuery, totalizersQuery, columnsNameOrNickName, foundObjects, columnsAndTotalizersResult};
     }
     
-    double getQueryAnalysis(QueryData queryData) throws SQLException, IOException {
-    	int actualTime = 0;
-    	
-    	if (dataBaseType.equals(MYSQL)) {
-    		String finalQueryAnalysis = MysqlSqlGenerator.generateFinalQueryAnalysis(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
-        	String totalizersQueryAnalysis = null;
-        	
-        	if (!queryData.totalizers().isEmpty()) {
-        		totalizersQueryAnalysis = MysqlSqlGenerator.generateTotalizersQueryAnalysis(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
-        	}
-        	actualTime = mySqlRepository.getActualTimeFromQueries(finalQueryAnalysis, totalizersQueryAnalysis);
-    	} else if (dataBaseType.equals(ORACLE)) {
-    		String[] finalQueryAnaysis = OracleSqlGenerator.generateFinalQueryAnalysis(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
-    		String[] totalizersQueryAnalysis = null;
-    		
-    		if (!queryData.totalizers().isEmpty()) {
-        		totalizersQueryAnalysis = OracleSqlGenerator.generateTotalizersQueryAnalysis(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
-        	}
-    		actualTime = oracleRepository.getActualTimeFromQueries(finalQueryAnaysis, totalizersQueryAnalysis);
-    	} else {
-    		throw new CannotConnectToDataBaseException(NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE);
-    	}
-    	return actualTime;
-    }
-    
 	private TreatedReportData treatReportData(ReportData reportData, Map<String, Totalizer> totalizers) {
     	List<String> columnsNameOrNickName = toColumnsNameOrNickName(reportData.columnsNameAndNickName());
     	Map<String, String> columnsAndTotalizersResult = null;

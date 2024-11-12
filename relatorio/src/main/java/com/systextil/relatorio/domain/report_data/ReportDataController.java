@@ -22,9 +22,4 @@ public class ReportDataController {
     public Object[] getQueryReturn(@RequestBody @Valid QueryData queryData) throws SQLException, ParseException, IOException {
         return service.getQueryReturn(queryData);
     }
-    
-    @PostMapping("analyze")
-    public double getQueryAnalysis(@RequestBody @Valid QueryData queryData) throws SQLException, IOException {
-    	return service.getQueryAnalysis(queryData);
-    }
 }

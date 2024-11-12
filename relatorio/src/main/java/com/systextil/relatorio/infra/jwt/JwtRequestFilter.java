@@ -3,7 +3,6 @@ package com.systextil.relatorio.infra.jwt;
 import java.io.IOException;
 import java.sql.SQLException;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,26 +19,29 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private JwtService tokenService;
+    private final JwtService service;
 
-    @Autowired
-    private UserRepository repository;
+    private final UserRepository userRepository;
 
-
+    public JwtRequestFilter(JwtService service, UserRepository userRepository) {
+    	this.service = service;
+    	this.userRepository = userRepository;
+    }
+    
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        var tokenJWT = recuperarToken(request);
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+        String tokenJWT = recuperarToken(request);
+        
         if (tokenJWT != null) {
-            String subject = tokenService.getUsernameToken(tokenJWT);
+            String subject = service.getUsernameToken(tokenJWT);
             UserDetails usuario = null;
-            try {
-                usuario = repository.getUser(subject);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-
-            var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+            
+			try {
+				usuario = userRepository.getUser(subject);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
@@ -47,12 +49,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     }
 
     private String recuperarToken(HttpServletRequest request) {
-        var authorizationHeader = request.getHeader("Authorization");
+        String authorizationHeader = request.getHeader("Authorization");
+        
         if (authorizationHeader != null) {
             return authorizationHeader.replace("Bearer ", "").trim();
         }
-
         return null;
-
     }
 }

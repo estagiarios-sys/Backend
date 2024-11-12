@@ -22,9 +22,9 @@ public class UserController {
 
     @PostMapping("login")
     public ResponseEntity<String> login(@RequestBody UserRequest request) throws SQLException {
-        Usuario usuario = new Usuario(request);
+        User usuario = new User(request);
 
-        if (repository.validateUser(usuario.getUsername())) {
+        if (repository.exists(usuario.getUsername())) {
             String senha = repository.getSenha(usuario.getUsername());
             String senhaDesembaralhada = null;
 
@@ -33,19 +33,18 @@ public class UserController {
             } catch (NumberFormatException exception) {
                 if (usuario.getPassword().equals(senha)) {
                     String token = jwtService.generateToken(usuario.getUsername());
+                    
                     return ResponseEntity.ok().body(token);
                 }
                 return ResponseEntity.status(401).body("");
             }
-
             if (senhaDesembaralhada.equals(usuario.getPassword())) {
                 String token = jwtService.generateToken(usuario.getUsername());
+                
                 return ResponseEntity.ok().body(token);
             }
             return ResponseEntity.status(401).body("");
         } else {
-            System.out.println("Erro de consulta de dados na Tabela");
-
             return ResponseEntity.notFound().build();
         }
     }

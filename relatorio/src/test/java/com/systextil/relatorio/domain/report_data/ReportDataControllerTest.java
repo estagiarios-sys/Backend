@@ -69,35 +69,4 @@ class ReportDataControllerTest {
 		assertEquals(200, response.getStatus());
 		assertEquals(expectedQueryReturn, response.getContentAsString());
 	}
-	
-	@Test
-	@DisplayName("getQueryAnalysis: response = bad request")
-	void cenario3() throws Exception {
-		MockHttpServletResponse response = mvc
-				.perform(post("/report-data/analyze"))
-				.andReturn()
-				.getResponse();
-		
-		assertEquals(400, response.getStatus());
-	}
-	
-	@Test
-	@DisplayName("getQueryAnalysis: response = ok com dados")
-	void cenario4() throws Exception {
-		when(service.getQueryAnalysis(any())).thenReturn(10.5);
-		
-		MockHttpServletResponse response = mvc
-				.perform(post("/report-data/analyze")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(requestJson.write(
-								new QueryData("TABELA", List.of(new QueryDataColumn("NOME", "APELIDO")), List.of(), "", List.of(), Map.of())
-						).getJson())
-				)
-				.andReturn().getResponse();
-		
-		String expectedQueryAnalysis = "10.5";
-		
-		assertEquals(200, response.getStatus());
-		assertEquals(expectedQueryAnalysis, response.getContentAsString());
-	}
 }

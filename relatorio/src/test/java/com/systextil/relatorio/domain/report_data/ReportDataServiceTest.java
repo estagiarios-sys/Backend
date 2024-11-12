@@ -55,12 +55,6 @@ class ReportDataServiceTest {
 	}
 	
 	@Test
-	@DisplayName("getQueryAnalysis")
-	void cenario2() {
-		assertThrows(CannotConnectToDataBaseException.class, () -> service.getQueryAnalysis(queryData));
-	}
-	
-	@Test
 	@DisplayName("joinColumnsAndTotalizersResult")
 	void cenario3() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
 		Map<String, String> columnsNameAndNickName = new LinkedHashMap<>();

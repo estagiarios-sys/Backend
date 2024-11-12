@@ -1,7 +1,7 @@
 package com.systextil.relatorio.infra.jwt;
 
-import org.hibernate.validator.cfg.context.ReturnValueConstraintMappingContext;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,22 +12,26 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private JwtRequestFilter securityFilter;
+    private final JwtRequestFilter securityFilter;
+    
+    public SecurityConfig(JwtRequestFilter securityFilter) {
+    	this.securityFilter = securityFilter;
+    }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
             .cors(corsConfigurer -> corsConfigurer.configurationSource(request -> {
-                var cors = new org.springframework.web.cors.CorsConfiguration();
-                cors.setAllowedOrigins(java.util.List.of("http://localhost:3000"));
-                cors.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-                cors.setAllowedHeaders(java.util.List.of("*"));
+                var cors = new CorsConfiguration();
+                cors.setAllowedOrigins(List.of("http://localhost:3000"));
+                cors.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                cors.setAllowedHeaders(List.of("*"));
                 cors.setAllowCredentials(true);
                 return cors;
             }))
@@ -41,7 +45,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+    AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 

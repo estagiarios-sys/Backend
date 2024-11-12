@@ -11,32 +11,33 @@ import java.util.Collections;
 public class UserRepository {
 
     private static Connection connection;
-    private static String user = "systextil";
-    private static String password = "oracle";
-    private static String url = "jdbc:oracle:thin:@10.10.1.100:1521/devsprd.public.pocvcn.oraclevcn.com";
 
-    boolean validateUser(String userName) throws SQLException {
+    boolean exists(String userName) throws SQLException {
         connect();
 
         String sql = "SELECT 1 FROM HDOC_030 WHERE USUARIO = '" + userName + "'";
-        PreparedStatement ps = connection.prepareStatement(sql);
-        ResultSet dados = ps.executeQuery();
-        boolean usuarioExiste = dados.next();
-
+        boolean exists = false;
+        
+        try(PreparedStatement ps = connection.prepareStatement(sql)) {
+        	ResultSet dados = ps.executeQuery();
+            exists = dados.next();
+        }
         disconnect();
 
-        return usuarioExiste;
+        return exists;
     }
 
     String getSenha(String userName) throws SQLException {
         connect();
 
         String sql = "SELECT SENHA FROM HDOC_030 WHERE USUARIO = '" + userName + "'";
-        PreparedStatement ps = connection.prepareStatement(sql);
-        ResultSet dados = ps.executeQuery();
-        dados.next();
-        String senha = dados.getString(1);
-
+        String senha = null;
+        
+        try(PreparedStatement ps = connection.prepareStatement(sql)) {
+        	ResultSet dados = ps.executeQuery();
+            dados.next();
+            senha = dados.getString(1);
+        }
         disconnect();
 
         return senha;
@@ -46,27 +47,31 @@ public class UserRepository {
         connect();
 
         String sql = "SELECT USUARIO, SENHA FROM HDOC_030 WHERE USUARIO = '" + login + "'";
-        PreparedStatement ps = connection.prepareStatement(sql);
-        ResultSet dados = ps.executeQuery();
-        dados.next();
-        String userName = dados.getString(1);
-        String password = dados.getString(2);
-        UserDetails user = new User(userName, password, Collections.emptyList());
+        String userName = null;
+        String password = null;
+        
+        try(PreparedStatement ps = connection.prepareStatement(sql)) {
+        	ResultSet dados = ps.executeQuery();
+            dados.next();
+            userName = dados.getString(1);
+            password = dados.getString(2);
+        }
+        UserDetails userDetails = new User(userName, password, Collections.emptyList());
 
         disconnect();
 
-        return user;
+        return userDetails;
     }
 
 
     private static void connect() throws SQLException {
+    	String user = "systextil";
+        String password = "oracle";
+        String url = "jdbc:oracle:thin:@10.10.1.100:1521/devsprd.public.pocvcn.oraclevcn.com";
         connection = DriverManager.getConnection(url, user, password);
     }
 
     private static void disconnect() throws SQLException {
         connection.close();
     }
-
-
-
 }
