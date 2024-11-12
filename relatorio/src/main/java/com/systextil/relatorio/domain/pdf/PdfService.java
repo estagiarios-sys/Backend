@@ -38,7 +38,6 @@ class PdfService {
 		if (pdfTitle == null || pdfTitle.isBlank()) {
 			pdfTitle = "Sem título";
 		}
-    	
     	if (repository.count() == 10) {
     		Long oldestEntry = repository.getOldestEntry();
     		String pdfPath = repository.findPathById(oldestEntry);
