@@ -1,11 +1,12 @@
 package com.systextil.relatorio.infra.jwt;
 
+import java.util.Date;
+
+import org.springframework.stereotype.Service;
+
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import org.springframework.stereotype.Service;
-
-import java.util.Date;
 
 @Service
 public class JwtService {
@@ -15,7 +16,7 @@ public class JwtService {
         return JWT.create()
                 .withSubject(username)
                 .withIssuedAt(new Date())
-                .withExpiresAt(new Date(System.currentTimeMillis() + 43200000))
+                .withExpiresAt(new Date(System.currentTimeMillis() + 86400000))
                 .sign(Algorithm.HMAC256(SECRET_KEY));
     }
 
