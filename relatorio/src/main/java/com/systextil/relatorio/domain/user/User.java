@@ -13,10 +13,12 @@ public class User implements UserDetails {
 	
 	private String login;
     private String senha;
+    private int codigoEmpresa;
 
-    public User(UserRequest request) {
+    public User(LoginRequest request) {
         this.login = request.login();
         this.senha = request.senha();
+        this.codigoEmpresa = request.codigoEmpresa();
     }
 
     @Override
@@ -53,4 +55,8 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return UserDetails.super.isEnabled();
     }
+
+	public int getCodigoEmpresa() {
+		return codigoEmpresa;
+	}
 }

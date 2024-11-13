@@ -1,51 +1,32 @@
 package com.systextil.relatorio.domain.user;
 
-import br.com.intersys.systextil.global.Criptografia;
-import com.systextil.relatorio.infra.jwt.JwtService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.sql.SQLException;
+import java.util.List;
 
 @RestController
 public class UserController {
 
     private final UserRepository repository;
-    private final JwtService jwtService;
+    private final UserService service;
     
-    public UserController(UserRepository repository, JwtService jwtService) {
+    public UserController(UserRepository repository, UserService service) {
         this.repository = repository;
-        this.jwtService = jwtService;
+        this.service = service;
+    }
+    
+    @GetMapping("companies")
+    public List<Company> getCompanies() throws SQLException {
+    	return repository.getCompanies();
     }
 
     @PostMapping("login")
-    public ResponseEntity<String> login(@RequestBody UserRequest request) throws SQLException {
-        User usuario = new User(request);
-
-        if (repository.exists(usuario.getUsername())) {
-            String senha = repository.getSenha(usuario.getUsername());
-            String senhaDesembaralhada = null;
-
-            try {
-                senhaDesembaralhada = Criptografia.desembaralha(senha);
-            } catch (NumberFormatException exception) {
-                if (usuario.getPassword().equals(senha)) {
-                    String token = jwtService.generateToken(usuario.getUsername());
-                    
-                    return ResponseEntity.ok().body(token);
-                }
-                return ResponseEntity.status(401).body("");
-            }
-            if (senhaDesembaralhada.equals(usuario.getPassword())) {
-                String token = jwtService.generateToken(usuario.getUsername());
-                
-                return ResponseEntity.ok().body(token);
-            }
-            return ResponseEntity.status(401).body("");
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) throws SQLException {
+        return service.login(loginRequest);
     }
 }

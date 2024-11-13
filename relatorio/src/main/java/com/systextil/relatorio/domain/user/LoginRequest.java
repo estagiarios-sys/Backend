@@ -1,6 +1,7 @@
 package com.systextil.relatorio.domain.user;
 
-public record UserRequest(
+record LoginRequest(
+	int codigoEmpresa,
     String login,
     String senha
 ) {}
