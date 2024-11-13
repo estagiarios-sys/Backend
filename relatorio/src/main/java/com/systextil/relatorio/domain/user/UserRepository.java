@@ -66,8 +66,8 @@ public class UserRepository {
 
     private static void connect() throws SQLException {
     	String user = "systextil";
-        String password = "oracle";
-        String url = "jdbc:oracle:thin:@10.10.1.100:1521/devsprd.public.pocvcn.oraclevcn.com";
+        String password = "3rp#_SYSTEXTIL2021";
+        String url = "jdbc:oracle:thin:@10.10.1.2:1521/S001ERP.public.pocvcn.oraclevcn.com";
         connection = DriverManager.getConnection(url, user, password);
     }
 
