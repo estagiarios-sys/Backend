@@ -24,7 +24,7 @@ public class SavedQueryController {
     }
 
     @GetMapping
-    public List<AllSavedQueriesListing> getSQL() {
+    public List<AllSavedQueriesListing> getSavedQuery() {
         return repository.findAllForListing();
     }
     

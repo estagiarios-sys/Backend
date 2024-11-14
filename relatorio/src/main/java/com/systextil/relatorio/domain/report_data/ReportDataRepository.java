@@ -22,10 +22,10 @@ class ReportDataRepository {
     }
 
     private ReportData findDataByFinalQuery(Connection idConnection, String sql) throws SQLException {
-        ArrayList<Object[]> listObjects = new ArrayList<>();
+        List<Object[]> listObjects = new ArrayList<>();
         Map<String, String> columnsNameAndNickName = new LinkedHashMap<>();
-        ArrayList<String> tableNames = new ArrayList<>();
-        ArrayList<String> columnNames = new ArrayList<>();
+        List<String> tableNames = new ArrayList<>();
+        List<String> columnNames = new ArrayList<>();
         Pattern tableDotColumnPattern = Pattern.compile("(\\w+)\\.(\\w+)", Pattern.CASE_INSENSITIVE);
         Matcher tableDotColumnMatcher = tableDotColumnPattern.matcher(sql);
         
@@ -50,7 +50,6 @@ class ReportDataRepository {
                     columnsNameAndNickName.put(tableNames.get(i-1) + "." + columnName, columnNickName);
                 }
             }
-
             while (data.next()) {
                 Object[] object = new Object[columnsNumber];
 
