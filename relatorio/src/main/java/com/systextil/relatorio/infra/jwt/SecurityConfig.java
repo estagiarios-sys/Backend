@@ -37,7 +37,7 @@ public class SecurityConfig {
             }))
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(req -> {
-                req.requestMatchers("/login").permitAll();
+                req.requestMatchers("/login", "/companies").permitAll();
                 req.anyRequest().authenticated();
             })
             .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
