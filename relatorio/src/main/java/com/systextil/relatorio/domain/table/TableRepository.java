@@ -35,7 +35,6 @@ class TableRepository {
 		while(mainTableData.next()) {
 			mainTableColumns.put(mainTableData.getString("COLUMN_NAME"), mainTableData.getString("TYPE_NAME"));
 		}
-		System.out.println("Aqui está as colunas da PRODUTO: "+ mainTableColumns);
 		tablesAndColumns.put(allTables.mainTable(), mainTableColumns);
 		
 		for (String tablesPair : allTables.tablesPairs()) {
