@@ -6,8 +6,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -46,14 +49,24 @@ class TableService {
 	
 	Map<String, Map<String, String>> getColumnsFromTables(AllTables allTables) throws SQLException {
 		oracleRepository = new OracleRepository();
+		Map<String, Map<String, String>> tablesAndColumns = new LinkedHashMap<>();
 		
 		if (dataBaseType.equals(MYSQL)) {
-			return mysqlRepository.getColumnsFromTables(allTables);
+			mysqlRepository.getColumnsFromTable(allTables.mainTable());
 		} else if (dataBaseType.equals(ORACLE)) {
-			return oracleRepository.getColumnsFromTables(allTables);
+			tablesAndColumns.put(allTables.mainTable(), oracleRepository.getColumnsFromTables(allTables.mainTable()));
+			
+			for (String tablesPair : allTables.tablesPairs()) {
+				Pattern pattern = Pattern.compile("\\b\\w+$");
+				Matcher matcher = pattern.matcher(tablesPair);
+				matcher.find();
+				String table = matcher.group();
+				tablesAndColumns.put(table, oracleRepository.getColumnsFromTables(table));
+			}
 		} else {
 			throw new IllegalDataBaseTypeException();
 		}
+		return tablesAndColumns;
 	}
 	
 	void setTablesIntoJson() throws IOException, SQLException {

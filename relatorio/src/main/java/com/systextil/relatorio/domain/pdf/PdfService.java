@@ -1,6 +1,7 @@
 package com.systextil.relatorio.domain.pdf;
 
-import org.springframework.beans.factory.annotation.Value;
+import static com.systextil.relatorio.domain.pdf.StorageAccessor.*;
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -13,19 +14,12 @@ import org.springframework.web.client.RestTemplate;
 import jakarta.transaction.Transactional;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Service
 class PdfService {
 
-	private PdfRepository repository;
-	
-    @Value("${pdf.storage.location}")
-    private String storageLocation;
+	private final PdfRepository repository;
     
     PdfService(PdfRepository repository) {
 		this.repository = repository;
@@ -44,7 +38,7 @@ class PdfService {
     		repository.deleteById(oldestEntry);
     		
     		if (pdfPath != null) {
-    			Files.delete(Paths.get(pdfPath));
+    			deleteFile(pdfPath);
     		}
     	}
     	Pdf pdf = new Pdf(pdfTitle, requestTime);
@@ -81,31 +75,15 @@ class PdfService {
     
     ResponseEntity<byte[]> previewPdf(MicroserviceRequest microserviceRequest) {
     	RestTemplate restTemplate = new RestTemplate();
-
-    	// Configura os cabeçalhos da requisição
     	HttpHeaders headers = new HttpHeaders();
     	headers.setContentType(MediaType.APPLICATION_JSON);
     	HttpEntity<MicroserviceRequest> request = new HttpEntity<>(microserviceRequest, headers);
 
-    	// Faz a requisição POST para o microserviço Node.js
     	return restTemplate.exchange(
-    			"http://localhost:3001/preview-pdf", // URL do microserviço Node.js
+    			"http://localhost:3001/preview-pdf",
     			HttpMethod.POST,
     			request,
     			byte[].class
     			);
-    }
-    
-    private String savePdf(byte[] fileBytes, String pdfTitle) throws IOException {
-        Path storagePath = Paths.get(storageLocation);
-        
-        if (!Files.exists(storagePath)) {
-            Files.createDirectories(storagePath);
-        }
-        String fileName = UUID.randomUUID() + "_" + pdfTitle + ".pdf";
-        Path filePath = storagePath.resolve(fileName);
-        Files.write(filePath, fileBytes);
-
-        return filePath.toString();
     }
 }

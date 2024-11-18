@@ -17,7 +17,7 @@ class MysqlRepository extends TableRepository {
     	return tables;
     }
 	
-	Map<String, Map<String, String>> getColumnsFromTables(AllTables allTables) {
+	Map<String, Map<String, String>> getColumnsFromTable(String table) {
 		throw new UnsupportedOperationException("Método não implementado ainda");
 	}
 }

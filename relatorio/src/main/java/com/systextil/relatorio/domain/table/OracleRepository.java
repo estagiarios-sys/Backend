@@ -21,13 +21,13 @@ class OracleRepository {
         return tables;
     }
 	
-	Map<String, Map<String, String>> getColumnsFromTables(AllTables allTables) throws SQLException {
+	Map<String, String> getColumnsFromTables(String table) throws SQLException {
 		connection = new OracleConnection();
 		repository = new TableRepository();
 		connection.connect();
-		Map<String, Map<String, String>> tablesAndColumns = repository.getColumnsFromTables(connection.getIdConnection(), allTables);
+		Map<String, String> columns = repository.getColumnsFromTable(connection.getIdConnection(), table);
 		connection.disconnect();
 		
-		return tablesAndColumns;
+		return columns;
 	}
 }

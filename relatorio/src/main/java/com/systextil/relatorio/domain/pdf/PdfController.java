@@ -47,7 +47,6 @@ public class PdfController {
     public ResponseEntity<byte[]> previewPdf(@RequestBody MicroserviceRequest microserviceRequest) {
     	ResponseEntity<byte[]> response = service.previewPdf(microserviceRequest);
 
-    	// Retorna o PDF como resposta
     	return ResponseEntity.ok()
     			.contentType(MediaType.APPLICATION_PDF)
     			.body(response.getBody());

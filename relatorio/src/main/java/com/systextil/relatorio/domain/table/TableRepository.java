@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 class TableRepository {
 
@@ -26,31 +24,14 @@ class TableRepository {
         return tables;
     }
 	
-	Map<String, Map<String, String>> getColumnsFromTables(Connection idConnection, AllTables allTables) throws SQLException {
-		Map<String, Map<String, String>> tablesAndColumns = new LinkedHashMap<>();
+	Map<String, String> getColumnsFromTable(Connection idConnection, String table) throws SQLException {
 		DatabaseMetaData metaData = idConnection.getMetaData();
-		ResultSet mainTableData = metaData.getColumns(null, null, allTables.mainTable(), "%");
-		Map<String, String> mainTableColumns = new LinkedHashMap<>();
+		ResultSet tableData = metaData.getColumns(null, null, table, "%");
+		Map<String, String> columns = new LinkedHashMap<>();
 		
-		while(mainTableData.next()) {
-			mainTableColumns.put(mainTableData.getString("COLUMN_NAME"), mainTableData.getString("TYPE_NAME"));
+		while(tableData.next()) {
+			columns.put(tableData.getString("COLUMN_NAME"), tableData.getString("TYPE_NAME"));
 		}
-		tablesAndColumns.put(allTables.mainTable(), mainTableColumns);
-		
-		for (String tablesPair : allTables.tablesPairs()) {
-			Pattern pattern = Pattern.compile("\\b\\w+$");
-			Matcher matcher = pattern.matcher(tablesPair);
-			matcher.find();
-			String table = matcher.group();
-			
-			ResultSet tableData = metaData.getColumns(null, null, table, "%");
-			Map<String, String> tableColumns = new LinkedHashMap<>();
-			
-			while(tableData.next()) {
-				tableColumns.put(tableData.getString("COLUMN_NAME"), tableData.getString("TYPE_NAME"));
-			}
-			tablesAndColumns.put(table, tableColumns);
-		}
-		return tablesAndColumns;
+		return columns;
 	}
 }
