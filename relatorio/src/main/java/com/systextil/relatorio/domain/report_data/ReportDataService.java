@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.systextil.relatorio.domain.RelationshipData;
 import com.systextil.relatorio.domain.Totalizer;
-import com.systextil.relatorio.infra.exception_handler.CannotConnectToDataBaseException;
+import com.systextil.relatorio.infra.exception_handler.IllegalDataBaseTypeException;
 
 @Service
 class ReportDataService {
@@ -31,7 +31,6 @@ class ReportDataService {
     @Value("${database.type}")
     private final String dataBaseType;
     
-    private static final String NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE = "Tipo do banco de dados não configurado";
     private static final String MYSQL = "mysql";
     private static final String ORACLE = "oracle";
     
@@ -60,7 +59,7 @@ class ReportDataService {
         } else if (dataBaseType.equals(ORACLE)) {
         	reportData = oracleRepository.findDataByQuery(finalQuery, totalizersQuery);
         } else {
-    		throw new CannotConnectToDataBaseException(NOT_CONFIGURED_DATA_BASE_TYPE_MESSAGE);
+    		throw new IllegalDataBaseTypeException();
         }
         TreatedReportData treatedReportData = treatReportData(reportData, queryData.totalizers());
         List<String> columnsNameOrNickName = treatedReportData.columnsNameOrNickName();

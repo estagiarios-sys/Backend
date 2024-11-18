@@ -20,7 +20,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 
 import com.systextil.relatorio.domain.Totalizer;
-import com.systextil.relatorio.infra.exception_handler.CannotConnectToDataBaseException;
+import com.systextil.relatorio.infra.exception_handler.IllegalDataBaseTypeException;
 
 @SpringBootTest
 @TestPropertySource(properties = "database.type=sqlserver")
@@ -51,7 +51,7 @@ class ReportDataServiceTest {
 		when(queryData.totalizers()).thenReturn(mockTotalizers);
 		when(queryData.totalizers().isEmpty()).thenReturn(true);
 		
-		assertThrows(CannotConnectToDataBaseException.class, () -> service.getQueryReturn(queryData));
+		assertThrows(IllegalDataBaseTypeException.class, () -> service.getQueryReturn(queryData));
 	}
 	
 	@Test

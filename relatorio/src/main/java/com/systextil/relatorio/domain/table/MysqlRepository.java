@@ -2,6 +2,7 @@ package com.systextil.relatorio.domain.table;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import com.systextil.relatorio.infra.data_base_connection.MysqlConnection;
 
@@ -15,4 +16,8 @@ class MysqlRepository extends TableRepository {
     	
     	return tables;
     }
+	
+	Map<String, Map<String, String>> getColumnsFromTables(AllTables allTables) {
+		throw new UnsupportedOperationException("Método não implementado ainda");
+	}
 }

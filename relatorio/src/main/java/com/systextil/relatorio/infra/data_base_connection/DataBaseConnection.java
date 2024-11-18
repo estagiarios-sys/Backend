@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import com.systextil.relatorio.infra.exception_handler.CannotConnectToDataBaseException;
+import com.systextil.relatorio.infra.exception_handler.DataBaseConnectionException;
 
 
 /** Classe pai das classes que farão conexão com banco de dados */
@@ -15,11 +15,11 @@ class DataBaseConnection {
     private String url;
     private Connection idConnection;
 
-    public void connect() throws CannotConnectToDataBaseException {
+    public void connect() throws DataBaseConnectionException {
     	try {
 			this.idConnection = DriverManager.getConnection(url, user, password);
 		} catch (SQLException e) {
-			throw new CannotConnectToDataBaseException("Não foi possível conectar ao banco");
+			throw new DataBaseConnectionException("Não foi possível conectar ao banco");
 		}
 	}
 

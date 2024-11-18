@@ -47,17 +47,17 @@ public class RelatorioExceptionHandler {
     	
     	return ResponseEntity.status(HttpStatus.CONFLICT).body(errors);
     }
-    
-    @ExceptionHandler(TotalizerFieldsMismatchException.class)
-    public ResponseEntity<Map<String, String>> return400ErrorForTotalizerFieldsMismatchException(TotalizerFieldsMismatchException exception) {
+
+    @ExceptionHandler(DataBaseConnectionException.class)
+    public ResponseEntity<Map<String, String>> return500ErrorForDataBaseConnectionException(DataBaseConnectionException exception) {
     	Map<String, String> errors = new HashMap<>();
     	errors.put(MESSAGE, exception.getLocalizedMessage());
     	
-    	return ResponseEntity.badRequest().body(errors);
+    	return ResponseEntity.internalServerError().body(errors);
     }
-
-    @ExceptionHandler(CannotConnectToDataBaseException.class)
-    public ResponseEntity<Map<String, String>> return500ErrorForCannotConnectToDataBaseException(CannotConnectToDataBaseException exception) {
+    
+    @ExceptionHandler(IllegalDataBaseTypeException.class)
+    public ResponseEntity<Map<String, String>> return500ErrorForIllegalDataBaseTypeException(IllegalDataBaseTypeException exception) {
     	Map<String, String> errors = new HashMap<>();
     	errors.put(MESSAGE, exception.getLocalizedMessage());
     	
