@@ -19,6 +19,7 @@ import java.util.Map;
 public class RelatorioExceptionHandler {
 	
 	private static final String MESSAGE = "message";
+	private static final String INTERNAL_STATUS = "internal status";
 
     @ExceptionHandler(SQLSyntaxErrorException.class)
     public ResponseEntity<Map<String, String>> return400ErrorForSQLSyntaxError(SQLSyntaxErrorException exception) {
@@ -68,7 +69,7 @@ public class RelatorioExceptionHandler {
     @ExceptionHandler(HttpClientErrorException.class)
     public ResponseEntity<Map<String, String>> return500ErrorForHttpClientErrorException(HttpClientErrorException exception) {
     	Map<String, String> errors = new LinkedHashMap<>();
-    	errors.put("internal status", exception.getStatusText());
+    	errors.put(INTERNAL_STATUS, exception.getStatusText());
     	
     	return ResponseEntity.internalServerError().body(errors);
     }
@@ -76,7 +77,15 @@ public class RelatorioExceptionHandler {
     @ExceptionHandler(HttpServerErrorException.class)
     public ResponseEntity<Map<String, String>> return500ErrorForHttpServerErrorException(HttpServerErrorException exception) {
     	Map<String, String> errors = new LinkedHashMap<>();
-    	errors.put("internal status", exception.getStatusText());
+    	errors.put(INTERNAL_STATUS, exception.getStatusText());
+    	
+    	return ResponseEntity.internalServerError().body(errors);
+    }
+    
+    @ExceptionHandler(UnsupportedHttpStatusException.class)
+    public ResponseEntity<Map<String, Integer>> return500ErrorForUnsupportedHttpStatusException(UnsupportedHttpStatusException exception) {
+    	Map<String, Integer> errors = new LinkedHashMap<>();
+    	errors.put(INTERNAL_STATUS, exception.getHttpStatus().value());
     	
     	return ResponseEntity.internalServerError().body(errors);
     }

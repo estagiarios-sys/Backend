@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
+import com.systextil.relatorio.infra.exception_handler.UnsupportedHttpStatusException;
+
 import jakarta.transaction.Transactional;
 
 import java.io.IOException;
@@ -64,22 +66,28 @@ class PdfService {
     		noDataPdf.update(PdfStatus.ERRO);
         	repository.save(noDataPdf);
         	throw new HttpClientErrorException(response.getStatusCode());
-    	} else {
+    	} else if (response.getStatusCode().is5xxServerError()) {
     		noDataPdf.update(PdfStatus.ERRO);
         	repository.save(noDataPdf);
         	throw new HttpServerErrorException(response.getStatusCode());
+    	} else {
+    		noDataPdf.update(PdfStatus.ERRO);
+        	repository.save(noDataPdf);
+        	throw new UnsupportedHttpStatusException(response.getStatusCode());
     	}
     }
     
     byte[] previewPdf(MicroserviceRequest microserviceRequest) {
     	ResponseEntity<byte[]> response = microserviceClient.previewPdf(microserviceRequest);
     	
-    	if (response.getStatusCode().is4xxClientError()) {
+    	if (response.getStatusCode().is2xxSuccessful()) {
+    		return response.getBody();
+    	} else if (response.getStatusCode().is4xxClientError()) {
     		throw new HttpClientErrorException(response.getStatusCode());
     	} else if (response.getStatusCode().is5xxServerError()) {
     		throw new HttpServerErrorException(response.getStatusCode());
     	} else {
-    		return response.getBody();
+    		throw new UnsupportedHttpStatusException(response.getStatusCode());
     	}
     }
 }
