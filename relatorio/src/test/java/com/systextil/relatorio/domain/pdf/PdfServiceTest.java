@@ -2,11 +2,14 @@ package com.systextil.relatorio.domain.pdf;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.anything;
 
 import java.io.IOException;
-import java.nio.file.Files;
+import java.lang.reflect.Array;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -14,6 +17,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +25,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 @SpringBootTest
@@ -48,12 +54,12 @@ class PdfServiceTest {
 	@MockBean
 	private MicroserviceRequest mockMicroserviceRequest;
 	
-	private MockedStatic<Files> mockedFile;
+	private MockedStatic<StorageAccessor> mockedStorageAccessor;
 	
 	@BeforeAll
 	void setUp() {
 		mockStatic(LocalDateTime.class);
-		mockedFile = mockStatic(Files.class);
+		mockedStorageAccessor = mockStatic(StorageAccessor.class);
 		mockStatic(Paths.class);
 	}
 	
@@ -71,7 +77,7 @@ class PdfServiceTest {
 		service.createNoDataPdf("Título");
 		
 		verify(mockRepository, never()).deleteById(anyLong());
-		mockedFile.verify(() -> Files.delete(any()), never());
+		mockedStorageAccessor.verify(() -> StorageAccessor.deleteFile(anyString()), never());
 	}
 	
 	@Test
@@ -84,13 +90,26 @@ class PdfServiceTest {
 		service.createNoDataPdf("Título");
 		
 		verify(mockRepository).deleteById(anyLong());
-		mockedFile.verify(() -> Files.delete(any()));
+		mockedStorageAccessor.verify(() -> StorageAccessor.deleteFile(anyString()));
 	}
 	
 	@Test
-	@DisplayName("generatePdf")
-	void cenario3() {
+	@DisplayName("generatePdf: microserviço retorna 200")
+	void cenario3() throws IOException {
+		PdfSaving mockPdfSaving = mock(PdfSaving.class);
+		ResponseEntity mockResponseEntity = mock(ResponseEntity.ok(Byte.valueOf("123")));
+		when(mockRestTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), )).thenReturn(mockResponseEntity);
+		when(mockRepository.getReferenceById(anyLong())).thenReturn(mockPdf);
+
+		service.generatePdf(mockPdfSaving);
+		
+		mockedStorageAccessor.verify(() -> StorageAccessor.savePdf(any(byte[].class), anyString()));
+		verify(mockPdf).update(any(LocalDateTime.class), anyString());
 	}
 	
-	
+	@Test
+	@DisplayName("generatePdf: microserviço retorna 400")
+	void cenario4() {
+		
+	}
 }

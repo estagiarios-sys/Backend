@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.SQLSyntaxErrorException;
@@ -66,6 +67,14 @@ public class RelatorioExceptionHandler {
     
     @ExceptionHandler(HttpClientErrorException.class)
     public ResponseEntity<Map<String, String>> return500ErrorForHttpClientErrorException(HttpClientErrorException exception) {
+    	Map<String, String> errors = new LinkedHashMap<>();
+    	errors.put("internal status", exception.getStatusText());
+    	
+    	return ResponseEntity.internalServerError().body(errors);
+    }
+    
+    @ExceptionHandler(HttpServerErrorException.class)
+    public ResponseEntity<Map<String, String>> return500ErrorForHttpServerErrorException(HttpServerErrorException exception) {
     	Map<String, String> errors = new LinkedHashMap<>();
     	errors.put("internal status", exception.getStatusText());
     	

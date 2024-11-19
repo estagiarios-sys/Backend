@@ -2,14 +2,10 @@ package com.systextil.relatorio.domain.pdf;
 
 import static com.systextil.relatorio.domain.pdf.StorageAccessor.*;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.HttpServerErrorException;
 
 import jakarta.transaction.Transactional;
 
@@ -20,9 +16,11 @@ import java.time.LocalDateTime;
 class PdfService {
 
 	private final PdfRepository repository;
+	private final MicroserviceClient microserviceClient;
     
-    PdfService(PdfRepository repository) {
+    PdfService(PdfRepository repository, MicroserviceClient microserviceClient) {
 		this.repository = repository;
+		this.microserviceClient = microserviceClient;
 	}
 
     @Transactional
@@ -49,41 +47,39 @@ class PdfService {
     	Pdf noDataPdf = repository.getReferenceById(pdfSaving.pdfId());
     	noDataPdf.update(PdfStatus.GERANDO_PDF);
     	repository.save(noDataPdf);
-    	MicroserviceRequest microserviceRequest = new MicroserviceRequest(pdfSaving.fullTableHTML(), noDataPdf.getPdfTitle(), pdfSaving.imgPDF());
-    	RestTemplate restTemplate = new RestTemplate();
-    	HttpHeaders headers = new HttpHeaders();
-    	headers.setContentType(MediaType.APPLICATION_JSON);
-    	HttpEntity<MicroserviceRequest> request = new HttpEntity<>(microserviceRequest, headers);
-
-    	try {
-    		ResponseEntity<byte[]> response = restTemplate.exchange(
-        			"http://localhost:3001/generate-pdf",
-        			HttpMethod.POST,
-        			request,
-        			byte[].class
-        			);
-        	LocalDateTime generatedPdfTime = LocalDateTime.now();
-        	String filePath = savePdf(response.getBody(), noDataPdf.getPdfTitle());
-        	noDataPdf.update(generatedPdfTime, filePath);
-        	repository.save(noDataPdf);
-    	} catch (HttpClientErrorException exception) {
+    	
+    	ResponseEntity<byte[]> response = microserviceClient.generatePdf(
+    			new MicroserviceRequest(
+    					pdfSaving.fullTableHTML(),
+    					noDataPdf.getPdfTitle(),
+    					pdfSaving.imgPDF()
+    			)
+    	);
+    	if (response.getStatusCode().is2xxSuccessful()) {
+    		LocalDateTime generatedPdfTime = LocalDateTime.now();
+            String filePath = savePdf(response.getBody(), noDataPdf.getPdfTitle());
+            noDataPdf.update(generatedPdfTime, filePath);
+            repository.save(noDataPdf);
+    	} else if (response.getStatusCode().is4xxClientError()) {
     		noDataPdf.update(PdfStatus.ERRO);
-    		repository.save(noDataPdf);
-    		throw new HttpClientErrorException(exception.getStatusCode(), exception.getLocalizedMessage());
+        	repository.save(noDataPdf);
+        	throw new HttpClientErrorException(response.getStatusCode());
+    	} else {
+    		noDataPdf.update(PdfStatus.ERRO);
+        	repository.save(noDataPdf);
+        	throw new HttpServerErrorException(response.getStatusCode());
     	}
     }
     
-    ResponseEntity<byte[]> previewPdf(MicroserviceRequest microserviceRequest) {
-    	RestTemplate restTemplate = new RestTemplate();
-    	HttpHeaders headers = new HttpHeaders();
-    	headers.setContentType(MediaType.APPLICATION_JSON);
-    	HttpEntity<MicroserviceRequest> request = new HttpEntity<>(microserviceRequest, headers);
-
-    	return restTemplate.exchange(
-    			"http://localhost:3001/preview-pdf",
-    			HttpMethod.POST,
-    			request,
-    			byte[].class
-    			);
+    byte[] previewPdf(MicroserviceRequest microserviceRequest) {
+    	ResponseEntity<byte[]> response = microserviceClient.previewPdf(microserviceRequest);
+    	
+    	if (response.getStatusCode().is4xxClientError()) {
+    		throw new HttpClientErrorException(response.getStatusCode());
+    	} else if (response.getStatusCode().is5xxServerError()) {
+    		throw new HttpServerErrorException(response.getStatusCode());
+    	} else {
+    		return response.getBody();
+    	}
     }
 }

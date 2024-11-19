@@ -1,5 +1,7 @@
 package com.systextil.relatorio.domain.report_data;
 
+import static com.systextil.relatorio.domain.report_data.SqlGenerator.*;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,7 +44,7 @@ class ReportDataService {
     }
 
     Object[] getQueryReturn(QueryData queryData) throws ParseException, IOException, SQLException {
-    	String finalQuery = SqlGenerator.generateFinalQuery(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
+    	String finalQuery = generateFinalQuery(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
         
         if (dataBaseType.equals(ORACLE)) {
         	finalQuery = SqlWithDateConverter.toSqlWithDdMMMyyyy(finalQuery);
@@ -50,7 +52,7 @@ class ReportDataService {
         String totalizersQuery = null;
         
         if (!queryData.totalizers().isEmpty()) {
-        	totalizersQuery = SqlGenerator.generateTotalizersQuery(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
+        	totalizersQuery = generateTotalizersQuery(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
         }
         ReportData reportData = null;
         

@@ -45,11 +45,11 @@ public class PdfController {
 
     @PostMapping("preview")
     public ResponseEntity<byte[]> previewPdf(@RequestBody MicroserviceRequest microserviceRequest) {
-    	ResponseEntity<byte[]> response = service.previewPdf(microserviceRequest);
+    	byte[] response = service.previewPdf(microserviceRequest);
 
     	return ResponseEntity.ok()
     			.contentType(MediaType.APPLICATION_PDF)
-    			.body(response.getBody());
+    			.body(response);
     }
     
     @GetMapping
