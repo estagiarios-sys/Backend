@@ -2,32 +2,27 @@ package com.systextil.relatorio.domain.pdf;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.anything;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Collections;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
-import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+
+import com.systextil.relatorio.infra.exception_handler.UnsupportedHttpStatusException;
 
 @SpringBootTest
 @TestInstance(Lifecycle.PER_CLASS)
@@ -40,27 +35,19 @@ class PdfServiceTest {
 	private PdfRepository mockRepository;
 	
 	@MockBean
-	private Pdf mockPdf;
-	
-	@MockBean
-	private RestTemplate mockRestTemplate;
-	
-	@MockBean
-	private HttpHeaders mockHeaders;
-	
-	@MockBean
-	private HttpEntity<MicroserviceRequest> mockRequest;
-	
-	@MockBean
-	private MicroserviceRequest mockMicroserviceRequest;
+	private MicroserviceClient mockMicroserviceClient;
 	
 	private MockedStatic<StorageAccessor> mockedStorageAccessor;
+	private Pdf mockPdf;
 	
 	@BeforeAll
-	void setUp() {
-		mockStatic(LocalDateTime.class);
+	void staticMocks() {
 		mockedStorageAccessor = mockStatic(StorageAccessor.class);
-		mockStatic(Paths.class);
+	}
+	
+	@BeforeEach
+	void mocks() {
+		mockPdf = mock(Pdf.class);
 	}
 	
 	@AfterAll
@@ -94,22 +81,145 @@ class PdfServiceTest {
 	}
 	
 	@Test
-	@DisplayName("generatePdf: microserviço retorna 200")
+	@DisplayName("generatePdf: microserviço retorna 2xx")
 	void cenario3() throws IOException {
-		PdfSaving mockPdfSaving = mock(PdfSaving.class);
-		ResponseEntity mockResponseEntity = mock(ResponseEntity.ok(Byte.valueOf("123")));
-		when(mockRestTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), )).thenReturn(mockResponseEntity);
 		when(mockRepository.getReferenceById(anyLong())).thenReturn(mockPdf);
-
+		
+		@SuppressWarnings("unchecked")
+		ResponseEntity<byte[]> mockResponse = mock(ResponseEntity.class);
+		when(mockMicroserviceClient.generatePdf(any())).thenReturn(mockResponse);
+		
+		when(mockResponse.getStatusCode()).thenReturn(HttpStatusCode.valueOf(200));
+		
+		PdfSaving mockPdfSaving = mock(PdfSaving.class);
 		service.generatePdf(mockPdfSaving);
 		
-		mockedStorageAccessor.verify(() -> StorageAccessor.savePdf(any(byte[].class), anyString()));
-		verify(mockPdf).update(any(LocalDateTime.class), anyString());
+		mockedStorageAccessor.verify(() -> StorageAccessor.savePdf(any(), any()));
+		verify(mockPdf).update(any(), any());
 	}
 	
 	@Test
-	@DisplayName("generatePdf: microserviço retorna 400")
-	void cenario4() {
+	@DisplayName("generatePdf: microserviço retorna 4xx")
+	void cenario4() throws IOException {
+		when(mockRepository.getReferenceById(anyLong())).thenReturn(mockPdf);
 		
+		@SuppressWarnings("unchecked")
+		ResponseEntity<byte[]> mockResponse = mock(ResponseEntity.class);
+		when(mockMicroserviceClient.generatePdf(any())).thenReturn(mockResponse);
+		
+		when(mockResponse.getStatusCode()).thenReturn(HttpStatusCode.valueOf(400));
+		
+		PdfSaving mockPdfSaving = mock(PdfSaving.class);
+		
+		try {
+			service.generatePdf(mockPdfSaving);
+		} catch (HttpClientErrorException exception) {
+			verify(mockPdf).update(PdfStatus.ERRO);
+			return;
+		}
+		fail();
+	}
+	
+	@Test
+	@DisplayName("generatePdf: microserviço retorna 5xx")
+	void cenario5() throws IOException {
+		when(mockRepository.getReferenceById(anyLong())).thenReturn(mockPdf);
+		
+		@SuppressWarnings("unchecked")
+		ResponseEntity<byte[]> mockResponse = mock(ResponseEntity.class);
+		when(mockMicroserviceClient.generatePdf(any())).thenReturn(mockResponse);
+		
+		when(mockResponse.getStatusCode()).thenReturn(HttpStatusCode.valueOf(500));
+		
+		PdfSaving mockPdfSaving = mock(PdfSaving.class);
+		
+		try {
+			service.generatePdf(mockPdfSaving);	
+		} catch (HttpServerErrorException exception) {
+			verify(mockPdf).update(PdfStatus.ERRO);
+			return;
+		}
+		fail();
+	}
+	
+	@Test
+	@DisplayName("generatePdf: microsserviço retorna código de status não suportado")
+	void cenario6() throws IOException {
+		when(mockRepository.getReferenceById(anyLong())).thenReturn(mockPdf);
+		
+		@SuppressWarnings("unchecked")
+		ResponseEntity<byte[]> mockResponse = mock(ResponseEntity.class);
+		when(mockMicroserviceClient.generatePdf(any())).thenReturn(mockResponse);
+		
+		when(mockResponse.getStatusCode()).thenReturn(HttpStatusCode.valueOf(300));
+		
+		PdfSaving mockPdfSaving = mock(PdfSaving.class);
+		
+		try {
+			service.generatePdf(mockPdfSaving);	
+		} catch (UnsupportedHttpStatusException exception) {
+			verify(mockPdf).update(PdfStatus.ERRO);
+			return;
+		}
+		fail();
+	}
+	
+	@Test
+	@DisplayName("previewPdf: microsserviço retorna 2xx")
+	void cenario7() {
+		@SuppressWarnings("unchecked")
+		ResponseEntity<byte[]> mockResponse = mock(ResponseEntity.class);
+		when(mockMicroserviceClient.previewPdf(any())).thenReturn(mockResponse);
+		
+		byte[] expectedResponseBody = {1, 2, 3};
+		when(mockResponse.getStatusCode()).thenReturn(HttpStatusCode.valueOf(200));
+		when(mockResponse.getBody()).thenReturn(expectedResponseBody);
+		
+		MicroserviceRequest mockMicroserviceRequest = mock(MicroserviceRequest.class);
+		byte[] responseBody = service.previewPdf(mockMicroserviceRequest);
+		
+		assertArrayEquals(expectedResponseBody, responseBody);
+	}
+	
+	@Test
+	@DisplayName("previewPdf: microsserviço retorna 4xx")
+	void cenario8() {
+		@SuppressWarnings("unchecked")
+		ResponseEntity<byte[]> mockResponse = mock(ResponseEntity.class);
+		when(mockMicroserviceClient.previewPdf(any())).thenReturn(mockResponse);
+		
+		when(mockResponse.getStatusCode()).thenReturn(HttpStatusCode.valueOf(400));
+		
+		MicroserviceRequest mockMicroserviceRequest = mock(MicroserviceRequest.class);
+		
+		assertThrows(HttpClientErrorException.class, () -> service.previewPdf(mockMicroserviceRequest));
+	}
+	
+	@Test
+	@DisplayName("previewPdf: microsserviço retorna 5xx")
+	void cenario9() {
+		@SuppressWarnings("unchecked")
+		ResponseEntity<byte[]> mockResponse = mock(ResponseEntity.class);
+		when(mockMicroserviceClient.previewPdf(any())).thenReturn(mockResponse);
+		
+		when(mockResponse.getStatusCode()).thenReturn(HttpStatusCode.valueOf(500));
+		
+		MicroserviceRequest mockMicroserviceRequest = mock(MicroserviceRequest.class);
+		
+		assertThrows(HttpServerErrorException.class, () -> service.previewPdf(mockMicroserviceRequest));
+	}
+	
+	@Test
+	@DisplayName("previewPdf: microsserviço retorna código de status não suportado")
+	void cenario10() {
+		@SuppressWarnings("unchecked")
+		ResponseEntity<byte[]> mockResponse = mock(ResponseEntity.class);
+		when(mockMicroserviceClient.previewPdf(any())).thenReturn(mockResponse);
+		
+		when(mockResponse.getStatusCode()).thenReturn(HttpStatusCode.valueOf(300));
+		
+		MicroserviceRequest mockMicroserviceRequest = mock(MicroserviceRequest.class);
+		
+		assertThrows(UnsupportedHttpStatusException.class, () -> service.previewPdf(mockMicroserviceRequest));
 	}
 }
