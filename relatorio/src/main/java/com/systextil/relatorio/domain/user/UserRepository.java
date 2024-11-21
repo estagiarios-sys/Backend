@@ -13,13 +13,16 @@ import java.util.List;
 
 @Repository
 public class UserRepository {
-
-    private OracleConnection connection;
+	
+    private final OracleConnection connection;
+    
+    public UserRepository(OracleConnection connection) {
+    	this.connection = connection;
+    }
 
     boolean exists(String userName, int codigoEmpresa) throws SQLException {
-    	connection = new OracleConnection();
         connection.connect();
-
+        
         String sql = "SELECT 1 FROM HDOC_030 WHERE USUARIO = '" + userName + "' AND EMPRESA = " + codigoEmpresa;
         boolean exists = false;
         
@@ -33,7 +36,6 @@ public class UserRepository {
     }
 
     String getSenha(String userName, int codigoEmpresa) throws SQLException {
-    	connection = new OracleConnection();
         connection.connect();
 
         String sql = "SELECT SENHA FROM HDOC_030 WHERE USUARIO = '" + userName + "' AND EMPRESA = " + codigoEmpresa;
@@ -50,7 +52,6 @@ public class UserRepository {
     }
 
     public UserDetails getUser(String login) throws SQLException {
-    	connection = new OracleConnection();
         connection.connect();
 
         String sql = "SELECT USUARIO, SENHA FROM HDOC_030 WHERE USUARIO = '" + login + "'";
@@ -71,7 +72,6 @@ public class UserRepository {
     }
     
     List<Company> getCompanies() throws SQLException {
-    	connection = new OracleConnection();
     	connection.connect();
     	
     	List<Company> companies = new ArrayList<>();

@@ -5,15 +5,11 @@ import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -37,22 +33,14 @@ class PdfServiceTest {
 	@MockBean
 	private MicroserviceClient mockMicroserviceClient;
 	
-	private MockedStatic<StorageAccessor> mockedStorageAccessor;
+	@MockBean
+	private StorageAccessor mockStorageAccessor;
+	
 	private Pdf mockPdf;
-	
-	@BeforeAll
-	void staticMocks() {
-		mockedStorageAccessor = mockStatic(StorageAccessor.class);
-	}
-	
+
 	@BeforeEach
 	void mocks() {
 		mockPdf = mock(Pdf.class);
-	}
-	
-	@AfterAll
-	void clean() {
-		Mockito.clearAllCaches();
 	}
 	
 	@Test
@@ -64,7 +52,7 @@ class PdfServiceTest {
 		service.createNoDataPdf("Título");
 		
 		verify(mockRepository, never()).deleteById(anyLong());
-		mockedStorageAccessor.verify(() -> StorageAccessor.deleteFile(anyString()), never());
+		verify(mockStorageAccessor, never()).deleteFile(anyString());
 	}
 	
 	@Test
@@ -77,7 +65,7 @@ class PdfServiceTest {
 		service.createNoDataPdf("Título");
 		
 		verify(mockRepository).deleteById(anyLong());
-		mockedStorageAccessor.verify(() -> StorageAccessor.deleteFile(anyString()));
+		verify(mockStorageAccessor).deleteFile(anyString());
 	}
 	
 	@Test
@@ -94,7 +82,7 @@ class PdfServiceTest {
 		PdfSaving mockPdfSaving = mock(PdfSaving.class);
 		service.generatePdf(mockPdfSaving);
 		
-		mockedStorageAccessor.verify(() -> StorageAccessor.savePdf(any(), any()));
+		verify(mockStorageAccessor).savePdf(any(), any());
 		verify(mockPdf).update(any(), any());
 	}
 	
