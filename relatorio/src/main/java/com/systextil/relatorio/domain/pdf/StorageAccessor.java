@@ -16,7 +16,7 @@ class StorageAccessor {
     private String storageLocation;
 
 	void deleteFile(String filePath) throws IOException {
-		Files.delete(Paths.get(filePath));
+		Files.deleteIfExists(Paths.get(filePath));
 	}
 	
 	String savePdf(byte[] fileBytes, String pdfTitle) throws IOException {
