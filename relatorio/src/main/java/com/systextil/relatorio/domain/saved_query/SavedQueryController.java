@@ -29,6 +29,7 @@ public class SavedQueryController {
     }
     
     @GetMapping("{id}")
+    @Transactional
     public OneSavedQueryListing getSavedQueryById(@PathVariable Long id) {
     	return new OneSavedQueryListing(repository.getReferenceById(id));
     }

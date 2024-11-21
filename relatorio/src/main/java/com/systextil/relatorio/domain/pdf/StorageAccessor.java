@@ -7,21 +7,19 @@ import java.nio.file.Paths;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+@Component
 class StorageAccessor {
 	
 	@Value("${pdf.storage.location}")
-    private static String storageLocation;
-	
-	private StorageAccessor() {
-		throw new IllegalStateException("Classe utilitária");
-	}
+    private String storageLocation;
 
-	static void deleteFile(String filePath) throws IOException {
+	void deleteFile(String filePath) throws IOException {
 		Files.delete(Paths.get(filePath));
 	}
 	
-	static String savePdf(byte[] fileBytes, String pdfTitle) throws IOException {
+	String savePdf(byte[] fileBytes, String pdfTitle) throws IOException {
         Path storagePath = Paths.get(storageLocation);
         
         if (!Files.exists(storagePath)) {

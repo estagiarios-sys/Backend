@@ -1,7 +1,5 @@
 package com.systextil.relatorio.domain.pdf;
 
-import static com.systextil.relatorio.domain.pdf.StorageAccessor.*;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -19,10 +17,12 @@ class PdfService {
 
 	private final PdfRepository repository;
 	private final MicroserviceClient microserviceClient;
+	private final StorageAccessor storageAccessor;
     
-    PdfService(PdfRepository repository, MicroserviceClient microserviceClient) {
+    PdfService(PdfRepository repository, MicroserviceClient microserviceClient, StorageAccessor storageAccessor) {
 		this.repository = repository;
 		this.microserviceClient = microserviceClient;
+		this.storageAccessor = storageAccessor;
 	}
 
     @Transactional
@@ -38,13 +38,14 @@ class PdfService {
     		repository.deleteById(oldestEntry);
     		
     		if (pdfPath != null) {
-    			deleteFile(pdfPath);
+    			storageAccessor.deleteFile(pdfPath);
     		}
     	}
     	Pdf pdf = new Pdf(pdfTitle, requestTime);
     	return repository.save(pdf).getId();
     }
     
+    @Transactional
     void generatePdf(PdfSaving pdfSaving) throws IOException {
     	Pdf noDataPdf = repository.getReferenceById(pdfSaving.pdfId());
     	noDataPdf.update(PdfStatus.GERANDO_PDF);
@@ -59,7 +60,7 @@ class PdfService {
     	);
     	if (response.getStatusCode().is2xxSuccessful()) {
     		LocalDateTime generatedPdfTime = LocalDateTime.now();
-            String filePath = savePdf(response.getBody(), noDataPdf.getPdfTitle());
+            String filePath = storageAccessor.savePdf(response.getBody(), noDataPdf.getPdfTitle());
             noDataPdf.update(generatedPdfTime, filePath);
             repository.save(noDataPdf);
     	} else if (response.getStatusCode().is4xxClientError()) {
