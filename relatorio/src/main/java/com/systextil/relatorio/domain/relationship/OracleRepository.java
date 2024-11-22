@@ -25,8 +25,10 @@ class OracleRepository extends RelationshipRepository {
                 "  USER_CONS_COLUMNS rc ON c.R_CONSTRAINT_NAME = rc.CONSTRAINT_NAME " +
                 "WHERE " +
                 "  c.CONSTRAINT_TYPE = 'R' " +
+                "AND uc.POSITION = rc.POSITION " +
                 "ORDER BY " +
                 "  uc.TABLE_NAME, uc.COLUMN_NAME";
+                
         List<RelationshipData> listRelationshipData = super.getRelationshipsFromDataBase(connectionOracle.getIdConnection(), sql);
         connectionOracle.disconnect();
         
