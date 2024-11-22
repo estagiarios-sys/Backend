@@ -44,8 +44,9 @@ class ReportDataService {
     }
 
     Object[] getQueryReturn(QueryData queryData) throws ParseException, IOException, SQLException {
-    	String finalQuery = generateFinalQuery(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
-        
+    	String finalQuery = generateFinalQuery(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()), dataBaseType);
+        System.out.println(finalQuery);
+    	
         if (dataBaseType.equals(ORACLE)) {
         	finalQuery = SqlWithDateConverter.toSqlWithDdMMMyyyy(finalQuery);
         }

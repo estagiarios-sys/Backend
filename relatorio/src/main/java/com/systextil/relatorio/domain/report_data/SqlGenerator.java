@@ -11,7 +11,7 @@ class SqlGenerator {
 		throw new IllegalStateException("Classe utilitária");
 	}
 	
-	static String generateFinalQuery(String table, List<String> columns, List<String> conditions, String orderBy,  List<String> joins) {
+	static String generateFinalQuery(String table, List<String> columns, List<String> conditions, String orderBy,  List<String> joins, String dataBaseType) {
         String query = "SELECT ";
         query = query.concat(String.join(", ", columns));
         query = query.concat(" FROM ");
@@ -31,7 +31,9 @@ class SqlGenerator {
             query = query.concat(" ORDER BY ");
             query = query.concat(orderBy);
         }
-        
+        if (dataBaseType.equals("oracle")) {
+        	query = "SELECT * FROM ( " + query + " ) WHERE ROWNUM <= 10";
+        }
         return query;
     }
     

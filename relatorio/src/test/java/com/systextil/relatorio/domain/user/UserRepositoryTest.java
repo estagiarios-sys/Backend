@@ -40,13 +40,13 @@ class UserRepositoryTest {
 		
 		statement = h2Connection.getIdConnection().createStatement();
 		statement.execute("CREATE TABLE FATU_500 (CODIGO_EMPRESA INT, NOME_EMPRESA VARCHAR(255))");
-		statement.execute("INSERT INTO FATU_500 (CODIGO_EMPRESA, NOME_EMPRESA) VALUES (1, 'EMPRESA 1')");
-		statement.execute("INSERT INTO FATU_500 (CODIGO_EMPRESA, NOME_EMPRESA) VALUES (555, 'EMPRESA 555')");
+		statement.execute("INSERT INTO FATU_500 VALUES (1, 'EMPRESA 1')");
+		statement.execute("INSERT INTO FATU_500 VALUES (555, 'EMPRESA 555')");
 		
 		statement.execute("CREATE TABLE HDOC_030 (EMPRESA INT, USUARIO VARCHAR(255), SENHA VARCHAR(255))");
-		statement.execute("INSERT INTO HDOC_030 (EMPRESA, USUARIO, SENHA) VALUES (1, 'AAA', 'SENHA AAA')");
-		statement.execute("INSERT INTO HDOC_030 (EMPRESA, USUARIO, SENHA) VALUES (1, 'BBB', 'SENHA BBB')");
-		statement.execute("INSERT INTO HDOC_030 (EMPRESA, USUARIO, SENHA) VALUES (555, 'CCC', 'SENHA CCC')");		
+		statement.execute("INSERT INTO HDOC_030 VALUES (1, 'AAA', 'SENHA AAA')");
+		statement.execute("INSERT INTO HDOC_030 VALUES (1, 'BBB', 'SENHA BBB')");
+		statement.execute("INSERT INTO HDOC_030 VALUES (555, 'CCC', 'SENHA CCC')");		
 	}
 	
 	@BeforeEach

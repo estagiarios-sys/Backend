@@ -22,17 +22,16 @@ public class RelationshipRepository {
                 String columnName = data.getString("COLUMN_NAME");
                 String referencedTableName = data.getString("REFERENCED_TABLE_NAME");
                 String referencedColumnName = data.getString("REFERENCED_COLUMN_NAME");
-                String tableAndReferencedTable = tableName + " e " + referencedTableName;
+                String tablesPair = tableName + " e " + referencedTableName;
                 String join = "INNER JOIN " + referencedTableName + " ON " + tableName + "." + columnName + " = " + referencedTableName + "." + referencedColumnName;
-                RelationshipData relationshipData = new RelationshipData(tableAndReferencedTable, join);
+                RelationshipData relationshipData = new RelationshipData(tablesPair, join);
                 listRelationshipData.add(relationshipData);
-                String tableAndReferencedTableReversed = referencedTableName + " e " + tableName;
+                String tablesPairReversed = referencedTableName + " e " + tableName;
                 String joinReversed = "INNER JOIN " + tableName + " ON " + referencedTableName + "." + referencedColumnName + " = " + tableName + "." + columnName;
-                RelationshipData relationshipDataReversed = new RelationshipData(tableAndReferencedTableReversed, joinReversed);
+                RelationshipData relationshipDataReversed = new RelationshipData(tablesPairReversed, joinReversed);
                 listRelationshipData.add(relationshipDataReversed);
             }
     	}
-        
         return listRelationshipData;
     }
 }

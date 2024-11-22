@@ -33,6 +33,12 @@ class RelationshipService {
     private static final String FILE_NOT_FOUND_MESSAGE = "Arquivo não encontrado ou não legível: ";
     private static final String MYSQL = "mysql";
     private static final String ORACLE = "oracle";
+    
+    private final FindDuplicates findDuplicates;
+    
+    RelationshipService(FindDuplicates findDuplicates) {
+		this.findDuplicates = findDuplicates;
+	}
 	
 	Resource getRelationships() throws IOException {
         Path filePath = Paths.get(relationshipsJsonPath);
@@ -62,19 +68,28 @@ class RelationshipService {
         	} else {
         		throw new IllegalDataBaseTypeException();
         	}
-        	
-        	try(FileWriter fileWriter = new FileWriter(resourceWithJoins.getFile())) {
-        		fileWriter.write(objectMapper.writeValueAsString(relationships));
-        	}
-        	ArrayList<String> tables = new ArrayList<>();
-        	
+        	List<String> tablesPairs = new ArrayList<>();
+
         	for (RelationshipData relationship : relationships) {
-        		tables.add(relationship.tablesPair());
+        		tablesPairs.add(relationship.tablesPair());
         	}
         	
-        	try(FileWriter fileWriter = new FileWriter(resource.getFile())) {
-        		fileWriter.write(objectMapper.writeValueAsString(tables));
-        	}
+        	List<String> duplicates = findDuplicates.findDuplicates(tablesPairs);
+        	
+        	findDuplicates.cutDuplicates(duplicates, relationships);
+        	
+//        	try(FileWriter fileWriter = new FileWriter(resourceWithJoins.getFile())) {
+//        		fileWriter.write(objectMapper.writeValueAsString(relationships));
+//        	}
+//        	ArrayList<String> tables = new ArrayList<>();
+//        	
+//        	for (RelationshipData relationship : relationships) {
+//        		tables.add(relationship.tablesPair());
+//        	}
+//        	
+//        	try(FileWriter fileWriter = new FileWriter(resource.getFile())) {
+//        		fileWriter.write(objectMapper.writeValueAsString(tables));
+//        	}
         } else {
         	throw new FileNotFoundException(FILE_NOT_FOUND_MESSAGE + filePath);
         }

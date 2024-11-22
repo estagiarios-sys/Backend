@@ -38,7 +38,7 @@ class ReportDataServiceTest {
 	Map<String, Totalizer> mockTotalizers;
 	
 	@AfterAll
-	static void clean() {
+	static void tearDownAll() {
 		Mockito.clearAllCaches();
 	}
 
@@ -46,7 +46,7 @@ class ReportDataServiceTest {
 	@DisplayName("getQueryReturn")
 	void cenario1() {
 		mockStatic(SqlGenerator.class);
-		when(SqlGenerator.generateFinalQuery(anyString(), anyList(), anyList(), anyString(), anyList())).thenReturn("");
+		when(SqlGenerator.generateFinalQuery(anyString(), anyList(), anyList(), anyString(), anyList(), anyString())).thenReturn("");
 		
 		when(queryData.totalizers()).thenReturn(mockTotalizers);
 		when(queryData.totalizers().isEmpty()).thenReturn(true);

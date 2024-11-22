@@ -1,13 +1,13 @@
 package com.systextil.relatorio.domain.user;
 
+import static br.com.intersys.systextil.global.Criptografia.desembaralha;
+
 import java.sql.SQLException;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.systextil.relatorio.infra.jwt.JwtService;
-
-import br.com.intersys.systextil.global.Criptografia;
 
 @Service
 class UserService {
@@ -28,7 +28,7 @@ class UserService {
             String senhaDesembaralhada = null;
 
             try {
-                senhaDesembaralhada = Criptografia.desembaralha(senha);
+                senhaDesembaralhada = desembaralha(senha);
             } catch (NumberFormatException exception) {
                 if (usuario.getPassword().equals(senha)) {
                     String token = jwtService.generateToken(usuario.getUsername());
