@@ -1,98 +1,97 @@
 package com.systextil.relatorio.domain.report_data;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 
+import com.systextil.relatorio.infra.data_base_connection.H2Connection;
+
+@TestInstance(Lifecycle.PER_CLASS)
 class ReportDataRepositoryTest {
 
-	private Connection mockConnection;
-	private PreparedStatement mockPreparedStatement;
-	private ResultSet mockResultSet;
+	private H2Connection connection;
+	private Statement statement;
 	private ReportDataRepository repository;
 	
+	@BeforeAll
+	void setUpAll() throws SQLException {
+		connection = new H2Connection();
+		connection.connect();
+		
+		statement = connection.getIdConnection().createStatement();
+		statement.execute("CREATE TABLE CLIENTE (ID INT, NOME VARCHAR(255), IDADE INT)");
+		statement.execute("INSERT INTO CLIENTE VALUES (1, 'AAA', 10)");
+		statement.execute("INSERT INTO CLIENTE VALUES (2, 'BBB', 20)");
+		statement.execute("INSERT INTO CLIENTE VALUES (3, 'CCC', 30)");
+		
+		statement.execute("CREATE TABLE COMPRA (ID INT, VALOR FLOAT, CLIENTE_ID INT)");
+		statement.execute("INSERT INTO COMPRA VALUES (1, 100.0, 3)");
+		statement.execute("INSERT INTO COMPRA VALUES (2, 200.0, 2)");
+		statement.execute("INSERT INTO COMPRA VALUES (3, 300.0, 1)");
+	}
+	
 	@BeforeEach
-	void setUp() throws SQLException {
-		mockConnection = mock(Connection.class);
-		
-		mockPreparedStatement = mock(PreparedStatement.class);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStatement);
-		
-		mockResultSet = mock(ResultSet.class);
-		
+	void setUp() {
 		repository = new ReportDataRepository();
+	}
+	
+	@AfterAll
+	void tearDownAll() throws SQLException {
+		statement.execute("DROP TABLE CLIENTE");
+		statement.execute("DROP TABLE COMPRA");
+		connection.disconnect();
 	}
 	
 	@Test
 	@DisplayName("findDataByFinalQuery")
-	void cenario1() throws SQLException, NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
-        when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
-
-        ResultSetMetaData mockMetaData = mock(ResultSetMetaData.class);
-        when(mockResultSet.getMetaData()).thenReturn(mockMetaData);
-        when(mockMetaData.getColumnCount()).thenReturn(3);
-
-        when(mockMetaData.getColumnLabel(1)).thenReturn("id_cliente");
-        when(mockMetaData.getColumnLabel(2)).thenReturn("name");
-        when(mockMetaData.getColumnLabel(3)).thenReturn("value");
-
-        when(mockResultSet.next()).thenReturn(true, true, false);
-        when(mockResultSet.getString(1)).thenReturn("1", "2");
-        when(mockResultSet.getString(2)).thenReturn("John Doe", "Jane Doe");
-        when(mockResultSet.getString(3)).thenReturn("100", "200");
-
-        Method findDataByFinalQuery = repository.getClass().getDeclaredMethod("findDataByFinalQuery", Connection.class, String.class);
+	void cenario1() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
+        Method findDataByFinalQuery = ReportDataRepository.class.getDeclaredMethod("findDataByFinalQuery", Connection.class, String.class);
         findDataByFinalQuery.setAccessible(true);
-
-        ReportData reportData = (ReportData) findDataByFinalQuery.invoke(repository, mockConnection, "SELECT table1.id, table1.name, table1.value FROM table1");
-
+        
+        String sql = "SELECT CLIENTE.NOME AS \"NOME DO CLIENTE\", CLIENTE.IDADE, COMPRA.VALOR FROM CLIENTE INNER JOIN COMPRA ON CLIENTE.ID = COMPRA.CLIENTE_ID";
+        ReportData reportData = (ReportData) findDataByFinalQuery.invoke(repository, connection.getIdConnection(), sql);
+        
         Map<String, String> expectedColumnsNameAndNickName = new LinkedHashMap<>();
-        expectedColumnsNameAndNickName.put("table1.id", "id_cliente");
-        expectedColumnsNameAndNickName.put("table1.name", null);
-        expectedColumnsNameAndNickName.put("table1.value", null);
-
-        ArrayList<Object[]> expectedFoundObjects = new ArrayList<>();
-        expectedFoundObjects.add(new Object[]{"1", "John Doe", "100"});
-        expectedFoundObjects.add(new Object[]{"2", "Jane Doe", "200"});
-
+        expectedColumnsNameAndNickName.put("CLIENTE.NOME", "NOME DO CLIENTE");
+        expectedColumnsNameAndNickName.put("CLIENTE.IDADE", null);
+        expectedColumnsNameAndNickName.put("COMPRA.VALOR", null);
+        
+        List<Object[]> expectedListObjects = new ArrayList<>();
+        expectedListObjects.add(new Object[] {"AAA", "10", "300.0"});
+        expectedListObjects.add(new Object[] {"BBB", "20", "200.0"});
+        expectedListObjects.add(new Object[] {"CCC", "30", "100.0"});
+        
         assertEquals(expectedColumnsNameAndNickName, reportData.columnsNameAndNickName());
-        assertArrayEquals(expectedFoundObjects.toArray(), reportData.foundObjects().toArray());
+        assertArrayEquals(expectedListObjects.toArray(), reportData.foundObjects().toArray());
 	}
 	
 	@Test
 	@DisplayName("findDataByTotalizersQuery")
-	void cenario2() throws SQLException, NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
-		when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
-		
-		ResultSetMetaData mockResultSetMetaData = mock(ResultSetMetaData.class);
-		when(mockResultSet.getMetaData()).thenReturn(mockResultSetMetaData);
-		
-		when(mockResultSetMetaData.getColumnCount()).thenReturn(3);
-		
-		when(mockResultSet.getInt(anyInt())).thenReturn(140, 665, 875);
-		
+	void cenario2() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
 		Method findDataByTotalizersQuery = repository.getClass().getDeclaredMethod("findDataByTotalizersQuery", Connection.class, String.class);
 		findDataByTotalizersQuery.setAccessible(true);
 		
+		String sql = "SELECT COUNT(CLIENTE.ID), SUM(COMPRA.VALOR) FROM CLIENTE INNER JOIN COMPRA ON CLIENTE.ID = COMPRA.CLIENTE_ID";
 		@SuppressWarnings("unchecked")
-		List<String> totalizersResults = (List<String>) findDataByTotalizersQuery.invoke(repository, mockConnection, "query");
+		List<String> totalizersResults = (List<String>) findDataByTotalizersQuery.invoke(repository, connection.getIdConnection(), sql);
 		
-		List<String> expectedTotalizersResults = List.of("140", "665", "875");
+		List<String> expectedTotalizersResults = List.of("3", "600");
 		
 		assertEquals(expectedTotalizersResults, totalizersResults);
 	}

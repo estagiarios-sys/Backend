@@ -96,9 +96,9 @@ class UserRepositoryTest {
 	@Test
 	@DisplayName("getUser: assertEquals")
 	void cenario5() throws SQLException {
-		UserDetails expectedUserDetails = new User("AAA", "SENHA AAA", Collections.emptyList());
-		
 		UserDetails userDetails = repository.getUser("AAA");
+		
+		UserDetails expectedUserDetails = new User("AAA", "SENHA AAA", Collections.emptyList());
 		
 		assertEquals(expectedUserDetails, userDetails);
 	}
@@ -106,9 +106,9 @@ class UserRepositoryTest {
 	@Test
 	@DisplayName("getUser: assertNotEquals")
 	void cenario6() throws SQLException {
-		UserDetails expectedUserDetails = new User("AAA", "SENHA AAA", Collections.emptyList());
-		
 		UserDetails userDetails = repository.getUser("BBB");
+		
+		UserDetails expectedUserDetails = new User("AAA", "SENHA AAA", Collections.emptyList());
 		
 		assertNotEquals(expectedUserDetails, userDetails);
 	}
@@ -116,13 +116,13 @@ class UserRepositoryTest {
 	@Test
 	@DisplayName("getCompanies")
 	void cenario7() throws SQLException {
+		List<Company> companies = repository.getCompanies();
+		
 		Company firstExpectedCompany = new Company(1, "EMPRESA 1");
 		Company secondExpectedCompany = new Company(555, "EMPRESA 555");
 		List<Company> expectedCompanies = new ArrayList<>();
 		expectedCompanies.add(firstExpectedCompany);
 		expectedCompanies.add(secondExpectedCompany);
-		
-		List<Company> companies = repository.getCompanies();
 		
 		assertIterableEquals(expectedCompanies, companies);
 	}
