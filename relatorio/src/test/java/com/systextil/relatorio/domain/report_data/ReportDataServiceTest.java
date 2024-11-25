@@ -16,8 +16,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.systextil.relatorio.domain.Totalizer;
 import com.systextil.relatorio.infra.exception_handler.IllegalDataBaseTypeException;
@@ -31,10 +31,10 @@ class ReportDataServiceTest {
 	@Autowired
 	private ReportDataService service;
 	
-	@MockBean
+	@MockitoBean
 	private QueryData queryData;
 	
-	@MockBean
+	@MockitoBean
 	Map<String, Totalizer> mockTotalizers;
 	
 	@AfterAll
@@ -46,7 +46,7 @@ class ReportDataServiceTest {
 	@DisplayName("getQueryReturn")
 	void cenario1() {
 		mockStatic(SqlGenerator.class);
-		when(SqlGenerator.generateFinalQuery(anyString(), anyList(), anyList(), anyString(), anyList(), anyString())).thenReturn("");
+		when(SqlGenerator.generateFinalQuery(anyString(), anyList(), anyList(), anyString(), anyList())).thenReturn("");
 		
 		when(queryData.totalizers()).thenReturn(mockTotalizers);
 		when(queryData.totalizers().isEmpty()).thenReturn(true);

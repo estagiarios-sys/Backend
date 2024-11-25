@@ -21,8 +21,7 @@ class SqlGeneratorTest {
 				List.of("COLUNA1", "COLUNA2"),
 				List.of("COLUNA1 > 100", "COLUNA2 < 100"),
 				"COLUNA1 DESC",
-				List.of("JOIN TABELA2 ON COLUNA1 = COLUNA2", "JOIN TABELA3 ON COLUNA1 = COLUNA2"),
-				""
+				List.of("JOIN TABELA2 ON COLUNA1 = COLUNA2", "JOIN TABELA3 ON COLUNA1 = COLUNA2")
 				);
 		String expectedQuery = "SELECT COLUNA1, COLUNA2 "
 								+ "FROM TABELA1 "
@@ -42,8 +41,7 @@ class SqlGeneratorTest {
 				List.of("COLUNA1", "COLUNA2"),
 				Collections.emptyList(),
 				"COLUNA1 DESC",
-				List.of("JOIN TABELA2 ON COLUNA1 = COLUNA2", "JOIN TABELA3 ON COLUNA1 = COLUNA2"),
-				""
+				List.of("JOIN TABELA2 ON COLUNA1 = COLUNA2", "JOIN TABELA3 ON COLUNA1 = COLUNA2")
 				);
 		String expectedQuery = "SELECT COLUNA1, COLUNA2 "
 								+ "FROM TABELA1 "
@@ -62,8 +60,7 @@ class SqlGeneratorTest {
 				List.of("COLUNA1", "COLUNA2"),
 				List.of("COLUNA1 > 100", "COLUNA2 < 100"),
 				"",
-				List.of("JOIN TABELA2 ON COLUNA1 = COLUNA2", "JOIN TABELA3 ON COLUNA1 = COLUNA2"),
-				""
+				List.of("JOIN TABELA2 ON COLUNA1 = COLUNA2", "JOIN TABELA3 ON COLUNA1 = COLUNA2")
 				);
 		String expectedQuery = "SELECT COLUNA1, COLUNA2 "
 								+ "FROM TABELA1 "
@@ -81,8 +78,7 @@ class SqlGeneratorTest {
 				List.of("COLUNA1", "COLUNA2"),
 				List.of("COLUNA1 > 100", "COLUNA2 < 100"),
 				"COLUNA1 DESC",
-				Collections.emptyList(),
-				""
+				Collections.emptyList()
 				);
 		String expectedQuery = "SELECT COLUNA1, COLUNA2 "
 								+ "FROM TABELA1 "

@@ -12,9 +12,9 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
@@ -27,13 +27,13 @@ class PdfServiceTest {
 	@Autowired
 	private PdfService service;
 	
-	@MockBean
+	@MockitoBean
 	private PdfRepository mockRepository;
 	
-	@MockBean
+	@MockitoBean
 	private MicroserviceClient mockMicroserviceClient;
-	
-	@MockBean
+
+	@MockitoBean
 	private PdfStorageAccessor mockStorageAccessor;
 	
 	private Pdf mockPdf;
