@@ -34,7 +34,7 @@ class PdfServiceTest {
 	private MicroserviceClient mockMicroserviceClient;
 	
 	@MockBean
-	private StorageAccessor mockStorageAccessor;
+	private PdfStorageAccessor mockStorageAccessor;
 	
 	private Pdf mockPdf;
 

@@ -17,9 +17,9 @@ class PdfService {
 
 	private final PdfRepository repository;
 	private final MicroserviceClient microserviceClient;
-	private final StorageAccessor storageAccessor;
+	private final PdfStorageAccessor storageAccessor;
     
-    PdfService(PdfRepository repository, MicroserviceClient microserviceClient, StorageAccessor storageAccessor) {
+    PdfService(PdfRepository repository, MicroserviceClient microserviceClient, PdfStorageAccessor storageAccessor) {
 		this.repository = repository;
 		this.microserviceClient = microserviceClient;
 		this.storageAccessor = storageAccessor;

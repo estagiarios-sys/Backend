@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-class StorageAccessor {
+class PdfStorageAccessor {
 	
 	@Value("${pdf.storage.location}")
     private String storageLocation;

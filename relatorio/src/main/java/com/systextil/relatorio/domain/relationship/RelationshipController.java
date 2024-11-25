@@ -26,8 +26,8 @@ public class RelationshipController {
     }
 	
 	@PutMapping
-    public ResponseEntity<Void> setRelationshipsFromDatabaseIntoJson() throws SQLException, IOException {
-        service.setRelationshipsFromDatabaseIntoJson();
+    public ResponseEntity<Void> setRelationshipsIntoJson() throws SQLException, IOException {
+        service.setRelationshipsIntoJson();
         
         return ResponseEntity.ok(null);
     }
