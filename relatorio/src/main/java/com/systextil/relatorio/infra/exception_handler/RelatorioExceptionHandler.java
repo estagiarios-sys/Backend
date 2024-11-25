@@ -12,14 +12,15 @@ import org.springframework.web.client.HttpServerErrorException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.SQLSyntaxErrorException;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @RestControllerAdvice
 public class RelatorioExceptionHandler {
 	
+	private final Logger logger = Logger.getLogger(getClass().getName());
 	private static final String MESSAGE = "message";
-	private static final String INTERNAL_STATUS = "internal status";
 
     @ExceptionHandler(SQLSyntaxErrorException.class)
     public ResponseEntity<Map<String, String>> return400ErrorForSQLSyntaxError(SQLSyntaxErrorException exception) {
@@ -67,26 +68,23 @@ public class RelatorioExceptionHandler {
     }
     
     @ExceptionHandler(HttpClientErrorException.class)
-    public ResponseEntity<Map<String, String>> return500ErrorForHttpClientErrorException(HttpClientErrorException exception) {
-    	Map<String, String> errors = new LinkedHashMap<>();
-    	errors.put(INTERNAL_STATUS, exception.getStatusText());
+    public ResponseEntity<Void> return500ErrorForHttpClientErrorException(HttpClientErrorException exception) {
+    	logger.log(Level.SEVERE, exception.getLocalizedMessage());
     	
-    	return ResponseEntity.internalServerError().body(errors);
+    	return ResponseEntity.internalServerError().build();
     }
     
     @ExceptionHandler(HttpServerErrorException.class)
-    public ResponseEntity<Map<String, String>> return500ErrorForHttpServerErrorException(HttpServerErrorException exception) {
-    	Map<String, String> errors = new LinkedHashMap<>();
-    	errors.put(INTERNAL_STATUS, exception.getStatusText());
+    public ResponseEntity<Void> return500ErrorForHttpServerErrorException(HttpServerErrorException exception) {
+    	logger.log(Level.SEVERE, exception.getLocalizedMessage());
     	
-    	return ResponseEntity.internalServerError().body(errors);
+    	return ResponseEntity.internalServerError().build();
     }
     
     @ExceptionHandler(UnsupportedHttpStatusException.class)
-    public ResponseEntity<Map<String, Integer>> return500ErrorForUnsupportedHttpStatusException(UnsupportedHttpStatusException exception) {
-    	Map<String, Integer> errors = new LinkedHashMap<>();
-    	errors.put(INTERNAL_STATUS, exception.getHttpStatus().value());
+    public ResponseEntity<Void> return500ErrorForUnsupportedHttpStatusException(UnsupportedHttpStatusException exception) {
+    	logger.log(Level.SEVERE, exception.getLocalizedMessage());
     	
-    	return ResponseEntity.internalServerError().body(errors);
+    	return ResponseEntity.internalServerError().build();
     }
 }

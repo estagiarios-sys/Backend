@@ -46,7 +46,7 @@ class ReportDataControllerTest {
 				.perform(post("/report-data"))
 				.andReturn()
 				.getResponse();
-		
+
 		assertEquals(400, response.getStatus());
 	}
 

@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 
 @Service
 class PdfService {
-
+	
 	private final PdfRepository repository;
 	private final MicroserviceClient microserviceClient;
 	private final PdfStorageAccessor storageAccessor;
@@ -50,27 +50,30 @@ class PdfService {
     	Pdf noDataPdf = repository.getReferenceById(pdfSaving.pdfId());
     	noDataPdf.update(PdfStatus.GERANDO_PDF);
     	repository.save(noDataPdf);
+    	ResponseEntity<byte[]> response = null;
     	
-    	ResponseEntity<byte[]> response = microserviceClient.generatePdf(
-    			new MicroserviceRequest(
-    					pdfSaving.fullTableHTML(),
-    					noDataPdf.getPdfTitle(),
-    					pdfSaving.imgPDF()
-    			)
-    	);
+    	try {
+    		response = microserviceClient.generatePdf(
+        			new MicroserviceRequest(
+        					pdfSaving.fullTableHTML(),
+        					noDataPdf.getPdfTitle(),
+        					pdfSaving.imgPDF()
+        			)
+        	);
+    	} catch (HttpClientErrorException exception) {
+    		noDataPdf.update(PdfStatus.ERRO);
+        	repository.save(noDataPdf);
+        	throw new HttpClientErrorException(exception.getLocalizedMessage(), exception.getStatusCode(), exception.getStatusText(), null, null, null);
+		} catch (HttpServerErrorException exception) {
+			noDataPdf.update(PdfStatus.ERRO);
+        	repository.save(noDataPdf);
+        	throw new HttpServerErrorException(exception.getLocalizedMessage(), exception.getStatusCode(), exception.getStatusText(), null, null, null);
+		}
     	if (response.getStatusCode().is2xxSuccessful()) {
     		LocalDateTime generatedPdfTime = LocalDateTime.now();
             String filePath = storageAccessor.savePdf(response.getBody(), noDataPdf.getPdfTitle());
             noDataPdf.update(generatedPdfTime, filePath);
             repository.save(noDataPdf);
-    	} else if (response.getStatusCode().is4xxClientError()) {
-    		noDataPdf.update(PdfStatus.ERRO);
-        	repository.save(noDataPdf);
-        	throw new HttpClientErrorException(response.getStatusCode());
-    	} else if (response.getStatusCode().is5xxServerError()) {
-    		noDataPdf.update(PdfStatus.ERRO);
-        	repository.save(noDataPdf);
-        	throw new HttpServerErrorException(response.getStatusCode());
     	} else {
     		noDataPdf.update(PdfStatus.ERRO);
         	repository.save(noDataPdf);
