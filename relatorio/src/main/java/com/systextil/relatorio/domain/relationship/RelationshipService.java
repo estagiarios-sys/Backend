@@ -34,10 +34,10 @@ class RelationshipService {
     private static final String MYSQL = "mysql";
     private static final String ORACLE = "oracle";
     
-    private final FindDuplicates findDuplicates;
+    private final MultiJoinReducer multiJoinReducer;
     
-    RelationshipService(FindDuplicates findDuplicates) {
-		this.findDuplicates = findDuplicates;
+    RelationshipService(MultiJoinReducer multiJoinReducer) {
+		this.multiJoinReducer = multiJoinReducer;
 	}
 	
 	Resource getRelationships() throws IOException {
@@ -59,37 +59,34 @@ class RelationshipService {
         
         if (resourceWithJoins.isReadable() && resourceWithJoins.exists()) {
         	ObjectMapper objectMapper = new ObjectMapper();
-        	List<RelationshipData> relationships = null;
+        	List<RelationshipData> impreciseRelationships = null;
         	
         	if (dataBaseType.equals(MYSQL)) {
-        		relationships = new MysqlRepository().getRelationshipsFromDataBase();
+        		impreciseRelationships = new MysqlRepository().getRelationshipsFromDataBase();
         	} else if (dataBaseType.equals(ORACLE)) {
-        		relationships = new OracleRepository().getRelationshipsFromDataBase();
+        		impreciseRelationships = new OracleRepository().getRelationshipsFromDataBase();
         	} else {
         		throw new IllegalDataBaseTypeException();
         	}
         	List<String> tablesPairs = new ArrayList<>();
 
+        	for (RelationshipData relationship : impreciseRelationships) {
+        		tablesPairs.add(relationship.tablesPair());
+        	}
+        	List<String> duplicates = multiJoinReducer.findDuplicates(tablesPairs);
+        	List<RelationshipData> relationships = multiJoinReducer.cutDuplicates(duplicates, impreciseRelationships);
+        	
+        	try(FileWriter fileWriter = new FileWriter(resourceWithJoins.getFile())) {
+        		fileWriter.write(objectMapper.writeValueAsString(relationships));
+        	}
+        	tablesPairs = new ArrayList<>();
+        	
         	for (RelationshipData relationship : relationships) {
         		tablesPairs.add(relationship.tablesPair());
         	}
-        	
-        	List<String> duplicates = findDuplicates.findDuplicates(tablesPairs);
-        	
-        	findDuplicates.cutDuplicates(duplicates, relationships);
-        	
-//        	try(FileWriter fileWriter = new FileWriter(resourceWithJoins.getFile())) {
-//        		fileWriter.write(objectMapper.writeValueAsString(relationships));
-//        	}
-//        	ArrayList<String> tables = new ArrayList<>();
-//        	
-//        	for (RelationshipData relationship : relationships) {
-//        		tables.add(relationship.tablesPair());
-//        	}
-//        	
-//        	try(FileWriter fileWriter = new FileWriter(resource.getFile())) {
-//        		fileWriter.write(objectMapper.writeValueAsString(tables));
-//        	}
+        	try(FileWriter fileWriter = new FileWriter(resource.getFile())) {
+        		fileWriter.write(objectMapper.writeValueAsString(tablesPairs));
+        	}
         } else {
         	throw new FileNotFoundException(FILE_NOT_FOUND_MESSAGE + filePath);
         }
