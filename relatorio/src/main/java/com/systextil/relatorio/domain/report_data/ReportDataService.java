@@ -44,7 +44,7 @@ class ReportDataService {
     }
 
     Object[] getQueryReturn(QueryData queryData) throws ParseException, IOException, SQLException {
-    	String finalQuery = generateFinalQuery(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()), dataBaseType);
+    	String finalQuery = generateFinalQuery(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
     	
         if (dataBaseType.equals(ORACLE)) {
         	finalQuery = SqlWithDateConverter.toSqlWithDdMMMyyyy(finalQuery);
@@ -69,6 +69,25 @@ class ReportDataService {
         Map<String, String> columnsAndTotalizersResult = treatedReportData.columnsAndTotalizersResult();
         
         return new Object[]{finalQuery, totalizersQuery, columnsNameOrNickName, foundObjects, columnsAndTotalizersResult};
+    }
+    
+    double getQueryAnalysis(QueryData queryData) throws SQLException, IOException {
+    	int actualTime = 0;
+    	
+    	if (dataBaseType.equals(MYSQL)) {
+    		
+    	} else if (dataBaseType.equals(ORACLE)) {
+    		String[] finalQueryAnaysis = OracleSqlGenerator.generateFinalQueryAnalysis(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
+    		String[] totalizersQueryAnalysis = null;
+    		
+    		if (!queryData.totalizers().isEmpty()) {
+        		totalizersQueryAnalysis = OracleSqlGenerator.generateTotalizersQueryAnalysis(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
+        	}
+    		actualTime = oracleRepository.getActualTimeFromQueries(finalQueryAnaysis, totalizersQueryAnalysis);
+    	} else {
+    		throw new IllegalDataBaseTypeException();
+    	}
+    	return actualTime;
     }
     
 	private TreatedReportData treatReportData(ReportData reportData, Map<String, Totalizer> totalizers) {

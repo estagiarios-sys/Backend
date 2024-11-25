@@ -11,7 +11,7 @@ class SqlGenerator {
 		throw new IllegalStateException("Classe utilitária");
 	}
 	
-	static String generateFinalQuery(String table, List<String> columns, List<String> conditions, String orderBy,  List<String> joins, String dataBaseType) {
+	static String generateFinalQuery(String table, List<String> columns, List<String> conditions, String orderBy,  List<String> joins) {
         String query = "SELECT ";
         query = query.concat(String.join(", ", columns));
         query = query.concat(" FROM ");
