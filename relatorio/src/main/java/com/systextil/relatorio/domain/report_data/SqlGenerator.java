@@ -31,9 +31,6 @@ class SqlGenerator {
             query = query.concat(" ORDER BY ");
             query = query.concat(orderBy);
         }
-        if (dataBaseType.equals("oracle")) {
-        	query = "SELECT * FROM ( " + query + " ) WHERE ROWNUM <= 10";
-        }
         return query;
     }
     
