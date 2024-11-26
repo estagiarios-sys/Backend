@@ -11,7 +11,6 @@ import jakarta.transaction.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 class PdfService {
@@ -47,10 +46,15 @@ class PdfService {
     }
 
     @Transactional
-    Optional<RuntimeException> generatePdf(PdfSaving pdfSaving) throws IOException {
-    	Pdf noDataPdf = repository.getReferenceById(pdfSaving.pdfId());
+    Pdf setStatusGerandoPdf(Long pdfId) {
+    	Pdf noDataPdf = repository.getReferenceById(pdfId);
     	noDataPdf.update(PdfStatus.GERANDO_PDF);
     	repository.save(noDataPdf);
+    	
+    	return noDataPdf;
+    }
+
+    void generatePdf(PdfSaving pdfSaving, Pdf noDataPdf) throws IOException {
     	ResponseEntity<byte[]> response = null;
     	
     	try {
@@ -64,22 +68,21 @@ class PdfService {
     	} catch (HttpClientErrorException exception) {
     		noDataPdf.update(PdfStatus.ERRO);
         	repository.save(noDataPdf);
-        	return Optional.of(new HttpClientErrorException(exception.getLocalizedMessage(), exception.getStatusCode(), exception.getStatusText(), null, null, null));
+        	throw new HttpClientErrorException(exception.getLocalizedMessage(), exception.getStatusCode(), exception.getStatusText(), null, null, null);
 		} catch (HttpServerErrorException exception) {
 			noDataPdf.update(PdfStatus.ERRO);
         	repository.save(noDataPdf);
-        	return Optional.of(new HttpServerErrorException(exception.getLocalizedMessage(), exception.getStatusCode(), exception.getStatusText(), null, null, null));
+        	throw new HttpServerErrorException(exception.getLocalizedMessage(), exception.getStatusCode(), exception.getStatusText(), null, null, null);
 		}
     	if (response.getStatusCode().is2xxSuccessful()) {
     		LocalDateTime generatedPdfTime = LocalDateTime.now();
             String filePath = storageAccessor.savePdf(response.getBody(), noDataPdf.getPdfTitle());
             noDataPdf.update(generatedPdfTime, filePath);
             repository.save(noDataPdf);
-            return Optional.empty();
     	} else {
     		noDataPdf.update(PdfStatus.ERRO);
         	repository.save(noDataPdf);
-        	return Optional.of(new UnsupportedHttpStatusException(response.getStatusCode()));
+        	throw new UnsupportedHttpStatusException(response.getStatusCode());
     	}
     }
 
