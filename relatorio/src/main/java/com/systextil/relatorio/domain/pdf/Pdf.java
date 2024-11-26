@@ -35,7 +35,7 @@ public class Pdf {
 		this.path = path;
 		this.status = PdfStatus.CONCLUIDO.toString();
 	}
-	
+
 	public void update(PdfStatus status) {
 		this.status = status.toString();
 	}

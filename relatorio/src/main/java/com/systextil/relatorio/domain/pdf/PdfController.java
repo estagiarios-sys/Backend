@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -38,8 +39,11 @@ public class PdfController {
 	
     @PutMapping("set-data")
     public ResponseEntity<Pdf> generatePdf(@RequestBody PdfSaving pdfSaving) throws IOException {
-    	service.generatePdf(pdfSaving);
-
+    	Optional<RuntimeException> exceptionToBeThrown = service.generatePdf(pdfSaving);
+    	
+    	if (exceptionToBeThrown.isPresent()) {
+    		throw exceptionToBeThrown.get();
+    	}
     	return ResponseEntity.ok().build();
     }
 

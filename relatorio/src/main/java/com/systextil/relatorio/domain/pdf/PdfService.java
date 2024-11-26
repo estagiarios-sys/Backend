@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 class PdfService {
@@ -44,9 +45,9 @@ class PdfService {
     	Pdf pdf = new Pdf(pdfTitle, requestTime);
     	return repository.save(pdf).getId();
     }
-    
+
     @Transactional
-    void generatePdf(PdfSaving pdfSaving) throws IOException {
+    Optional<RuntimeException> generatePdf(PdfSaving pdfSaving) throws IOException {
     	Pdf noDataPdf = repository.getReferenceById(pdfSaving.pdfId());
     	noDataPdf.update(PdfStatus.GERANDO_PDF);
     	repository.save(noDataPdf);
@@ -63,33 +64,30 @@ class PdfService {
     	} catch (HttpClientErrorException exception) {
     		noDataPdf.update(PdfStatus.ERRO);
         	repository.save(noDataPdf);
-        	throw new HttpClientErrorException(exception.getLocalizedMessage(), exception.getStatusCode(), exception.getStatusText(), null, null, null);
+        	return Optional.of(new HttpClientErrorException(exception.getLocalizedMessage(), exception.getStatusCode(), exception.getStatusText(), null, null, null));
 		} catch (HttpServerErrorException exception) {
 			noDataPdf.update(PdfStatus.ERRO);
         	repository.save(noDataPdf);
-        	throw new HttpServerErrorException(exception.getLocalizedMessage(), exception.getStatusCode(), exception.getStatusText(), null, null, null);
+        	return Optional.of(new HttpServerErrorException(exception.getLocalizedMessage(), exception.getStatusCode(), exception.getStatusText(), null, null, null));
 		}
     	if (response.getStatusCode().is2xxSuccessful()) {
     		LocalDateTime generatedPdfTime = LocalDateTime.now();
             String filePath = storageAccessor.savePdf(response.getBody(), noDataPdf.getPdfTitle());
             noDataPdf.update(generatedPdfTime, filePath);
             repository.save(noDataPdf);
+            return Optional.empty();
     	} else {
     		noDataPdf.update(PdfStatus.ERRO);
         	repository.save(noDataPdf);
-        	throw new UnsupportedHttpStatusException(response.getStatusCode());
+        	return Optional.of(new UnsupportedHttpStatusException(response.getStatusCode()));
     	}
     }
-    
+
     byte[] previewPdf(MicroserviceRequest microserviceRequest) {
     	ResponseEntity<byte[]> response = microserviceClient.previewPdf(microserviceRequest);
     	
     	if (response.getStatusCode().is2xxSuccessful()) {
     		return response.getBody();
-    	} else if (response.getStatusCode().is4xxClientError()) {
-    		throw new HttpClientErrorException(response.getStatusCode());
-    	} else if (response.getStatusCode().is5xxServerError()) {
-    		throw new HttpServerErrorException(response.getStatusCode());
     	} else {
     		throw new UnsupportedHttpStatusException(response.getStatusCode());
     	}
