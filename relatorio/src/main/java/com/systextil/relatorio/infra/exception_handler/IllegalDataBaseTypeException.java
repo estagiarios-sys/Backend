@@ -4,7 +4,7 @@ public class IllegalDataBaseTypeException extends IllegalArgumentException {
 
 	private static final long serialVersionUID = 1L;
 
-	public IllegalDataBaseTypeException() {
-		super("Tipo do banco de dados não reconhecido");
+	public IllegalDataBaseTypeException(String dataBaseType) {
+		super("Tipo do banco de dados não reconhecido ou suportado: " + dataBaseType + ". Confira no application.properties");
 	}
 }

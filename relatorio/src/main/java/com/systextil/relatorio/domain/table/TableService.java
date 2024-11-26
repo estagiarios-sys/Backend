@@ -64,7 +64,7 @@ class TableService {
 				tablesAndColumns.put(table, oracleRepository.getColumnsFromTables(table));
 			}
 		} else {
-			throw new IllegalDataBaseTypeException();
+			throw new IllegalDataBaseTypeException(dataBaseType);
 		}
 		return tablesAndColumns;
 	}
@@ -84,7 +84,7 @@ class TableService {
             } else if (dataBaseType.equals(ORACLE)) {
             	tablesAndColumns = oracleRepository.getTables();
             } else {
-        		throw new IllegalDataBaseTypeException();
+        		throw new IllegalDataBaseTypeException(dataBaseType);
             }
             String json = objectMapper.writeValueAsString(tablesAndColumns);
             

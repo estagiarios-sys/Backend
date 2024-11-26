@@ -61,7 +61,7 @@ class ReportDataService {
         } else if (dataBaseType.equals(ORACLE)) {
         	reportData = oracleRepository.findDataByQuery(finalQuery, totalizersQuery);
         } else {
-    		throw new IllegalDataBaseTypeException();
+    		throw new IllegalDataBaseTypeException(dataBaseType);
         }
         TreatedReportData treatedReportData = treatReportData(reportData, queryData.totalizers());
         List<String> columnsNameOrNickName = treatedReportData.columnsNameOrNickName();
@@ -85,7 +85,7 @@ class ReportDataService {
         	}
     		actualTime = oracleRepository.getActualTimeFromQueries(finalQueryAnaysis, totalizersQueryAnalysis);
     	} else {
-    		throw new IllegalDataBaseTypeException();
+    		throw new IllegalDataBaseTypeException(dataBaseType);
     	}
     	return actualTime;
     }

@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 
 @RestControllerAdvice
 public class RelatorioExceptionHandler {
-	
+
 	private final Logger logger = Logger.getLogger(getClass().getName());
 	private static final String MESSAGE = "message";
 
@@ -27,7 +27,7 @@ public class RelatorioExceptionHandler {
     	Map<String, String> errors = new HashMap<>();
     	errors.put(MESSAGE, "Não foi possível montar o SQL. Verifique os dados passados no JSON");
         errors.put("exception message", exception.getLocalizedMessage());
-    	
+
         return ResponseEntity.badRequest().body(errors);
     }
 
@@ -42,49 +42,47 @@ public class RelatorioExceptionHandler {
         }
         return ResponseEntity.badRequest().body(errors);
     }
-    
+
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     public ResponseEntity<Map<String, String>> return400ErrorForDuplicateEntry(SQLIntegrityConstraintViolationException exception) {
     	Map<String, String> errors = new HashMap<>();
     	errors.put(MESSAGE, exception.getLocalizedMessage());
-    	
+
     	return ResponseEntity.status(HttpStatus.CONFLICT).body(errors);
     }
 
     @ExceptionHandler(DataBaseConnectionException.class)
-    public ResponseEntity<Map<String, String>> return500ErrorForDataBaseConnectionException(DataBaseConnectionException exception) {
-    	Map<String, String> errors = new HashMap<>();
-    	errors.put(MESSAGE, exception.getLocalizedMessage());
-    	
-    	return ResponseEntity.internalServerError().body(errors);
+    public ResponseEntity<Void> return500ErrorForDataBaseConnectionException(DataBaseConnectionException exception) {
+    	logger.log(Level.SEVERE, exception.getLocalizedMessage());
+
+    	return ResponseEntity.internalServerError().build();
     }
-    
+
     @ExceptionHandler(IllegalDataBaseTypeException.class)
-    public ResponseEntity<Map<String, String>> return500ErrorForIllegalDataBaseTypeException(IllegalDataBaseTypeException exception) {
-    	Map<String, String> errors = new HashMap<>();
-    	errors.put(MESSAGE, exception.getLocalizedMessage());
-    	
-    	return ResponseEntity.internalServerError().body(errors);
+    public ResponseEntity<Void> return500ErrorForIllegalDataBaseTypeException(IllegalDataBaseTypeException exception) {
+    	logger.log(Level.SEVERE, exception.getLocalizedMessage());
+
+    	return ResponseEntity.internalServerError().build();
     }
-    
+
     @ExceptionHandler(HttpClientErrorException.class)
     public ResponseEntity<Void> return500ErrorForHttpClientErrorException(HttpClientErrorException exception) {
     	logger.log(Level.SEVERE, exception.getLocalizedMessage());
-    	
+
     	return ResponseEntity.internalServerError().build();
     }
-    
+
     @ExceptionHandler(HttpServerErrorException.class)
     public ResponseEntity<Void> return500ErrorForHttpServerErrorException(HttpServerErrorException exception) {
     	logger.log(Level.SEVERE, exception.getLocalizedMessage());
-    	
+
     	return ResponseEntity.internalServerError().build();
     }
-    
+
     @ExceptionHandler(UnsupportedHttpStatusException.class)
     public ResponseEntity<Void> return500ErrorForUnsupportedHttpStatusException(UnsupportedHttpStatusException exception) {
     	logger.log(Level.SEVERE, exception.getLocalizedMessage());
-    	
+
     	return ResponseEntity.internalServerError().build();
     }
 }

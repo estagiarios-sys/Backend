@@ -43,7 +43,7 @@ class RelationshipService {
         } else if (dataBaseType.equals(ORACLE)) {
         	impreciseRelationships = new OracleRepository().getRelationshipsFromDataBase();
         } else {
-        	throw new IllegalDataBaseTypeException();
+        	throw new IllegalDataBaseTypeException(dataBaseType);
         }
         List<String> tablesPairs = new ArrayList<>();
 

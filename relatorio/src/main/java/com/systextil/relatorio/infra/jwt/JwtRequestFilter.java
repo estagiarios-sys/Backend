@@ -2,6 +2,8 @@ package com.systextil.relatorio.infra.jwt;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,17 +12,18 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.systextil.relatorio.domain.user.UserRepository;
+import com.systextil.relatorio.infra.exception_handler.DataBaseConnectionException;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponseWrapper;
 
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final JwtService service;
-
     private final UserRepository userRepository;
 
     public JwtRequestFilter(JwtService service, UserRepository userRepository) {
@@ -30,7 +33,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
-        String tokenJWT = recuperarToken(request);
+        final Logger logger = Logger.getLogger(getClass().getName());
+        final HttpServletResponseWrapper wrappedResponse = new HttpServletResponseWrapper(response);
+    	String tokenJWT = recuperarToken(request);
         
         if (tokenJWT != null) {
             String subject = service.getUsernameToken(tokenJWT);
@@ -38,6 +43,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             
 			try {
 				usuario = userRepository.getUser(subject);
+			} catch (DataBaseConnectionException exception) {
+				logger.log(Level.SEVERE, exception.getLocalizedMessage());
+				wrappedResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+				return;
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
