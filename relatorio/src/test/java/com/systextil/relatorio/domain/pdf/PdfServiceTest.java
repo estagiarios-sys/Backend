@@ -71,8 +71,6 @@ class PdfServiceTest {
 	@Test
 	@DisplayName("generatePdf: microserviço retorna 2xx")
 	void cenario3() throws IOException {
-		when(mockRepository.getReferenceById(anyLong())).thenReturn(mockPdf);
-		
 		@SuppressWarnings("unchecked")
 		ResponseEntity<byte[]> mockResponse = mock(ResponseEntity.class);
 		when(mockMicroserviceClient.generatePdf(any())).thenReturn(mockResponse);
@@ -80,7 +78,7 @@ class PdfServiceTest {
 		when(mockResponse.getStatusCode()).thenReturn(HttpStatusCode.valueOf(200));
 		
 		PdfSaving mockPdfSaving = mock(PdfSaving.class);
-		service.generatePdf(mockPdfSaving);
+		service.generatePdf(mockPdfSaving, mockPdf);
 		
 		verify(mockStorageAccessor).savePdf(any(), any());
 		verify(mockPdf).update(any(), any());
@@ -89,18 +87,12 @@ class PdfServiceTest {
 	@Test
 	@DisplayName("generatePdf: microserviço retorna 4xx")
 	void cenario4() throws IOException {
-		when(mockRepository.getReferenceById(anyLong())).thenReturn(mockPdf);
-		
-		@SuppressWarnings("unchecked")
-		ResponseEntity<byte[]> mockResponse = mock(ResponseEntity.class);
-		when(mockMicroserviceClient.generatePdf(any())).thenReturn(mockResponse);
-		
-		when(mockResponse.getStatusCode()).thenReturn(HttpStatusCode.valueOf(400));
+		when(mockMicroserviceClient.generatePdf(any())).thenThrow(HttpClientErrorException.class);
 		
 		PdfSaving mockPdfSaving = mock(PdfSaving.class);
 		
 		try {
-			service.generatePdf(mockPdfSaving);
+			service.generatePdf(mockPdfSaving, mockPdf);
 		} catch (HttpClientErrorException exception) {
 			verify(mockPdf).update(PdfStatus.ERRO);
 			return;
@@ -111,18 +103,12 @@ class PdfServiceTest {
 	@Test
 	@DisplayName("generatePdf: microserviço retorna 5xx")
 	void cenario5() throws IOException {
-		when(mockRepository.getReferenceById(anyLong())).thenReturn(mockPdf);
-		
-		@SuppressWarnings("unchecked")
-		ResponseEntity<byte[]> mockResponse = mock(ResponseEntity.class);
-		when(mockMicroserviceClient.generatePdf(any())).thenReturn(mockResponse);
-		
-		when(mockResponse.getStatusCode()).thenReturn(HttpStatusCode.valueOf(500));
+		when(mockMicroserviceClient.generatePdf(any())).thenThrow(HttpServerErrorException.class);
 		
 		PdfSaving mockPdfSaving = mock(PdfSaving.class);
 		
 		try {
-			service.generatePdf(mockPdfSaving);	
+			service.generatePdf(mockPdfSaving, mockPdf);	
 		} catch (HttpServerErrorException exception) {
 			verify(mockPdf).update(PdfStatus.ERRO);
 			return;
@@ -133,8 +119,6 @@ class PdfServiceTest {
 	@Test
 	@DisplayName("generatePdf: microsserviço retorna código de status não suportado")
 	void cenario6() throws IOException {
-		when(mockRepository.getReferenceById(anyLong())).thenReturn(mockPdf);
-		
 		@SuppressWarnings("unchecked")
 		ResponseEntity<byte[]> mockResponse = mock(ResponseEntity.class);
 		when(mockMicroserviceClient.generatePdf(any())).thenReturn(mockResponse);
@@ -144,7 +128,7 @@ class PdfServiceTest {
 		PdfSaving mockPdfSaving = mock(PdfSaving.class);
 		
 		try {
-			service.generatePdf(mockPdfSaving);	
+			service.generatePdf(mockPdfSaving, mockPdf);	
 		} catch (UnsupportedHttpStatusException exception) {
 			verify(mockPdf).update(PdfStatus.ERRO);
 			return;
@@ -167,34 +151,6 @@ class PdfServiceTest {
 		byte[] responseBody = service.previewPdf(mockMicroserviceRequest);
 		
 		assertArrayEquals(expectedResponseBody, responseBody);
-	}
-	
-	@Test
-	@DisplayName("previewPdf: microsserviço retorna 4xx")
-	void cenario8() {
-		@SuppressWarnings("unchecked")
-		ResponseEntity<byte[]> mockResponse = mock(ResponseEntity.class);
-		when(mockMicroserviceClient.previewPdf(any())).thenReturn(mockResponse);
-		
-		when(mockResponse.getStatusCode()).thenReturn(HttpStatusCode.valueOf(400));
-		
-		MicroserviceRequest mockMicroserviceRequest = mock(MicroserviceRequest.class);
-		
-		assertThrows(HttpClientErrorException.class, () -> service.previewPdf(mockMicroserviceRequest));
-	}
-	
-	@Test
-	@DisplayName("previewPdf: microsserviço retorna 5xx")
-	void cenario9() {
-		@SuppressWarnings("unchecked")
-		ResponseEntity<byte[]> mockResponse = mock(ResponseEntity.class);
-		when(mockMicroserviceClient.previewPdf(any())).thenReturn(mockResponse);
-		
-		when(mockResponse.getStatusCode()).thenReturn(HttpStatusCode.valueOf(500));
-		
-		MicroserviceRequest mockMicroserviceRequest = mock(MicroserviceRequest.class);
-		
-		assertThrows(HttpServerErrorException.class, () -> service.previewPdf(mockMicroserviceRequest));
 	}
 	
 	@Test
