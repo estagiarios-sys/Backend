@@ -75,7 +75,7 @@ class ReportDataService {
     	int actualTime = 0;
     	
     	if (dataBaseType.equals(MYSQL)) {
-    		
+    		throw new IllegalStateException("MySQL ainda não é 100% suportado");
     	} else if (dataBaseType.equals(ORACLE)) {
     		String[] finalQueryAnaysis = OracleSqlGenerator.generateFinalQueryAnalysis(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
     		String[] totalizersQueryAnalysis = null;
