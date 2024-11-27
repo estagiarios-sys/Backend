@@ -71,32 +71,42 @@ class UserServiceTest {
 		assertEquals("", response.getBody());
 	}
 	
-//	@Test
-//	@DisplayName("login: desembaralha lança exception e senha está correta")
-//	void cenario3() throws SQLException {
-//		when(repository.exists(anyString(), anyInt())).thenReturn(true);
-//		when(repository.getSenha(anyString(), anyInt())).thenReturn("123");
-//		when(desembaralha(any())).thenThrow(NumberFormatException.class);
-//		when(jwtService.generateToken(anyString())).thenReturn("token");
-//		
-//		LoginRequest loginRequest = new LoginRequest(1, "login", "123");
-//		ResponseEntity<String> response = service.login(loginRequest);
-//		
-//		assertEquals(200, response.getStatusCode().value());
-//		assertEquals("token", response.getBody());
-//	}
-//	
-//	@Test
-//	@DisplayName("login: desembaralha lança exception e senha está incorreta")
-//	void cenario4() throws SQLException {
-//		when(repository.exists(anyString(), anyInt())).thenReturn(true);
-//		when(repository.getSenha(anyString(), anyInt())).thenReturn("321");
-//		when(desembaralha(any())).thenThrow(NumberFormatException.class);
-//		
-//		LoginRequest loginRequest = new LoginRequest(1, "login", "123");
-//		ResponseEntity<String> response = service.login(loginRequest);
-//		
-//		assertEquals(401, response.getStatusCode().value());
-//		assertEquals("", response.getBody());
-//	}
+	@Test
+	@DisplayName("login: desembaralha lança exception e senha está correta")
+	void cenario3() throws SQLException {
+		when(repository.exists(anyString(), anyInt())).thenReturn(true);
+		when(repository.getSenha(anyString(), anyInt())).thenReturn("123");
+		when(desembaralha(any())).thenThrow(NumberFormatException.class);
+		when(jwtService.generateToken(anyString())).thenReturn("token");
+		
+		LoginRequest loginRequest = new LoginRequest(1, "login", "123");
+		ResponseEntity<String> response = service.login(loginRequest);
+		
+		assertEquals(200, response.getStatusCode().value());
+		assertEquals("token", response.getBody());
+	}
+
+	@Test
+	@DisplayName("login: desembaralha lança exception e senha está incorreta")
+	void cenario4() throws SQLException {
+		when(repository.exists(anyString(), anyInt())).thenReturn(true);
+		when(repository.getSenha(anyString(), anyInt())).thenReturn("321");
+
+		LoginRequest loginRequest = new LoginRequest(1, "login", "123");
+		ResponseEntity<String> response = service.login(loginRequest);
+		
+		assertEquals(401, response.getStatusCode().value());
+		assertEquals("", response.getBody());
+	}
+	
+	@Test
+	@DisplayName("login: usuário não existe")
+	void cenario5() throws SQLException {
+		when(repository.exists(anyString(), anyInt())).thenReturn(false);
+		
+		LoginRequest loginRequest = new LoginRequest(1, "login", "123");
+		ResponseEntity<String> response = service.login(loginRequest);
+		
+		assertEquals(404, response.getStatusCode().value());
+	}
 }

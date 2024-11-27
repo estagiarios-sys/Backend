@@ -22,7 +22,7 @@ class UserService {
 	
 	ResponseEntity<String> login(LoginRequest loginRequest) throws SQLException {
 		User usuario = new User(loginRequest);
-
+		
         if (repository.exists(usuario.getUsername(), usuario.getCodigoEmpresa())) {
             String senha = repository.getSenha(usuario.getUsername(), usuario.getCodigoEmpresa());
             String senhaDesembaralhada = null;
