@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("pdf")
@@ -37,7 +38,7 @@ public class PdfController {
 	}
 	
     @PutMapping("set-data")
-    public ResponseEntity<Pdf> generatePdf(@RequestBody PdfSaving pdfSaving) throws IOException {
+    public ResponseEntity<Pdf> generatePdf(@RequestBody @Valid PdfSaving pdfSaving) throws IOException {
     	Pdf noDataPdf = service.setStatusGerandoPdf(pdfSaving.pdfId());
     	service.generatePdf(pdfSaving, noDataPdf);
 
@@ -45,7 +46,7 @@ public class PdfController {
     }
 
     @PostMapping("preview")
-    public ResponseEntity<byte[]> previewPdf(@RequestBody MicroserviceRequest microserviceRequest) {
+    public ResponseEntity<byte[]> previewPdf(@RequestBody @Valid MicroserviceRequest microserviceRequest) {
     	byte[] response = service.previewPdf(microserviceRequest);
 
     	return ResponseEntity.ok()

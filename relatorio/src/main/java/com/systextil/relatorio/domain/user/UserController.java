@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 import java.sql.SQLException;
 import java.util.List;
 
@@ -26,7 +28,7 @@ public class UserController {
     }
 
     @PostMapping("login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) throws SQLException {
+    public ResponseEntity<String> login(@RequestBody @Valid LoginRequest loginRequest) throws SQLException {
         return service.login(loginRequest);
     }
 }
