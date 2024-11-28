@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
+import java.net.ConnectException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.SQLSyntaxErrorException;
 import java.util.HashMap;
@@ -83,6 +84,13 @@ public class RelatorioExceptionHandler {
     public ResponseEntity<Void> return500ErrorForUnsupportedHttpStatusException(UnsupportedHttpStatusException exception) {
     	logger.log(Level.SEVERE, exception.getLocalizedMessage());
 
+    	return ResponseEntity.internalServerError().build();
+    }
+    
+    @ExceptionHandler(ConnectException.class)
+    public ResponseEntity<Void> return500ErrorForConnectException(ConnectException exception) {
+    	logger.log(Level.SEVERE, exception.getLocalizedMessage());
+    	
     	return ResponseEntity.internalServerError().build();
     }
 }

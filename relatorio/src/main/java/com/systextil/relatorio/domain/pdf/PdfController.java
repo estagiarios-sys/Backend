@@ -21,8 +21,8 @@ import jakarta.validation.Valid;
 @RequestMapping("pdf")
 public class PdfController {
 
-	private PdfRepository repository;
-	private PdfService service;
+	private final PdfRepository repository;
+	private final PdfService service;
 	
 	public PdfController(PdfRepository repository, PdfService service) {
 		this.repository = repository;
@@ -38,7 +38,7 @@ public class PdfController {
 	}
 	
     @PutMapping("set-data")
-    public ResponseEntity<Pdf> generatePdf(@RequestBody @Valid PdfSaving pdfSaving) throws IOException {
+    public ResponseEntity<Void> generatePdf(@RequestBody @Valid PdfSaving pdfSaving) throws IOException {
     	Pdf noDataPdf = service.setStatusGerandoPdf(pdfSaving.pdfId());
     	service.generatePdf(pdfSaving, noDataPdf);
 

@@ -1,9 +1,12 @@
 package com.systextil.relatorio.domain.user;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 record LoginRequest(
-	@NotBlank
+	@NotNull
+	@Positive
 	int codigoEmpresa,
 	@NotBlank
     String login,
