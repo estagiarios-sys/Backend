@@ -29,12 +29,17 @@ class TableService {
     @Value("${database.type}")
     private String dataBaseType;
     
-    private MysqlRepository mysqlRepository;
-    private OracleRepository oracleRepository;
+    private final TableOracleRepository oracleRepository;
+    private final TableMysqlRepository mysqlRepository;
 	
     private static final String FILE_NOT_FOUND_MESSAGE = "Arquivo não encontrado ou não legível: ";
     private static final String MYSQL = "mysql";
     private static final String ORACLE = "oracle";
+    
+    TableService(TableMysqlRepository mysqlRepository, TableOracleRepository oracleRepository) {
+    	this.oracleRepository = oracleRepository;
+    	this.mysqlRepository = mysqlRepository;
+    }
 	
 	Resource getTables() throws IOException {
     	Path filePath = Paths.get(tablesJsonFilePath);
@@ -48,7 +53,6 @@ class TableService {
     }
 	
 	Map<String, Map<String, String>> getColumnsFromTables(AllTables allTables) throws SQLException {
-		oracleRepository = new OracleRepository();
 		Map<String, Map<String, String>> tablesAndColumns = new LinkedHashMap<>();
 		
 		if (dataBaseType.equals(MYSQL)) {
@@ -70,8 +74,6 @@ class TableService {
 	}
 	
 	void setTablesIntoJson() throws IOException, SQLException {
-    	mysqlRepository = new MysqlRepository();
-    	oracleRepository = new OracleRepository();
         Path filePath = Paths.get(tablesJsonFilePath);
         Resource resource = new UrlResource(filePath.toUri());
         

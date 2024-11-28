@@ -3,14 +3,24 @@ package com.systextil.relatorio.domain.relationship;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.springframework.stereotype.Repository;
+
 import com.systextil.relatorio.domain.RelationshipData;
 import com.systextil.relatorio.infra.data_base_connection.OracleConnection;
 
-class OracleRepository extends RelationshipRepository {
+@Repository
+class RelationshipOracleRepository {
+	
+	private final OracleConnection connection;
+	private final RelationshipRepository repository;
+	
+	RelationshipOracleRepository(OracleConnection connection, RelationshipRepository repository) {
+		this.connection = connection;
+		this.repository = repository;
+	}
 	
 	List<RelationshipData> getRelationshipsFromDataBase() throws SQLException {
-        OracleConnection connectionOracle = new OracleConnection();
-        connectionOracle.connect();
+        connection.connect();
         String sql = "SELECT " +
                 "  uc.TABLE_NAME, " +
                 "  uc.COLUMN_NAME, " +
@@ -29,8 +39,8 @@ class OracleRepository extends RelationshipRepository {
                 "ORDER BY " +
                 "  uc.TABLE_NAME, uc.COLUMN_NAME";
                 
-        List<RelationshipData> listRelationshipData = super.getRelationshipsFromDataBase(connectionOracle.getIdConnection(), sql);
-        connectionOracle.disconnect();
+        List<RelationshipData> listRelationshipData = repository.getRelationshipsFromDataBase(connection.getIdConnection(), sql);
+        connection.disconnect();
         
         return listRelationshipData;
     }

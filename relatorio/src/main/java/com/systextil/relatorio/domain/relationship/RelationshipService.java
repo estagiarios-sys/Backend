@@ -23,11 +23,15 @@ class RelationshipService {
     private static final String MYSQL = "mysql";
     private static final String ORACLE = "oracle";
     
+    private final RelationshipOracleRepository oracleRepository;
+    private final RelationshipMysqlRepository mysqlRepository;
     private final MultiJoinReducer multiJoinReducer;
     private final RelationshipStorageAccessor storageAccessor;
     
-    RelationshipService(MultiJoinReducer multiJoinReducer, RelationshipStorageAccessor storageAccessor) {
-		this.multiJoinReducer = multiJoinReducer;
+    RelationshipService(RelationshipOracleRepository oracleRepository, RelationshipMysqlRepository mysqlRepository, MultiJoinReducer multiJoinReducer, RelationshipStorageAccessor storageAccessor) {
+		this.oracleRepository = oracleRepository;
+		this.mysqlRepository = mysqlRepository;
+    	this.multiJoinReducer = multiJoinReducer;
 		this.storageAccessor = storageAccessor;
 	}
     
@@ -39,9 +43,9 @@ class RelationshipService {
         List<RelationshipData> impreciseRelationships = null;
 
         if (dataBaseType.equals(MYSQL)) {
-        	impreciseRelationships = new MysqlRepository().getRelationshipsFromDataBase();
+        	impreciseRelationships = mysqlRepository.getRelationshipsFromDataBase();
         } else if (dataBaseType.equals(ORACLE)) {
-        	impreciseRelationships = new OracleRepository().getRelationshipsFromDataBase();
+        	impreciseRelationships = oracleRepository.getRelationshipsFromDataBase();
         } else {
         	throw new IllegalDataBaseTypeException(dataBaseType);
         }

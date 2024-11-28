@@ -8,6 +8,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.stereotype.Repository;
+
+@Repository
 class ReportDataRepository {
     
     ReportData findDataByQuery(Connection idConnection, String finalQuery, String totalizersQuery) throws SQLException {

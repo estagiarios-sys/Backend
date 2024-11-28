@@ -7,9 +7,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.stereotype.Repository;
+
 import com.systextil.relatorio.domain.RelationshipData;
 
-public class RelationshipRepository {
+@Repository
+class RelationshipRepository {
 	
     List<RelationshipData> getRelationshipsFromDataBase(Connection idConnection, String sql) throws SQLException {
     	List<RelationshipData> listRelationshipData = new ArrayList<>();

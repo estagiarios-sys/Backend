@@ -9,6 +9,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.stereotype.Repository;
+
+@Repository
 class TableRepository {
 
 	List<String> getTables(Connection idConnection, String catalog, String tableNamePattern) throws SQLException {

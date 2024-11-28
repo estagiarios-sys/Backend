@@ -12,15 +12,25 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.systextil.relatorio.infra.data_base_connection.OracleConnection;
 
+@SpringBootTest
 @TestInstance(Lifecycle.PER_CLASS)
-class OracleRepositoryTest {
+class ReportDataOracleRepositoryTest {
 
-	private H2Connection connection;
-	private OracleRepository repository;
+	@MockitoBean
+	private ReportDataRepository repository;
+
+	private final H2Connection connection;
+	private ReportDataOracleRepository oracleRepository;
 	private Statement statement;
+	
+	ReportDataOracleRepositoryTest() {
+		this.connection = new H2Connection();
+	}
 	
 	private class H2Connection extends OracleConnection {
 		private H2Connection() {
@@ -30,7 +40,6 @@ class OracleRepositoryTest {
 	
 	@BeforeAll
 	void setUpAll() throws SQLException {
-		connection = new H2Connection();
 		connection.connect();
 		
 		statement = connection.getIdConnection().createStatement();
@@ -43,7 +52,7 @@ class OracleRepositoryTest {
 	
 	@BeforeEach
 	void setUp() {
-		repository = new OracleRepository(connection);
+		oracleRepository = new ReportDataOracleRepository(connection, repository);
 	}
 	
 	@AfterAll
@@ -59,7 +68,7 @@ class OracleRepositoryTest {
 	void cenario1() throws SQLException {
 		String[] finalQueryAnalysis = {"EXPLAIN PLAN FOR SELECT 1 FROM TEST", "SELECT SUM(TIME) FROM PLAN_TABLE"};
 		String[] totalizersQueryAnalysis = {"EXPLAIN PLAN FOR SELECT SUM(1) FROM TEST", "SELECT SUM(TIME) FROM PLAN_TABLE"};
-		int actualTime = repository.getActualTimeFromQueries(finalQueryAnalysis, totalizersQueryAnalysis);
+		int actualTime = oracleRepository.getActualTimeFromQueries(finalQueryAnalysis, totalizersQueryAnalysis);
 		
 		assertEquals(6, actualTime);
 	}
@@ -68,7 +77,7 @@ class OracleRepositoryTest {
 	@DisplayName("getActualTimeFromQueries: Parâmetro totalizersQueryAnalysis vazio")
 	void cenario2() throws SQLException {
 		String[] finalQueryAnalysis = {"EXPLAIN PLAN FOR SELECT 1 FROM TEST", "SELECT SUM(TIME) FROM PLAN_TABLE"};
-		int actualTime = repository.getActualTimeFromQueries(finalQueryAnalysis, null);
+		int actualTime = oracleRepository.getActualTimeFromQueries(finalQueryAnalysis, null);
 		
 		assertEquals(3, actualTime);
 	}

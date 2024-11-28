@@ -24,8 +24,8 @@ import com.systextil.relatorio.infra.exception_handler.IllegalDataBaseTypeExcept
 @Service
 class ReportDataService {
 	
-	private final OracleRepository oracleRepository;
-    private final MysqlRepository mySqlRepository;
+	private final ReportDataOracleRepository oracleRepository;
+    private final ReportDataMysqlRepository mySqlRepository;
 
     @Value("${relationships_with_joins.json.file.path}")
     private final String relationshipsWithJoinsJsonFilePath;
@@ -36,7 +36,7 @@ class ReportDataService {
     private static final String MYSQL = "mysql";
     private static final String ORACLE = "oracle";
     
-    ReportDataService(OracleRepository oracleRepository, MysqlRepository mySqlRepository) {
+    ReportDataService(ReportDataOracleRepository oracleRepository, ReportDataMysqlRepository mySqlRepository) {
     	this.oracleRepository = oracleRepository;
     	this.mySqlRepository = mySqlRepository;
     	this.relationshipsWithJoinsJsonFilePath = null;
