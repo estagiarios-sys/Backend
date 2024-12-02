@@ -11,8 +11,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +26,7 @@ import com.systextil.relatorio.domain.Totalizer;
 import com.systextil.relatorio.infra.exception_handler.IllegalDataBaseTypeException;
 
 @SpringBootTest
+@TestInstance(Lifecycle.PER_CLASS)
 @TestPropertySource(properties = "database.type=sqlserver")
 class ReportDataServiceTest {
 
@@ -32,31 +36,30 @@ class ReportDataServiceTest {
 	private ReportDataService service;
 	
 	@MockitoBean
-	private QueryData queryData;
+	private ReportDataOracleRepository oracleRepository;
 	
 	@MockitoBean
-	Map<String, Totalizer> mockTotalizers;
+	private ReportDataMysqlRepository mysqlRepository;
+	
+	@BeforeAll
+	void setUpAll() {
+		mockStatic(SqlGenerator.class);
+	}
 	
 	@AfterAll
-	static void tearDownAll() {
+	void tearDownAll() {
 		Mockito.clearAllCaches();
 	}
 
 	@Test
 	@DisplayName("getQueryReturn")
 	void cenario1() {
-		mockStatic(SqlGenerator.class);
-		when(SqlGenerator.generateFinalQuery(anyString(), anyList(), anyList(), anyString(), anyList())).thenReturn("");
-		
-		when(queryData.totalizers()).thenReturn(mockTotalizers);
-		when(queryData.totalizers().isEmpty()).thenReturn(true);
-		
-		assertThrows(IllegalDataBaseTypeException.class, () -> service.getQueryReturn(queryData));
+		assertThrows(IllegalDataBaseTypeException.class, () -> service.getQueryReturn(mock(QueryData.class)));
 	}
 	
 	@Test
 	@DisplayName("joinColumnsAndTotalizersResult")
-	void cenario3() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
+	void cenario2() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
 		Map<String, String> columnsNameAndNickName = new LinkedHashMap<>();
 		columnsNameAndNickName.put("NOME", "NOME_CLIENTE");
 		columnsNameAndNickName.put("IDADE", "");
@@ -85,7 +88,7 @@ class ReportDataServiceTest {
 
 	@Test
 	@DisplayName("toColumnsNameOrNickName")
-	void cenario4() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
+	void cenario3() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
 		Map<String, String> columnsNameAndNickName = new LinkedHashMap<>();
 		columnsNameAndNickName.put("NOME", "NOME_CLIENTE");
 		columnsNameAndNickName.put("IDADE", null);
@@ -107,7 +110,7 @@ class ReportDataServiceTest {
 	
 	@Test
 	@DisplayName("joinColumnsNameAndNickName")
-	void cenario5() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
+	void cenario4() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
 		QueryDataColumn column1 = new QueryDataColumn("NOME", "NOME_CLIENTE");
 		QueryDataColumn column2 = new QueryDataColumn("IDADE", null);
 		QueryDataColumn column3 = new QueryDataColumn("SALARIO", "PAGAMENTO_MENSAL");
