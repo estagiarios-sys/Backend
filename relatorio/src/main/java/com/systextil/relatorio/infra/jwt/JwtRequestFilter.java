@@ -35,29 +35,40 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
         final Logger logger = Logger.getLogger(getClass().getName());
         final HttpServletResponseWrapper wrappedResponse = new HttpServletResponseWrapper(response);
-    	String tokenJWT = recuperarToken(request);
-        
+    
+        // Ignorar rotas específicas como Swagger e rotas públicas
+        String requestURI = request.getRequestURI();
+        if (requestURI.startsWith("/swagger-ui") || 
+            requestURI.startsWith("/v3/api-docs") 
+        ){
+            filterChain.doFilter(request, response);
+            return;
+        }
+    
+        String tokenJWT = recuperarToken(request);
+    
         if (tokenJWT != null) {
             String subject = service.getUsernameToken(tokenJWT);
             UserDetails usuario = null;
-            
-			try {
-				usuario = userRepository.getUser(subject);
-			} catch (DataBaseConnectionException exception) {
-				logger.log(Level.SEVERE, exception.getLocalizedMessage());
-				wrappedResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-				return;
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			if (usuario != null) {
-				UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
-	            SecurityContextHolder.getContext().setAuthentication(authentication);
-			}
+    
+            try {
+                usuario = userRepository.getUser(subject);
+            } catch (DataBaseConnectionException exception) {
+                logger.log(Level.SEVERE, exception.getLocalizedMessage());
+                wrappedResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                return;
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            if (usuario != null) {
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
         }
-
+    
         filterChain.doFilter(request, response);
     }
+    
 
     private String recuperarToken(HttpServletRequest request) {
         String authorizationHeader = request.getHeader("Authorization");

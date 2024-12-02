@@ -37,12 +37,20 @@ public class SecurityConfig {
             }))
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(req -> {
-                req.requestMatchers("/login", "/companies").permitAll();
+                req.requestMatchers(
+                    "/login",
+                    "/companies",
+                    "/swagger-ui/**", // Swagger UI
+                    "/v3/api-docs/**", // OpenAPI Docs
+                    "/v3/api-docs.yaml" // Arquivo YAML (se necessário)
+                ).permitAll();
                 req.anyRequest().authenticated();
             })
             .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
             .build();
     }
+
+    
 
     @Bean
     AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {

@@ -1,11 +1,11 @@
 package com.systextil.relatorio.domain.report_data;
 
-import static com.systextil.relatorio.domain.report_data.SqlGenerator.*;
-
 import java.util.List;
 import java.util.Map;
 
 import com.systextil.relatorio.domain.Totalizer;
+import static com.systextil.relatorio.domain.report_data.SqlGenerator.generateFinalQuery;
+import static com.systextil.relatorio.domain.report_data.SqlGenerator.generateTotalizersQuery;
 
 class OracleSqlGenerator {
 	
