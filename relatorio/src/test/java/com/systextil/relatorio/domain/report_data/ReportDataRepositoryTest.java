@@ -52,6 +52,7 @@ class ReportDataRepositoryTest {
 	void tearDownAll() throws SQLException {
 		statement.execute("DROP TABLE CLIENTE");
 		statement.execute("DROP TABLE COMPRA");
+		statement.close();
 		connection.disconnect();
 	}
 	
