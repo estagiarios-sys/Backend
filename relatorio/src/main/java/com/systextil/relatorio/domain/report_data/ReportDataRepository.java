@@ -12,19 +12,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 class ReportDataRepository {
-    
-    ReportData findDataByQuery(Connection idConnection, String finalQuery, String totalizersQuery) throws SQLException {
-    	ReportData loadedQueryData = findDataByFinalQuery(idConnection, finalQuery);
-    	
-    	if (totalizersQuery != null && !totalizersQuery.isBlank()) {
-    		List<String> totalizersResults = findDataByTotalizersQuery(idConnection, totalizersQuery);
-        	return new ReportData(loadedQueryData.columnsNameAndNickName(), loadedQueryData.foundObjects(), totalizersResults);
-    	}
-    	
-    	return loadedQueryData;
-    }
 
-    private ReportData findDataByFinalQuery(Connection idConnection, String sql) throws SQLException {
+    ReportData findDataByFinalQuery(Connection idConnection, String sql) throws SQLException {
         List<Object[]> listObjects = new ArrayList<>();
         Map<String, String> columnsNameAndNickName = new LinkedHashMap<>();
         List<String> tableNames = new ArrayList<>();
@@ -65,7 +54,7 @@ class ReportDataRepository {
         return new ReportData(columnsNameAndNickName, listObjects, null);
     }
     
-    private List<String> findDataByTotalizersQuery(Connection idConnection, String totalizersQuery) throws SQLException {
+    List<String> findDataByTotalizersQuery(Connection idConnection, String totalizersQuery) throws SQLException {
     	List<String> totalizersResults = new ArrayList<>();
     	
     	try(PreparedStatement command = idConnection.prepareStatement(totalizersQuery)) {

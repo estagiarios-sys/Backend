@@ -54,15 +54,7 @@ class ReportDataService {
         if (!queryData.totalizers().isEmpty()) {
         	totalizersQuery = generateTotalizersQuery(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
         }
-        ReportData reportData = null;
-        
-        if (dataBaseType.equals(MYSQL)) {
-        	reportData = mySqlRepository.findDataByQuery(finalQuery, totalizersQuery);
-        } else if (dataBaseType.equals(ORACLE)) {
-        	reportData = oracleRepository.findDataByQuery(finalQuery, totalizersQuery);
-        } else {
-    		throw new IllegalDataBaseTypeException(dataBaseType);
-        }
+        ReportData reportData = findDataByQueries(finalQuery, totalizersQuery);
         TreatedReportData treatedReportData = treatReportData(reportData, queryData.totalizers());
         List<String> columnsNameOrNickName = treatedReportData.columnsNameOrNickName();
         List<Object[]> foundObjects = treatedReportData.foundObjects();
@@ -157,7 +149,6 @@ class ReportDataService {
     			}
     		}
     	}
-    	
     	return joins;
     }
     
@@ -173,5 +164,26 @@ class ReportDataService {
     	}
     	
     	return joinedColumnsNameAndNickName;
+    }
+    
+    private ReportData findDataByQueries(String finalQuery, String totalizersQuery) throws SQLException {
+    	ReportData reportData = null;
+    	
+    	if (dataBaseType.equals(MYSQL)) {
+        	reportData = mySqlRepository.findDataByFinalQuery(finalQuery);
+        	
+        	if (totalizersQuery != null) {
+        		reportData = new ReportData(reportData, mySqlRepository.findDataByTotalizersQuery(totalizersQuery));
+        	}
+        } else if (dataBaseType.equals(ORACLE)) {
+        	reportData = oracleRepository.findDataByFinalQuery(finalQuery);
+        	
+        	if (totalizersQuery != null) {
+        		reportData = new ReportData(reportData, oracleRepository.findDataByTotalizersQuery(totalizersQuery));
+        	}
+        } else {
+    		throw new IllegalDataBaseTypeException(dataBaseType);
+        }
+    	return reportData;
     }
 }

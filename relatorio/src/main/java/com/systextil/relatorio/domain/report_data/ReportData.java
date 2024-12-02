@@ -8,4 +8,12 @@ record ReportData(
 	Map<String, String> columnsNameAndNickName,
 	List<Object[]> foundObjects,
 	List<String> totalizersResult
-) {}
+) {
+	ReportData(ReportData oldReportData, List<String> totalizersResults) {
+		this(
+			oldReportData.columnsNameAndNickName,
+			oldReportData.foundObjects,
+			totalizersResults
+		);
+	}
+}

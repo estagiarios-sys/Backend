@@ -1,6 +1,7 @@
 package com.systextil.relatorio.domain.report_data;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
@@ -17,11 +18,19 @@ class ReportDataMysqlRepository {
 		this.repository = repository;
 	}
     
-    ReportData findDataByQuery(String finalQuery, String totalizersQuery) throws SQLException {
+	ReportData findDataByFinalQuery(String finalQuery) throws SQLException {
     	connection.connect();
-    	ReportData loadedQueryData = repository.findDataByQuery(connection.getIdConnection(), finalQuery, totalizersQuery);
+    	ReportData loadedQueryData = repository.findDataByFinalQuery(connection.getIdConnection(), finalQuery);
     	connection.disconnect();
         	
     	return loadedQueryData;
+    }
+	
+	List<String> findDataByTotalizersQuery(String totalizersQuery) throws SQLException {
+    	connection.connect();
+    	List<String> totalizersResults = repository.findDataByTotalizersQuery(connection.getIdConnection(), totalizersQuery);
+    	connection.disconnect();
+        	
+    	return totalizersResults;
     }
 }
