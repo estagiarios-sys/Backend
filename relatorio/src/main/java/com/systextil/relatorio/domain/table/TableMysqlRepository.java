@@ -28,6 +28,6 @@ class TableMysqlRepository {
     }
 	
 	Map<String, Map<String, String>> getColumnsFromTable(String table) {
-		throw new UnsupportedOperationException("Método não implementado ainda");
+		throw new UnsupportedOperationException("MySQL ainda não é 100% suportado");
 	}
 }

@@ -67,17 +67,7 @@ class ReportDataOracleRepositoryTest {
 	@DisplayName("getActualTimeFromQueries: Todos parâmetros não vazios")
 	void cenario1() throws SQLException {
 		String[] finalQueryAnalysis = {"EXPLAIN PLAN FOR SELECT 1 FROM TEST", "SELECT SUM(TIME) FROM PLAN_TABLE"};
-		String[] totalizersQueryAnalysis = {"EXPLAIN PLAN FOR SELECT SUM(1) FROM TEST", "SELECT SUM(TIME) FROM PLAN_TABLE"};
-		int actualTime = oracleRepository.getActualTimeFromQueries(finalQueryAnalysis, totalizersQueryAnalysis);
-		
-		assertEquals(6, actualTime);
-	}
-	
-	@Test
-	@DisplayName("getActualTimeFromQueries: Parâmetro totalizersQueryAnalysis vazio")
-	void cenario2() throws SQLException {
-		String[] finalQueryAnalysis = {"EXPLAIN PLAN FOR SELECT 1 FROM TEST", "SELECT SUM(TIME) FROM PLAN_TABLE"};
-		int actualTime = oracleRepository.getActualTimeFromQueries(finalQueryAnalysis, null);
+		int actualTime = oracleRepository.getActualTimeFromQuery(finalQueryAnalysis);
 		
 		assertEquals(3, actualTime);
 	}

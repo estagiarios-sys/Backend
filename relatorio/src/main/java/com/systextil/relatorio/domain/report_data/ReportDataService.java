@@ -75,15 +75,19 @@ class ReportDataService {
     	int actualTime = 0;
     	
     	if (dataBaseType.equals(MYSQL)) {
-    		throw new IllegalStateException("MySQL ainda não é 100% suportado");
+    		throw new UnsupportedOperationException("MySQL ainda não é 100% suportado");
     	} else if (dataBaseType.equals(ORACLE)) {
-    		String[] finalQueryAnaysis = OracleSqlGenerator.generateFinalQueryAnalysis(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
+    		String[] finalQueryAnalysis = OracleSqlGenerator.generateFinalQueryAnalysis(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
     		String[] totalizersQueryAnalysis = null;
     		
     		if (!queryData.totalizers().isEmpty()) {
         		totalizersQueryAnalysis = OracleSqlGenerator.generateTotalizersQueryAnalysis(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
         	}
-    		actualTime = oracleRepository.getActualTimeFromQueries(finalQueryAnaysis, totalizersQueryAnalysis);
+    		actualTime += oracleRepository.getActualTimeFromQuery(finalQueryAnalysis);
+    		
+    		if (totalizersQueryAnalysis != null) {
+    			actualTime += oracleRepository.getActualTimeFromQuery(totalizersQueryAnalysis);
+    		}
     	} else {
     		throw new IllegalDataBaseTypeException(dataBaseType);
     	}

@@ -28,30 +28,22 @@ class ReportDataOracleRepository {
     	return loadedQueryData;
     }
 	
-	int getActualTimeFromQueries(String[] finalQueryAnalysis, String[] totalizersQueryAnalysis) throws SQLException {
+	int getActualTimeFromQuery(String[] query) throws SQLException {
 		connection.connect();
-		int actualTimeFromFinalQuery = getActualTimeFromQuery(connection.getIdConnection(), finalQueryAnalysis);
+		Connection idConnection = connection.getIdConnection();
+		int actualTime = 0;
 		
-		if (totalizersQueryAnalysis != null) {
-			int actualTimeFromTotalizersQuery = getActualTimeFromQuery(connection.getIdConnection(), totalizersQueryAnalysis);
-			connection.disconnect();
-			
-			return actualTimeFromFinalQuery + actualTimeFromTotalizersQuery;
-		}
-		connection.disconnect();
-		
-		return actualTimeFromFinalQuery;
-	}
-	
-	private int getActualTimeFromQuery(Connection idConnection, String[] query) throws SQLException {		
 		try(PreparedStatement explainPlanForCommand = idConnection.prepareStatement(query[0]);
 			PreparedStatement planDisplayCommand = idConnection.prepareStatement(query[1])) {
 	    	explainPlanForCommand.execute();
 	    	ResultSet data = planDisplayCommand.executeQuery();
 	    	data.next();
-	    	return data.getInt(1);
+	    	actualTime = data.getInt(1);
 		} catch (SQLException exception) {
 			throw new SQLException(exception.getLocalizedMessage());
+		} finally {
+			connection.disconnect();
 		}
+    	return actualTime;
     }
 }

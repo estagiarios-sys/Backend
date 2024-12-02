@@ -10,6 +10,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
 import java.net.ConnectException;
+import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.SQLSyntaxErrorException;
 import java.util.HashMap;
@@ -31,6 +32,27 @@ public class RelatorioExceptionHandler {
 
         return ResponseEntity.badRequest().body(errors);
     }
+    
+    @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
+    public ResponseEntity<Map<String, String>> return400ErrorForDuplicateEntry(SQLIntegrityConstraintViolationException exception) {
+    	Map<String, String> errors = Map.of(MESSAGE, exception.getLocalizedMessage());
+
+    	return ResponseEntity.status(HttpStatus.CONFLICT).body(errors);
+    }
+    
+    @ExceptionHandler(DataBaseConnectionException.class)
+    public ResponseEntity<Void> return500ErrorForDataBaseConnectionException(DataBaseConnectionException exception) {
+    	logger.log(Level.SEVERE, exception.getLocalizedMessage());
+
+    	return ResponseEntity.internalServerError().build();
+    }
+    
+    @ExceptionHandler(SQLException.class)
+    public ResponseEntity<Map<String, String>> return400ErrorForSQLException(SQLException exception) {
+    	Map<String, String> errors = Map.of(MESSAGE, exception.getLocalizedMessage());
+    	
+    	return ResponseEntity.badRequest().body(errors);
+    }
 
     /** Método chamado quando algum dado não passar por alguma validação */
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -43,22 +65,7 @@ public class RelatorioExceptionHandler {
         }
         return ResponseEntity.badRequest().body(errors);
     }
-
-    @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
-    public ResponseEntity<Map<String, String>> return400ErrorForDuplicateEntry(SQLIntegrityConstraintViolationException exception) {
-    	Map<String, String> errors = new HashMap<>();
-    	errors.put(MESSAGE, exception.getLocalizedMessage());
-
-    	return ResponseEntity.status(HttpStatus.CONFLICT).body(errors);
-    }
-
-    @ExceptionHandler(DataBaseConnectionException.class)
-    public ResponseEntity<Void> return500ErrorForDataBaseConnectionException(DataBaseConnectionException exception) {
-    	logger.log(Level.SEVERE, exception.getLocalizedMessage());
-
-    	return ResponseEntity.internalServerError().build();
-    }
-
+    
     @ExceptionHandler(IllegalDataBaseTypeException.class)
     public ResponseEntity<Void> return500ErrorForIllegalDataBaseTypeException(IllegalDataBaseTypeException exception) {
     	logger.log(Level.SEVERE, exception.getLocalizedMessage());
@@ -92,5 +99,12 @@ public class RelatorioExceptionHandler {
     	logger.log(Level.SEVERE, exception.getLocalizedMessage());
     	
     	return ResponseEntity.internalServerError().build();
+    }
+    
+    @ExceptionHandler(UnsupportedOperationException.class)
+    public ResponseEntity<Map<String, String>> return501ErrorForUnsupportedOperationException(UnsupportedOperationException exception) {
+    	Map<String, String> errors = Map.of(MESSAGE, exception.getLocalizedMessage());
+    	
+    	return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(errors);
     }
 }
