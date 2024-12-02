@@ -12,6 +12,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import java.net.ConnectException;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.sql.SQLRecoverableException;
 import java.sql.SQLSyntaxErrorException;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +46,13 @@ public class RelatorioExceptionHandler {
     	logger.log(Level.SEVERE, exception.getLocalizedMessage());
 
     	return ResponseEntity.internalServerError().build();
+    }
+    
+    @ExceptionHandler(SQLRecoverableException.class)
+    public ResponseEntity<Void> return429For(SQLRecoverableException exception) {
+    	logger.log(Level.WARNING, exception.getLocalizedMessage());
+    	
+    	return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
     }
     
     @ExceptionHandler(SQLException.class)
