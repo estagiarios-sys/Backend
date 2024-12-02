@@ -115,4 +115,11 @@ public class RelatorioExceptionHandler {
     	
     	return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(errors);
     }
+    
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> return400ErrorForIllegalArgumentException(IllegalArgumentException exception) {
+    	Map<String, String> errors = Map.of(MESSAGE, exception.getLocalizedMessage());
+    	
+    	return ResponseEntity.badRequest().body(errors);
+    }
 }

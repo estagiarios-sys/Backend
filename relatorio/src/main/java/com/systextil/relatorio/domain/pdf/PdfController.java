@@ -32,6 +32,7 @@ public class PdfController {
 	@Transactional
 	@PostMapping("create-empty")
 	public ResponseEntity<Long> createNoDataPdf(@RequestBody @Nullable String pdfTitle) throws URISyntaxException, IOException {
+		if (pdfTitle != null && pdfTitle.contains("\"")) throw new IllegalArgumentException("Título do PDF não pode conter aspas");
 		Long noDataPdfId = service.createNoDataPdf(pdfTitle);
     	
     	return ResponseEntity.created(new URI("")).body(noDataPdfId);
