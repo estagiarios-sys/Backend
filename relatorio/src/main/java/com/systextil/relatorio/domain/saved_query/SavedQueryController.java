@@ -37,9 +37,9 @@ public class SavedQueryController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SavedQuery> saveQuery(
             @RequestParam String stringSavedQuerySaving,
-            @RequestParam(required = false, value = "imgPDF") MultipartFile file
+            @RequestParam(required = false, value = "imgPDF") MultipartFile pdfImageFile
     ) throws IOException {
-    	SavedQuery savedQuery = service.saveQuery(stringSavedQuerySaving, file);
+    	SavedQuery savedQuery = service.saveQuery(stringSavedQuerySaving, pdfImageFile);
 
     	return ResponseEntity.created(URI.create("")).body(savedQuery);
     }
@@ -48,10 +48,10 @@ public class SavedQueryController {
     @Transactional
     public ResponseEntity<Void> updateQuery(
     		@RequestParam String stringSavedQueryUpdating,
-            @RequestParam(required = false, value = "imgPDF") MultipartFile file,
+            @RequestParam(required = false, value = "imgPDF") MultipartFile pdfImageFile,
             @PathVariable Long id
     ) throws IOException {
-    	service.updateQuery(stringSavedQueryUpdating, file, id);
+    	service.updateQuery(stringSavedQueryUpdating, pdfImageFile, id);
         		
         return ResponseEntity.ok().build();
         

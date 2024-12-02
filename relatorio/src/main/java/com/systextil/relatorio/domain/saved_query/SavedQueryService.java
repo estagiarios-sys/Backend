@@ -18,32 +18,28 @@ class SavedQueryService {
 		this.objectMapper = objectMapper;
 	}
 	
-	SavedQuery saveQuery(String stringSavedQuerySaving, MultipartFile file) throws IOException {
-		byte[] imgPDF;
-    	
-    	try {
-    		imgPDF = file.getBytes();
-    	} catch (NullPointerException exception) {
-    		imgPDF = null;
+	SavedQuery saveQuery(String stringSavedQuerySaving, MultipartFile pdfImageFile) throws IOException {
+		byte[] pdfImage = null;
+		
+    	if (pdfImageFile != null && !pdfImageFile.isEmpty()) {
+    		pdfImage = pdfImageFile.getBytes();
     	}
     	SavedQuerySaving savedQuerySaving = objectMapper.readValue(stringSavedQuerySaving, SavedQuerySaving.class);
-    	SavedQuery savedQuery = new SavedQuery(savedQuerySaving, imgPDF);
+    	SavedQuery savedQuery = new SavedQuery(savedQuerySaving, pdfImage);
     	repository.save(savedQuery);
     	
     	return savedQuery;
 	}
 
-	void updateQuery(String stringSavedQueryUpdating, MultipartFile file, Long id) throws IOException {
-		byte[] imgPDF;
-    	
-    	try {
-    		imgPDF = file.getBytes();
-    	} catch (NullPointerException exception) {
-    		imgPDF = null;
+	void updateQuery(String stringSavedQueryUpdating, MultipartFile pdfImageFile, Long id) throws IOException {
+		byte[] pdfImage = null;
+		
+    	if (pdfImageFile != null && !pdfImageFile.isEmpty()) {
+    		pdfImage = pdfImageFile.getBytes();
     	}
     	SavedQueryUpdating updating = objectMapper.readValue(stringSavedQueryUpdating, SavedQueryUpdating.class);
     	SavedQuery savedQuery = repository.getReferenceById(id);
         	
-        savedQuery.updateData(updating, imgPDF);
+        savedQuery.updateData(updating, pdfImage);
 	}
 }
