@@ -39,7 +39,7 @@ class ReportDataControllerTest {
 	private JacksonTester<Object[]> objectArrayJson;
 	
 	@Autowired
-	private JacksonTester<Double> doubleJson;
+	private JacksonTester<Integer> intJson;
 	
 	@MockitoBean
 	private ReportDataService service;
@@ -160,7 +160,7 @@ class ReportDataControllerTest {
 	@Test
 	@DisplayName("getQueryAnalysis: Todos parâmetros")
 	void cenario8() throws Exception {
-		double queryAnalysis = 5.0;
+		int queryAnalysis = 5;
 		when(service.getQueryAnalysis(any())).thenReturn(queryAnalysis);
 
 		String response = mvc
@@ -175,7 +175,7 @@ class ReportDataControllerTest {
 				.getResponse()
 				.getContentAsString();
 
-		String expectedQueryAnalysis = doubleJson.write(queryAnalysis).getJson();
+		String expectedQueryAnalysis = intJson.write(queryAnalysis).getJson();
 		
 		assertEquals(expectedQueryAnalysis, response);
 	}

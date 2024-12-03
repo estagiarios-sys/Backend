@@ -9,12 +9,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 @Component
-class MicroserviceClient {
+class PdfMicroserviceClient {
 
 	private final RestTemplate restTemplate;
 	private final HttpHeaders httpHeaders;
 	
-	MicroserviceClient() {
+	PdfMicroserviceClient() {
 		this.restTemplate = new RestTemplate();
 		this.httpHeaders = new HttpHeaders();
 	}

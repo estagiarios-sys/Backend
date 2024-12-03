@@ -14,18 +14,21 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.systextil.relatorio.domain.RelationshipData;
 import com.systextil.relatorio.domain.Totalizer;
 import com.systextil.relatorio.infra.exception_handler.IllegalDataBaseTypeException;
+import com.systextil.relatorio.infra.exception_handler.UnsupportedHttpStatusException;
 
 @Service
 class ReportDataService {
 	
 	private final ReportDataOracleRepository oracleRepository;
     private final ReportDataMysqlRepository mySqlRepository;
+    private final ReportDataMicroserviceClient microserviceClient;
 
     @Value("${relationships_with_joins.json.file.path}")
     private final String relationshipsWithJoinsJsonFilePath;
@@ -36,9 +39,10 @@ class ReportDataService {
     private static final String MYSQL = "mysql";
     private static final String ORACLE = "oracle";
     
-    ReportDataService(ReportDataOracleRepository oracleRepository, ReportDataMysqlRepository mySqlRepository) {
+    ReportDataService(ReportDataOracleRepository oracleRepository, ReportDataMysqlRepository mySqlRepository, ReportDataMicroserviceClient microserviceClient) {
     	this.oracleRepository = oracleRepository;
     	this.mySqlRepository = mySqlRepository;
+    	this.microserviceClient = microserviceClient;
     	this.relationshipsWithJoinsJsonFilePath = null;
     	this.dataBaseType = null;
     }
@@ -63,27 +67,24 @@ class ReportDataService {
         return new Object[]{finalQuery, totalizersQuery, columnsNameOrNickName, foundObjects, columnsAndTotalizersResult};
     }
     
-    double getQueryAnalysis(QueryData queryData) throws SQLException, IOException {
-    	int actualTime = 0;
+    int getQueryAnalysis(QueryData queryData) throws SQLException, IOException {
+    	String finalQuery = generateFinalQuery(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
+    	String totalizersQuery = generateTotalizersQuery(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
+    	
+    	int queryAnalysis = 0;
     	
     	if (dataBaseType.equals(MYSQL)) {
     		throw new UnsupportedOperationException("MySQL ainda não é 100% suportado");
     	} else if (dataBaseType.equals(ORACLE)) {
-    		String[] finalQueryAnalysis = OracleSqlGenerator.generateFinalQueryAnalysis(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
-    		String[] totalizersQueryAnalysis = null;
+    		queryAnalysis += getResponseBody(finalQuery);
     		
     		if (!queryData.totalizers().isEmpty()) {
-        		totalizersQueryAnalysis = OracleSqlGenerator.generateTotalizersQueryAnalysis(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
-        	}
-    		actualTime += oracleRepository.getActualTimeFromQuery(finalQueryAnalysis);
-    		
-    		if (totalizersQueryAnalysis != null) {
-    			actualTime += oracleRepository.getActualTimeFromQuery(totalizersQueryAnalysis);
+        		queryAnalysis += getResponseBody(totalizersQuery);
     		}
     	} else {
     		throw new IllegalDataBaseTypeException(dataBaseType);
     	}
-    	return actualTime;
+    	return queryAnalysis;
     }
     
 	private TreatedReportData treatReportData(ReportData reportData, Map<String, Totalizer> totalizers) {
@@ -185,5 +186,15 @@ class ReportDataService {
     		throw new IllegalDataBaseTypeException(dataBaseType);
         }
     	return reportData;
+    }
+    
+    private int getResponseBody(String sql) {
+    	ResponseEntity<Integer> response = microserviceClient.getQueryAnalysis(sql);
+		
+		if (response.getStatusCode().is2xxSuccessful()) {
+			return response.getBody();
+		} else {
+			throw new UnsupportedHttpStatusException(response.getStatusCode());
+		}
     }
 }

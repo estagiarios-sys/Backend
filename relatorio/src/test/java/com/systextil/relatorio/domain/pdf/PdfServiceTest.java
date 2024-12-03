@@ -31,7 +31,7 @@ class PdfServiceTest {
 	private PdfRepository mockRepository;
 	
 	@MockitoBean
-	private MicroserviceClient mockMicroserviceClient;
+	private PdfMicroserviceClient mockMicroserviceClient;
 
 	@MockitoBean
 	private PdfStorageAccessor mockStorageAccessor;

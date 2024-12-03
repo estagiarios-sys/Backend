@@ -24,7 +24,7 @@ public class ReportDataController {
     }
     
     @PostMapping("analyze")
-    public double getQueryAnalysis(@RequestBody @Valid QueryData queryData) throws SQLException, IOException {
+    public int getQueryAnalysis(@RequestBody @Valid QueryData queryData) throws SQLException, IOException {
     	return service.getQueryAnalysis(queryData);
     }
 }
