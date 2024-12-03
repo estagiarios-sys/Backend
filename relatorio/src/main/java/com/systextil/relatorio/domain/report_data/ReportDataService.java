@@ -3,13 +3,8 @@ package com.systextil.relatorio.domain.report_data;
 import static com.systextil.relatorio.domain.report_data.SqlGenerator.*;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,9 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.systextil.relatorio.domain.RelationshipData;
-import com.systextil.relatorio.domain.Totalizer;
 import com.systextil.relatorio.infra.exception_handler.IllegalDataBaseTypeException;
 import com.systextil.relatorio.infra.exception_handler.UnsupportedHttpStatusException;
 
@@ -29,26 +21,37 @@ class ReportDataService {
 	private final ReportDataOracleRepository oracleRepository;
     private final ReportDataMysqlRepository mySqlRepository;
     private final ReportDataMicroserviceClient microserviceClient;
-
-    @Value("${relationships_with_joins.json.file.path}")
-    private final String relationshipsWithJoinsJsonFilePath;
-    
-    @Value("${database.type}")
+    private final ReportDataProcessor reportDataProcessor;
+    private final QueryDataPreparer queryDataPreparer;
     private final String dataBaseType;
     
     private static final String MYSQL = "mysql";
     private static final String ORACLE = "oracle";
     
-    ReportDataService(ReportDataOracleRepository oracleRepository, ReportDataMysqlRepository mySqlRepository, ReportDataMicroserviceClient microserviceClient) {
+    ReportDataService(
+    		ReportDataOracleRepository oracleRepository,
+    		ReportDataMysqlRepository mySqlRepository,
+    		ReportDataMicroserviceClient microserviceClient,
+    		ReportDataProcessor reportDataProcessor,
+    		QueryDataPreparer queryDataPreparer,
+    		@Value("${database.type}") String dataBaseType
+    		) {
     	this.oracleRepository = oracleRepository;
     	this.mySqlRepository = mySqlRepository;
     	this.microserviceClient = microserviceClient;
-    	this.relationshipsWithJoinsJsonFilePath = null;
-    	this.dataBaseType = null;
+    	this.reportDataProcessor = reportDataProcessor;
+    	this.queryDataPreparer = queryDataPreparer;
+    	this.dataBaseType = dataBaseType;
     }
 
     Object[] getQueryReturn(QueryData queryData) throws ParseException, IOException, SQLException {
-    	String finalQuery = generateFinalQuery(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
+    	String finalQuery = generateFinalQuery(
+    			queryData.table(),
+    			queryDataPreparer.joinColumnsNameAndNickName(queryData.columns()),
+    			queryData.conditions(),
+    			queryData.orderBy(),
+    			queryDataPreparer.findJoinsByTablesPairs(queryData.tablesPairs())
+    			);
     	
         if (dataBaseType.equals(ORACLE)) {
         	finalQuery = SqlWithDateConverter.toSqlWithDdMMMyyyy(finalQuery);
@@ -56,20 +59,35 @@ class ReportDataService {
         String totalizersQuery = null;
         
         if (!queryData.totalizers().isEmpty()) {
-        	totalizersQuery = generateTotalizersQuery(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
+        	totalizersQuery = generateTotalizersQuery(
+        			queryData.totalizers(),
+        			queryData.table(),
+        			queryData.conditions(),
+        			queryDataPreparer.findJoinsByTablesPairs(queryData.tablesPairs())
+        			);
         }
         ReportData reportData = findDataByQueries(finalQuery, totalizersQuery);
-        TreatedReportData treatedReportData = treatReportData(reportData, queryData.totalizers());
-        List<String> columnsNameOrNickName = treatedReportData.columnsNameOrNickName();
-        List<Object[]> foundObjects = treatedReportData.foundObjects();
-        Map<String, String> columnsAndTotalizersResult = treatedReportData.columnsAndTotalizersResult();
+        List<String> columnsNameOrNickName = reportDataProcessor.toColumnsNameOrNickName(reportData.columnsNameAndNickName());
+        List<Object[]> foundObjects = reportData.foundObjects();
+        Map<String, String> columnsAndTotalizersResult = reportDataProcessor.joinColumnsAndTotalizersResult(reportData, queryData.totalizers());
         
         return new Object[]{finalQuery, totalizersQuery, columnsNameOrNickName, foundObjects, columnsAndTotalizersResult};
     }
     
-    int getQueryAnalysis(QueryData queryData) throws SQLException, IOException {
-    	String finalQuery = generateFinalQuery(queryData.table(), joinColumnsNameAndNickName(queryData.columns()), queryData.conditions(), queryData.orderBy(), findJoinsByTablesPairs(queryData.tablesPairs()));
-    	String totalizersQuery = generateTotalizersQuery(queryData.totalizers(), queryData.table(), queryData.conditions(), findJoinsByTablesPairs(queryData.tablesPairs()));
+    int getQueryAnalysis(QueryData queryData) throws IOException {
+    	String finalQuery = generateFinalQuery(
+    			queryData.table(),
+    			queryDataPreparer.joinColumnsNameAndNickName(queryData.columns()),
+    			queryData.conditions(),
+    			queryData.orderBy(),
+    			queryDataPreparer.findJoinsByTablesPairs(queryData.tablesPairs())
+    			);
+    	String totalizersQuery = generateTotalizersQuery(
+    			queryData.totalizers(),
+    			queryData.table(),
+    			queryData.conditions(),
+    			queryDataPreparer.findJoinsByTablesPairs(queryData.tablesPairs())
+    			);
     	
     	int queryAnalysis = 0;
     	
@@ -86,87 +104,7 @@ class ReportDataService {
     	}
     	return queryAnalysis;
     }
-    
-	private TreatedReportData treatReportData(ReportData reportData, Map<String, Totalizer> totalizers) {
-    	List<String> columnsNameOrNickName = toColumnsNameOrNickName(reportData.columnsNameAndNickName());
-    	Map<String, String> columnsAndTotalizersResult = null;
-    	
-    	if (totalizers != null) {
-    		columnsAndTotalizersResult = joinColumnsAndTotalizersResult(reportData, totalizers);
-    	}
-    	return new TreatedReportData(columnsNameOrNickName, reportData.foundObjects(), columnsAndTotalizersResult);
-    }
-    
-    private Map<String, String> joinColumnsAndTotalizersResult(ReportData reportData, Map<String, Totalizer> totalizers) {
-    	int totalizersResultsCounter = 0;
-        Map<String, String> columnsAndTotalizersResult = new HashMap<>();
-        
-        for (Map.Entry<String, Totalizer> totalizer : totalizers.entrySet()) {
-        	String columnsAndTotalizersColumn = null;
-        	
-        	for (Map.Entry<String, String> columnNameAndNickName : reportData.columnsNameAndNickName().entrySet()) {
-        		if (totalizer.getKey().equalsIgnoreCase(columnNameAndNickName.getKey())) {
-        			if (columnNameAndNickName.getValue() != null && !columnNameAndNickName.getValue().isBlank()) {
-        				columnsAndTotalizersColumn = columnNameAndNickName.getValue();
-        			} else {
-        				columnsAndTotalizersColumn = columnNameAndNickName.getKey();
-        			}
-        		}
-        	}
-        	columnsAndTotalizersResult.put(columnsAndTotalizersColumn, totalizer.getValue().toPortuguese() + ": " + reportData.totalizersResult().get(totalizersResultsCounter));
-        	totalizersResultsCounter++;
-        }
-        return columnsAndTotalizersResult;
-    }
-    
-    private List<String> toColumnsNameOrNickName(Map<String, String> columnsNameAndNickName) {
-    	List<String> columnsNameOrNickName = new ArrayList<>();
-    	
-    	for (Map.Entry<String, String> columnNameAndNickName : columnsNameAndNickName.entrySet()) {
-   			if (columnNameAndNickName.getValue() != null) {
-   				columnsNameOrNickName.add(columnNameAndNickName.getValue());
-   			} else {
-   				columnsNameOrNickName.add(columnNameAndNickName.getKey());
-    		}
-    	}
-    	return columnsNameOrNickName;
-    }
-    
-    private List<String> findJoinsByTablesPairs(List<String> tablesPairs) throws IOException {
-    	ObjectMapper objectMapper = new ObjectMapper();
-    	Path fileOfJoinsPath = Paths.get(relationshipsWithJoinsJsonFilePath);
-    	String json = Files.readString(fileOfJoinsPath);
-    	List<RelationshipData> relationshipData = objectMapper.readValue(
-    			json, objectMapper
-    			.getTypeFactory()
-    			.constructCollectionType(List.class, RelationshipData.class)
-    	);
-    	List<String> joins = new ArrayList<>();
-    	
-    	for (String tablesPair : tablesPairs) {
-    		for (RelationshipData tablesPairAndJoin : relationshipData) {
-    			if (tablesPair.equals(tablesPairAndJoin.tablesPair())) {
-    				joins.add(tablesPairAndJoin.join());
-    			}
-    		}
-    	}
-    	return joins;
-    }
-    
-    private List<String> joinColumnsNameAndNickName(List<QueryDataColumn> columns) {
-    	List<String> joinedColumnsNameAndNickName = new ArrayList<>();
-    	
-    	for (QueryDataColumn column : columns) {
-    		if (column.nickName() == null || column.nickName().isBlank()) {
-    			joinedColumnsNameAndNickName.add(column.name());
-    		} else {
-    			joinedColumnsNameAndNickName.add(column.name() + " AS \"" + column.nickName() + "\"");
-    		}
-    	}
-    	
-    	return joinedColumnsNameAndNickName;
-    }
-    
+
     private ReportData findDataByQueries(String finalQuery, String totalizersQuery) throws SQLException {
     	ReportData reportData = null;
     	

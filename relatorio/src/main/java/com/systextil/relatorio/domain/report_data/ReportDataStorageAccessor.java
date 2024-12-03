@@ -14,14 +14,13 @@ import java.util.List;
 @Component
 class ReportDataStorageAccessor {
 
-    @Value("${relationships_with_joins.json.file.path}")
     private final String relationshipsWithJoinsJsonFilePath;
 
-    ReportDataStorageAccessor() {
-        this.relationshipsWithJoinsJsonFilePath = null;
+    ReportDataStorageAccessor(@Value("${relationships_with_joins.json.file.path}") String relationshipsWithJoinsJsonFilePath) {
+        this.relationshipsWithJoinsJsonFilePath = relationshipsWithJoinsJsonFilePath;
     }
 
-    private List<RelationshipData> findRelationshipData() throws IOException {
+    List<RelationshipData> findRelationshipData() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         assert relationshipsWithJoinsJsonFilePath != null;
         Path fileOfJoinsPath = Paths.get(relationshipsWithJoinsJsonFilePath);
