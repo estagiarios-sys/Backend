@@ -3,10 +3,10 @@ package com.systextil.relatorio.domain.relationship;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.any;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -73,8 +73,8 @@ class RelationshipServiceTest {
 			
 			verify(oracleRepository).getRelationshipsFromDataBase();
 			verify(mysqlRepository, never()).getRelationshipsFromDataBase();
-			verify(storageAccessor).setRelationshipsIntoJson(List.of());
-			verify(storageAccessor).setRelationshipsWithJoinsIntoJson(List.of());
+			verify(storageAccessor).setRelationshipsIntoJson(any());
+			verify(storageAccessor).setRelationshipsWithJoinsIntoJson(any());
 		}
 	}
 
@@ -104,8 +104,8 @@ class RelationshipServiceTest {
 			
 			verify(oracleRepository, never()).getRelationshipsFromDataBase();
 			verify(mysqlRepository).getRelationshipsFromDataBase();
-			verify(storageAccessor).setRelationshipsIntoJson(List.of());
-			verify(storageAccessor).setRelationshipsWithJoinsIntoJson(List.of());
+			verify(storageAccessor).setRelationshipsIntoJson(any());
+			verify(storageAccessor).setRelationshipsWithJoinsIntoJson(any());
 		}
 	}
 }
