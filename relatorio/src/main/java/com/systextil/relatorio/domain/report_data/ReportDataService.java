@@ -2,6 +2,7 @@ package com.systextil.relatorio.domain.report_data;
 
 import static com.systextil.relatorio.domain.report_data.SqlGenerator.*;
 import static com.systextil.relatorio.domain.report_data.SqlWithDateConverter.*;
+import static com.systextil.relatorio.domain.report_data.ReportDataProcessor.*;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -22,7 +23,6 @@ class ReportDataService {
 	private final ReportDataOracleRepository oracleRepository;
     private final ReportDataMysqlRepository mySqlRepository;
     private final ReportDataMicroserviceClient microserviceClient;
-    private final ReportDataProcessor reportDataProcessor;
     private final QueryDataPreparer queryDataPreparer;
     private final String dataBaseType;
     
@@ -33,14 +33,12 @@ class ReportDataService {
     		ReportDataOracleRepository oracleRepository,
     		ReportDataMysqlRepository mySqlRepository,
     		ReportDataMicroserviceClient microserviceClient,
-    		ReportDataProcessor reportDataProcessor,
     		QueryDataPreparer queryDataPreparer,
     		@Value("${database.type}") String dataBaseType
     		) {
     	this.oracleRepository = oracleRepository;
     	this.mySqlRepository = mySqlRepository;
     	this.microserviceClient = microserviceClient;
-    	this.reportDataProcessor = reportDataProcessor;
     	this.queryDataPreparer = queryDataPreparer;
     	this.dataBaseType = dataBaseType;
     }
@@ -68,9 +66,9 @@ class ReportDataService {
         			);
         }
         ReportData reportData = findDataByQueries(finalQuery, totalizersQuery);
-        List<String> columnsNameOrNickName = reportDataProcessor.toColumnsNameOrNickName(reportData.columnsNameAndNickName());
+        List<String> columnsNameOrNickName = toColumnsNameOrNickName(reportData.columnsNameAndNickName());
         List<Object[]> foundObjects = reportData.foundObjects();
-        Map<String, String> columnsAndTotalizersResult = reportDataProcessor.joinColumnsAndTotalizersResult(reportData, queryData.totalizers());
+        Map<String, String> columnsAndTotalizersResult = joinColumnsAndTotalizersResult(reportData, queryData.totalizers());
         
         return new Object[]{finalQuery, totalizersQuery, columnsNameOrNickName, foundObjects, columnsAndTotalizersResult};
     }

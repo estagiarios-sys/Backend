@@ -5,14 +5,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.stereotype.Component;
-
 import com.systextil.relatorio.domain.Totalizer;
 
-@Component
 class ReportDataProcessor {
+	
+	private ReportDataProcessor() {
+		throw new IllegalStateException("Classe utilitária");
+	}
 
-	Map<String, String> joinColumnsAndTotalizersResult(ReportData reportData, Map<String, Totalizer> totalizers) {
+	static Map<String, String> joinColumnsAndTotalizersResult(ReportData reportData, Map<String, Totalizer> totalizers) {
     	int totalizersResultsCounter = 0;
         Map<String, String> columnsAndTotalizersResult = new HashMap<>();
         
@@ -34,7 +35,7 @@ class ReportDataProcessor {
         return columnsAndTotalizersResult;
     }
 
-	List<String> toColumnsNameOrNickName(Map<String, String> columnsNameAndNickName) {
+	static List<String> toColumnsNameOrNickName(Map<String, String> columnsNameAndNickName) {
     	List<String> columnsNameOrNickName = new ArrayList<>();
     	
     	for (Map.Entry<String, String> columnNameAndNickName : columnsNameAndNickName.entrySet()) {
