@@ -9,11 +9,7 @@ record ReportData(
 	List<Object[]> foundObjects,
 	List<String> totalizersResult
 ) {
-	ReportData(ReportData oldReportData, List<String> totalizersResults) {
-		this(
-			oldReportData.columnsNameAndNickName,
-			oldReportData.foundObjects,
-			totalizersResults
-		);
+	ReportData updateData(ReportData oldReportData, List<String> totalizersResults) {
+		return new ReportData(oldReportData.columnsNameAndNickName, oldReportData.foundObjects, totalizersResults);
 	}
 }

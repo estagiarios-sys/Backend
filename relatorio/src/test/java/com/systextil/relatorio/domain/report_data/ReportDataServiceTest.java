@@ -3,12 +3,9 @@ package com.systextil.relatorio.domain.report_data;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.text.ParseException;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -16,117 +13,195 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.Nested;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import com.systextil.relatorio.domain.Totalizer;
 import com.systextil.relatorio.infra.exception_handler.IllegalDataBaseTypeException;
 
 @SpringBootTest
-@TestInstance(Lifecycle.PER_CLASS)
-@TestPropertySource(properties = "database.type=sqlserver")
 class ReportDataServiceTest {
 
-	private static final Class<ReportDataService> SERVICE_CLASS = ReportDataService.class;
+	@Nested
+	@TestInstance(Lifecycle.PER_CLASS)
+	@TestPropertySource(properties = "database.type=sqlserver")
+	@DisplayName("database.type=sqlserver")
+	class nest1 {
+		
+		@Autowired
+		private ReportDataService service;
+		
+		@MockitoBean
+		private ReportDataOracleRepository oracleRepository;
+		
+		@MockitoBean
+		private ReportDataMysqlRepository mysqlRepository;
+		
+		@MockitoBean
+		private ReportDataMicroserviceClient microserviceClient;
+		
+		@MockitoBean
+		private ReportDataProcessor reportDataProcessor;
+		
+		@MockitoBean
+		private QueryDataPreparer queryDataPreparer;
+		
+		@BeforeAll
+		void setUpAll() {
+			mockStatic(SqlGenerator.class);
+			mockStatic(SqlWithDateConverter.class);
+		}
+		
+		@AfterAll
+		void tearDownAll() {
+			Mockito.clearAllCaches();
+		}
 
-	@Autowired
-	private ReportDataService service;
-	
-	@MockitoBean
-	private ReportDataOracleRepository oracleRepository;
-	
-	@MockitoBean
-	private ReportDataMysqlRepository mysqlRepository;
-	
-	@BeforeAll
-	void setUpAll() {
-		mockStatic(SqlGenerator.class);
-	}
-	
-	@AfterAll
-	void tearDownAll() {
-		Mockito.clearAllCaches();
-	}
+		@Test
+		@DisplayName("getQueryReturn")
+		void cenario1() {
+			QueryData mockQueryData = mock(QueryData.class);
+			
+			assertThrows(IllegalDataBaseTypeException.class, () -> service.getQueryReturn(mockQueryData));
+		}
+		
+		@Test
+		@DisplayName("getQueryAnalysis")
+		void cenario2() {
+			QueryData mockQueryData = mock(QueryData.class);
 
-	@Test
-	@DisplayName("getQueryReturn")
-	void cenario1() {
-		assertThrows(IllegalDataBaseTypeException.class, () -> service.getQueryReturn(mock(QueryData.class)));
+			assertThrows(IllegalDataBaseTypeException.class, () -> service.getQueryAnalysis(mockQueryData));
+			verify(microserviceClient, never()).getQueryAnalysis(any());
+		}
 	}
 	
-	@Test
-	@DisplayName("joinColumnsAndTotalizersResult")
-	void cenario2() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
-		Map<String, String> columnsNameAndNickName = new LinkedHashMap<>();
-		columnsNameAndNickName.put("NOME", "NOME_CLIENTE");
-		columnsNameAndNickName.put("IDADE", "");
-		columnsNameAndNickName.put("SALARIO", "PAGAMENTO_MENSAL");
+	@Nested
+	@TestInstance(Lifecycle.PER_CLASS)
+	@TestPropertySource(properties = "database.type=oracle")
+	@DisplayName("database.type=oracle")
+	class nest2 {
 		
-		List<String> totalizersResults = List.of("100", "50000");
+		@Autowired
+		private ReportDataService service;
 		
-		Map<String, Totalizer> totalizers = new LinkedHashMap<>();
-		totalizers.put("IDADE", Totalizer.SUM);
-		totalizers.put("SALARIO", Totalizer.SUM);
+		@MockitoBean
+		private ReportDataOracleRepository oracleRepository;
 		
-		ReportData reportData = new ReportData(columnsNameAndNickName, null, totalizersResults);
+		@MockitoBean
+		private ReportDataMysqlRepository mysqlRepository;
 		
-		Method joinColumnsAndTotalizersResult = SERVICE_CLASS.getDeclaredMethod("joinColumnsAndTotalizersResult", ReportData.class, Map.class);
-		joinColumnsAndTotalizersResult.setAccessible(true);
+		@MockitoBean
+		private ReportDataMicroserviceClient microserviceClient;
 		
-		@SuppressWarnings("unchecked")
-		Map<String, String> columnsAndTotalizersResult = (Map<String, String>) joinColumnsAndTotalizersResult.invoke(service, reportData, totalizers);
+		@MockitoBean
+		private ReportDataProcessor reportDataProcessor;
 		
-		Map<String, String> expectedColumnsAdnTotalizersResult = new LinkedHashMap<>();
-		expectedColumnsAdnTotalizersResult.put("IDADE", "Soma: 100");
-		expectedColumnsAdnTotalizersResult.put("PAGAMENTO_MENSAL", "Soma: 50000");
+		@MockitoBean
+		private QueryDataPreparer queryDataPreparer;
 		
-		assertEquals(expectedColumnsAdnTotalizersResult, columnsAndTotalizersResult);
-	}
+		private MockedStatic<SqlWithDateConverter> mockedStaticSqlWithDateConverter;
+		
+		@BeforeAll
+		void setUpAll() {
+			mockStatic(SqlGenerator.class);
+			mockedStaticSqlWithDateConverter = mockStatic(SqlWithDateConverter.class);
+		}
+		
+		@AfterAll
+		void tearDownAll() {
+			Mockito.clearAllCaches();
+		}
 
-	@Test
-	@DisplayName("toColumnsNameOrNickName")
-	void cenario3() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
-		Map<String, String> columnsNameAndNickName = new LinkedHashMap<>();
-		columnsNameAndNickName.put("NOME", "NOME_CLIENTE");
-		columnsNameAndNickName.put("IDADE", null);
-		columnsNameAndNickName.put("SALARIO", "PAGAMENTO_MENSAL");
+		@Test
+		@DisplayName("getQueryReturn")
+		void cenario1() throws ParseException, IOException, SQLException {
+			ReportData mockReportData = mock(ReportData.class);
+			when(oracleRepository.findDataByFinalQuery(any())).thenReturn(mockReportData);
+			when(mockReportData.updateData(any(), any())).thenReturn(mockReportData);
+			
+			QueryData mockQueryData = mock(QueryData.class);
+			service.getQueryReturn(mockQueryData);
+			
+			mockedStaticSqlWithDateConverter.verify(() -> SqlWithDateConverter.toSqlWithDdMMMyyyy(any()));
+			verify(oracleRepository).findDataByFinalQuery(any());
+		}
 		
-		Method toColumnsNameOrNickName = SERVICE_CLASS.getDeclaredMethod("toColumnsNameOrNickName", Map.class);
-		toColumnsNameOrNickName.setAccessible(true);
-		
-		@SuppressWarnings("unchecked")
-		List<String> columnsNameOrNickName = (List<String>) toColumnsNameOrNickName.invoke(service, columnsNameAndNickName);
-		
-		List<String> expectedColumnsNameOrNickName = new ArrayList<>();
-		expectedColumnsNameOrNickName.add("NOME_CLIENTE");
-		expectedColumnsNameOrNickName.add("IDADE");
-		expectedColumnsNameOrNickName.add("PAGAMENTO_MENSAL");
-		
-		assertEquals(expectedColumnsNameOrNickName, columnsNameOrNickName);
+		@Test
+		@DisplayName("getQueryAnalysis")
+		void cenario2() throws IOException {
+			ResponseEntity<Integer> response = new ResponseEntity<Integer>(1, HttpStatus.OK);
+			when(microserviceClient.getQueryAnalysis(any())).thenReturn(response);
+			
+			QueryData mockQueryData = mock(QueryData.class);
+			service.getQueryAnalysis(mockQueryData);
+			
+			verify(microserviceClient).getQueryAnalysis(any());
+		}
 	}
 	
-	@Test
-	@DisplayName("joinColumnsNameAndNickName")
-	void cenario4() throws NoSuchMethodException, SecurityException, IllegalAccessException, InvocationTargetException {
-		QueryDataColumn column1 = new QueryDataColumn("NOME", "NOME_CLIENTE");
-		QueryDataColumn column2 = new QueryDataColumn("IDADE", null);
-		QueryDataColumn column3 = new QueryDataColumn("SALARIO", "PAGAMENTO_MENSAL");
-		List<QueryDataColumn> columns = List.of(column1, column2, column3);
+	@Nested
+	@TestInstance(Lifecycle.PER_CLASS)
+	@TestPropertySource(properties = "database.type=mysql")
+	@DisplayName("database.type=mysql")
+	class nest3 {
 		
-		Method joinColumnsNameAndNickName = SERVICE_CLASS.getDeclaredMethod("joinColumnsNameAndNickName", List.class);
-		joinColumnsNameAndNickName.setAccessible(true);
-				
-		@SuppressWarnings("unchecked")
-		List<String> joinedColumnsNameAndNickName = (List<String>) joinColumnsNameAndNickName.invoke(service, columns);
+		@Autowired
+		private ReportDataService service;
 		
-		List<String> expectedJoinedColumnsNameAndNickName = new ArrayList<>();
-		expectedJoinedColumnsNameAndNickName.add("NOME AS \"NOME_CLIENTE\"");
-		expectedJoinedColumnsNameAndNickName.add("IDADE");
-		expectedJoinedColumnsNameAndNickName.add("SALARIO AS \"PAGAMENTO_MENSAL\"");
+		@MockitoBean
+		private ReportDataOracleRepository oracleRepository;
 		
-		assertEquals(expectedJoinedColumnsNameAndNickName, joinedColumnsNameAndNickName);
+		@MockitoBean
+		private ReportDataMysqlRepository mysqlRepository;
+		
+		@MockitoBean
+		private ReportDataMicroserviceClient microserviceClient;
+		
+		@MockitoBean
+		private ReportDataProcessor reportDataProcessor;
+		
+		@MockitoBean
+		private QueryDataPreparer queryDataPreparer;
+		
+		private MockedStatic<SqlWithDateConverter> mockedStaticSqlWithDateConverter;
+		
+		@BeforeAll
+		void setUpAll() {
+			mockStatic(SqlGenerator.class);
+			mockedStaticSqlWithDateConverter = mockStatic(SqlWithDateConverter.class);
+		}
+		
+		@AfterAll
+		void tearDownAll() {
+			Mockito.clearAllCaches();
+		}
+
+		@Test
+		@DisplayName("getQueryReturn")
+		void cenario1() throws ParseException, IOException, SQLException {
+			ReportData mockReportData = mock(ReportData.class);
+			when(mysqlRepository.findDataByFinalQuery(any())).thenReturn(mockReportData);
+			when(mockReportData.updateData(any(), any())).thenReturn(mockReportData);
+			
+			QueryData mockQueryData = mock(QueryData.class);
+			service.getQueryReturn(mockQueryData);
+			
+			mockedStaticSqlWithDateConverter.verify(() -> SqlWithDateConverter.toSqlWithDdMMMyyyy(any()), never());
+			verify(mysqlRepository).findDataByFinalQuery(any());
+		}
+		
+		@Test
+		@DisplayName("getQueryAnalysis")
+		void cenario2() {
+			QueryData mockQueryData = mock(QueryData.class);
+			
+			assertThrows(UnsupportedOperationException.class, () -> service.getQueryAnalysis(mockQueryData));
+		}
 	}
 }

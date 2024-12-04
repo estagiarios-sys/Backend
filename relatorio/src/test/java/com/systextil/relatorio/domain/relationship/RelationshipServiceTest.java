@@ -41,7 +41,7 @@ class RelationshipServiceTest {
 		private RelationshipStorageAccessor storageAccessor;
 		
 		@Test
-		@DisplayName("setRelationshipsIntoJson: database.type=sqlserver")
+		@DisplayName("setRelationshipsIntoJson")
 		void cenario1() {
 			assertThrows(IllegalDataBaseTypeException.class, () -> service.setRelationshipsIntoJson());
 		}
@@ -67,8 +67,8 @@ class RelationshipServiceTest {
 		private RelationshipStorageAccessor storageAccessor;
 		
 		@Test
-		@DisplayName("setRelationshipsIntoJson: database.type=oracle")
-		void cenario2() throws SQLException, IOException {
+		@DisplayName("setRelationshipsIntoJson")
+		void cenario1() throws SQLException, IOException {
 			service.setRelationshipsIntoJson();
 			
 			verify(oracleRepository).getRelationshipsFromDataBase();
@@ -98,8 +98,8 @@ class RelationshipServiceTest {
 		private RelationshipStorageAccessor storageAccessor;
 		
 		@Test
-		@DisplayName("setRelationshipsIntoJson: database.type=mysql")
-		void cenario3() throws SQLException, IOException {
+		@DisplayName("setRelationshipsIntoJson")
+		void cenario1() throws SQLException, IOException {
 			service.setRelationshipsIntoJson();
 			
 			verify(oracleRepository, never()).getRelationshipsFromDataBase();

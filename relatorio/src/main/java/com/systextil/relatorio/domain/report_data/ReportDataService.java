@@ -1,6 +1,7 @@
 package com.systextil.relatorio.domain.report_data;
 
 import static com.systextil.relatorio.domain.report_data.SqlGenerator.*;
+import static com.systextil.relatorio.domain.report_data.SqlWithDateConverter.*;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -54,7 +55,7 @@ class ReportDataService {
     			);
     	
         if (dataBaseType.equals(ORACLE)) {
-        	finalQuery = SqlWithDateConverter.toSqlWithDdMMMyyyy(finalQuery);
+        	finalQuery = toSqlWithDdMMMyyyy(finalQuery);
         }
         String totalizersQuery = null;
         
@@ -112,13 +113,13 @@ class ReportDataService {
         	reportData = mySqlRepository.findDataByFinalQuery(finalQuery);
         	
         	if (totalizersQuery != null) {
-        		reportData = new ReportData(reportData, mySqlRepository.findDataByTotalizersQuery(totalizersQuery));
+        		reportData = reportData.updateData(reportData, mySqlRepository.findDataByTotalizersQuery(totalizersQuery));
         	}
         } else if (dataBaseType.equals(ORACLE)) {
         	reportData = oracleRepository.findDataByFinalQuery(finalQuery);
         	
         	if (totalizersQuery != null) {
-        		reportData = new ReportData(reportData, oracleRepository.findDataByTotalizersQuery(totalizersQuery));
+        		reportData = reportData.updateData(reportData, oracleRepository.findDataByTotalizersQuery(totalizersQuery));
         	}
         } else {
     		throw new IllegalDataBaseTypeException(dataBaseType);
@@ -130,7 +131,11 @@ class ReportDataService {
     	ResponseEntity<Integer> response = microserviceClient.getQueryAnalysis(sql);
 		
 		if (response.getStatusCode().is2xxSuccessful()) {
-			return response.getBody();
+			if (response.getBody() != null) {
+				return response.getBody();
+			} else {
+				throw new NullPointerException();
+			}
 		} else {
 			throw new UnsupportedHttpStatusException(response.getStatusCode());
 		}
