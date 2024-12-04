@@ -55,7 +55,7 @@ class ReportDataService {
     			);
     	
         if (dataBaseType.equals(ORACLE)) {
-        	finalQuery = toSqlWithDdMMMyyyy(finalQuery);
+        	finalQuery = toSqlWithDdMMyyyy(finalQuery);
         }
         String totalizersQuery = null;
         
@@ -75,7 +75,7 @@ class ReportDataService {
         return new Object[]{finalQuery, totalizersQuery, columnsNameOrNickName, foundObjects, columnsAndTotalizersResult};
     }
     
-    int getQueryAnalysis(QueryData queryData) throws IOException {
+    int getQueryAnalysis(QueryData queryData) throws IOException, ParseException {
     	String finalQuery = generateFinalQuery(
     			queryData.table(),
     			queryDataPreparer.joinColumnsNameAndNickName(queryData.columns()),
@@ -83,12 +83,20 @@ class ReportDataService {
     			queryData.orderBy(),
     			queryDataPreparer.findJoinsByTablesPairs(queryData.tablesPairs())
     			);
-    	String totalizersQuery = generateTotalizersQuery(
-    			queryData.totalizers(),
-    			queryData.table(),
-    			queryData.conditions(),
-    			queryDataPreparer.findJoinsByTablesPairs(queryData.tablesPairs())
-    			);
+    	
+    	if (dataBaseType.equals(ORACLE)) {
+        	finalQuery = toSqlWithDdMMyyyy(finalQuery);
+        }
+    	String totalizersQuery = null;
+        
+        if (!queryData.totalizers().isEmpty()) {
+        	totalizersQuery = generateTotalizersQuery(
+        			queryData.totalizers(),
+        			queryData.table(),
+        			queryData.conditions(),
+        			queryDataPreparer.findJoinsByTablesPairs(queryData.tablesPairs())
+        			);
+        }
     	
     	int queryAnalysis = 0;
     	
@@ -97,7 +105,7 @@ class ReportDataService {
     	} else if (dataBaseType.equals(ORACLE)) {
     		queryAnalysis += getResponseBody(finalQuery);
     		
-    		if (!queryData.totalizers().isEmpty()) {
+    		if (totalizersQuery != null) {
         		queryAnalysis += getResponseBody(totalizersQuery);
     		}
     	} else {

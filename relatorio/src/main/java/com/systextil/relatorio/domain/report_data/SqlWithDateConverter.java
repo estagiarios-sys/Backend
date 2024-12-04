@@ -14,12 +14,11 @@ class SqlWithDateConverter {
 		throw new IllegalStateException("Classe utilitária");
 	}
 	
-	static String toSqlWithDdMMMyyyy(String sqlWithYyyyMMdd) throws ParseException {
-		
+	static String toSqlWithDdMMyyyy(String sqlWithYyyyMMdd) throws ParseException {
 		if (sqlHasYyyyMMdd(sqlWithYyyyMMdd)) {
 			List<String> yyyyMMddDates = new ArrayList<>();
 			List<String> ddMMyyyyDates = new ArrayList<>();
-			String sqlWithDdMMMyyyy = null;
+			String sqlWithDdMMyyyy = null;
 			Pattern pattern = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
 			Matcher matcher = pattern.matcher(sqlWithYyyyMMdd);
 			
@@ -30,13 +29,13 @@ class SqlWithDateConverter {
 			for (String yyyyMMddDate : yyyyMMddDates) {
 				ddMMyyyyDates.add(toDdMMMyyyy(yyyyMMddDate));
 			}
-			sqlWithDdMMMyyyy = sqlWithYyyyMMdd;
+			sqlWithDdMMyyyy = sqlWithYyyyMMdd;
 			
 			for (int i = 0; i < yyyyMMddDates.size(); i++) {
-				 sqlWithDdMMMyyyy = sqlWithDdMMMyyyy.replace(yyyyMMddDates.get(i), ddMMyyyyDates.get(i));
+				 sqlWithDdMMyyyy = sqlWithDdMMyyyy.replace(yyyyMMddDates.get(i), ddMMyyyyDates.get(i));
 			}
 			
-			return sqlWithDdMMMyyyy;
+			return sqlWithDdMMyyyy;
 		} else {
 			return sqlWithYyyyMMdd;
 		}

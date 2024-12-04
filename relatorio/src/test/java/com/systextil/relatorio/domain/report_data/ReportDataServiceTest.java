@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.text.ParseException;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -113,6 +114,11 @@ class ReportDataServiceTest {
 			mockedStaticSqlWithDateConverter = mockStatic(SqlWithDateConverter.class);
 		}
 		
+		@AfterEach
+		void tearDown() {
+			mockedStaticSqlWithDateConverter.clearInvocations();
+		}
+		
 		@AfterAll
 		void tearDownAll() {
 			Mockito.clearAllCaches();
@@ -128,19 +134,20 @@ class ReportDataServiceTest {
 			QueryData mockQueryData = mock(QueryData.class);
 			service.getQueryReturn(mockQueryData);
 			
-			mockedStaticSqlWithDateConverter.verify(() -> SqlWithDateConverter.toSqlWithDdMMMyyyy(any()));
+			mockedStaticSqlWithDateConverter.verify(() -> SqlWithDateConverter.toSqlWithDdMMyyyy(any()));
 			verify(oracleRepository).findDataByFinalQuery(any());
 		}
 		
 		@Test
 		@DisplayName("getQueryAnalysis")
-		void cenario2() throws IOException {
+		void cenario2() throws IOException, ParseException {
 			ResponseEntity<Integer> response = new ResponseEntity<Integer>(1, HttpStatus.OK);
 			when(microserviceClient.getQueryAnalysis(any())).thenReturn(response);
 			
 			QueryData mockQueryData = mock(QueryData.class);
 			service.getQueryAnalysis(mockQueryData);
 			
+			mockedStaticSqlWithDateConverter.verify(() -> SqlWithDateConverter.toSqlWithDdMMyyyy(any()));
 			verify(microserviceClient).getQueryAnalysis(any());
 		}
 	}
@@ -177,6 +184,11 @@ class ReportDataServiceTest {
 			mockedStaticSqlWithDateConverter = mockStatic(SqlWithDateConverter.class);
 		}
 		
+		@AfterEach
+		void tearDown() {
+			mockedStaticSqlWithDateConverter.clearInvocations();
+		}
+		
 		@AfterAll
 		void tearDownAll() {
 			Mockito.clearAllCaches();
@@ -192,7 +204,7 @@ class ReportDataServiceTest {
 			QueryData mockQueryData = mock(QueryData.class);
 			service.getQueryReturn(mockQueryData);
 			
-			mockedStaticSqlWithDateConverter.verify(() -> SqlWithDateConverter.toSqlWithDdMMMyyyy(any()), never());
+			mockedStaticSqlWithDateConverter.verify(() -> SqlWithDateConverter.toSqlWithDdMMyyyy(any()), never());
 			verify(mysqlRepository).findDataByFinalQuery(any());
 		}
 		
