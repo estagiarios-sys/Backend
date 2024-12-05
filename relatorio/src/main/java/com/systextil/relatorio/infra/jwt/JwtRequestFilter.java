@@ -39,7 +39,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         // Ignorar rotas específicas como Swagger e rotas públicas
         String requestURI = request.getRequestURI();
         if (requestURI.startsWith("/swagger-ui") || 
-            requestURI.startsWith("/v3/api-docs") 
+            requestURI.startsWith("/v3/api-docs") ||
+            requestURI.startsWith("/login") ||
+            requestURI.startsWith("/companies") 
         ){
             filterChain.doFilter(request, response);
             return;

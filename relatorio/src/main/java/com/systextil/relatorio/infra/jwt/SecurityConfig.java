@@ -42,7 +42,8 @@ public class SecurityConfig {
                     "/companies",
                     "/swagger-ui/**", // Swagger UI
                     "/v3/api-docs/**", // OpenAPI Docs
-                    "/v3/api-docs.yaml" // Arquivo YAML (se necessário)
+                    "/v3/api-docs.yaml",
+                        "/test-jndi"// Arquivo YAML (se necessário)
                 ).permitAll();
                 req.anyRequest().authenticated();
             })
