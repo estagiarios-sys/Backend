@@ -42,19 +42,28 @@ class TableService {
     }
 	
 	Map<String, Map<String, String>> getColumnsFromTables(AllTables allTables) throws SQLException {
+		
 		Map<String, Map<String, String>> tablesAndColumns = new LinkedHashMap<>();
 		
 		if (dataBaseType.equals(MYSQL)) {
-			mysqlRepository.getColumnsFromTable(allTables.mainTable());
-		} else if (dataBaseType.equals(ORACLE)) {
-			tablesAndColumns.put(allTables.mainTable(), oracleRepository.getColumnsFromTables(allTables.mainTable()));
+			tablesAndColumns.put(allTables.mainTable(), mysqlRepository.getColumnsFromTable(allTables.mainTable()));
 			
 			for (String tablesPair : allTables.tablesPairs()) {
 				Pattern pattern = Pattern.compile("\\b\\w+$");
 				Matcher matcher = pattern.matcher(tablesPair);
 				matcher.find();
 				String table = matcher.group();
-				tablesAndColumns.put(table, oracleRepository.getColumnsFromTables(table));
+				tablesAndColumns.put(table, mysqlRepository.getColumnsFromTable(table));
+			}
+		} else if (dataBaseType.equals(ORACLE)) {
+			tablesAndColumns.put(allTables.mainTable(), oracleRepository.getColumnsFromTable(allTables.mainTable()));
+			
+			for (String tablesPair : allTables.tablesPairs()) {
+				Pattern pattern = Pattern.compile("\\b\\w+$");
+				Matcher matcher = pattern.matcher(tablesPair);
+				matcher.find();
+				String table = matcher.group();
+				tablesAndColumns.put(table, oracleRepository.getColumnsFromTable(table));
 			}
 		} else {
 			throw new IllegalDataBaseTypeException(dataBaseType);

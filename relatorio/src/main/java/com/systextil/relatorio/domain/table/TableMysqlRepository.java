@@ -27,7 +27,7 @@ class TableMysqlRepository {
     	return tables;
     }
 	
-	Map<String, Map<String, String>> getColumnsFromTable(String table) {
+	Map<String, String> getColumnsFromTable(String table) {
 		throw new UnsupportedOperationException("MySQL ainda não é 100% suportado");
 	}
 }

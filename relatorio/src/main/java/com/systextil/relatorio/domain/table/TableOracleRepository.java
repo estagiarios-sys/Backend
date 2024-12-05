@@ -27,7 +27,7 @@ class TableOracleRepository {
         return tables;
     }
 	
-	Map<String, String> getColumnsFromTables(String table) throws SQLException {
+	Map<String, String> getColumnsFromTable(String table) throws SQLException {
 		connection.connect();
 		Map<String, String> columns = repository.getColumnsFromTable(connection.getIdConnection(), table);
 		connection.disconnect();
