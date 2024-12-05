@@ -25,16 +25,14 @@ class SqlWithDateConverter {
 			while (matcher.find()) {
 				yyyyMMddDates.add(matcher.group());
 			}
-			
 			for (String yyyyMMddDate : yyyyMMddDates) {
-				ddMMyyyyDates.add(toDdMMMyyyy(yyyyMMddDate));
+				ddMMyyyyDates.add(toDdMMyyyy(yyyyMMddDate));
 			}
 			sqlWithDdMMyyyy = sqlWithYyyyMMdd;
 			
 			for (int i = 0; i < yyyyMMddDates.size(); i++) {
 				 sqlWithDdMMyyyy = sqlWithDdMMyyyy.replace(yyyyMMddDates.get(i), ddMMyyyyDates.get(i));
 			}
-			
 			return sqlWithDdMMyyyy;
 		} else {
 			return sqlWithYyyyMMdd;
@@ -48,7 +46,7 @@ class SqlWithDateConverter {
 		return matcher.find();
 	}
 	
-	private static String toDdMMMyyyy(String yyyyMMdd) throws ParseException {
+	private static String toDdMMyyyy(String yyyyMMdd) throws ParseException {
 		SimpleDateFormat yyyyMMddFormat = new SimpleDateFormat("yyyy-MM-dd");
 		SimpleDateFormat ddMMyyyyFormat = new SimpleDateFormat("dd-MM-yyyy");
 		Date yyyyMMddDate = yyyyMMddFormat.parse(yyyyMMdd);

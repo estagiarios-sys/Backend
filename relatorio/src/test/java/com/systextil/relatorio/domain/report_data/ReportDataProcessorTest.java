@@ -1,6 +1,7 @@
 package com.systextil.relatorio.domain.report_data;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static com.systextil.relatorio.domain.report_data.ReportDataProcessor.*;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -9,17 +10,11 @@ import java.util.Map;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import com.systextil.relatorio.domain.Totalizer;
 
-@SpringBootTest
 class ReportDataProcessorTest {
 
-	@Autowired
-	private ReportDataProcessor reportDataProcessor;
-	
 	@Test
 	@DisplayName("joinColumnsAndTotalizersResult")
 	void cenario1() {
@@ -36,7 +31,7 @@ class ReportDataProcessorTest {
 		
 		ReportData reportData = new ReportData(columnsNameAndNickName, null, totalizersResults);
 		
-		Map<String, String> columnsAndTotalizersResult = reportDataProcessor.joinColumnsAndTotalizersResult(reportData, totalizers);
+		Map<String, String> columnsAndTotalizersResult = joinColumnsAndTotalizersResult(reportData, totalizers);
 		
 		Map<String, String> expectedColumnsAdnTotalizersResult = new LinkedHashMap<>();
 		expectedColumnsAdnTotalizersResult.put("IDADE", "Soma: 100");
@@ -53,7 +48,7 @@ class ReportDataProcessorTest {
 		columnsNameAndNickName.put("IDADE", null);
 		columnsNameAndNickName.put("SALARIO", "PAGAMENTO_MENSAL");
 		
-		List<String> columnsNameOrNickName = reportDataProcessor.toColumnsNameOrNickName(columnsNameAndNickName);
+		List<String> columnsNameOrNickName = toColumnsNameOrNickName(columnsNameAndNickName);
 		
 		List<String> expectedColumnsNameOrNickName = new ArrayList<>();
 		expectedColumnsNameOrNickName.add("NOME_CLIENTE");
