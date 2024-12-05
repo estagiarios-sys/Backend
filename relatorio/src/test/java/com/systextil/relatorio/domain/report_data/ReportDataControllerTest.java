@@ -52,10 +52,10 @@ class ReportDataControllerTest {
 
 		String response = mvc
 				.perform(post("/report-data")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(queryDataJson.write(
-								new QueryData("TABELA", List.of(new QueryDataColumn("NOME", "APELIDO")), List.of(), "", List.of(), Map.of())
-						).getJson())
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(queryDataJson.write(
+							new QueryData("TABELA", List.of(new QueryDataColumn("NOME", "APELIDO")), List.of(), "", List.of(), Map.of())
+					).getJson())
 				)
 				.andExpect(status().isOk())
 				.andReturn()

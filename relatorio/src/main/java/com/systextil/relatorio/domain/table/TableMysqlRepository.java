@@ -21,7 +21,7 @@ class TableMysqlRepository {
 	
 	List<String> getTables() throws SQLException {
     	connection.connect();
-    	List<String> tables = repository.getTables(connection.getIdConnection(), "db_gerador_relatorio", "%");
+    	List<String> tables = repository.getTables(connection.getIdConnection(), "db_gerador_relatorio");
     	connection.disconnect();
     	
     	return tables;

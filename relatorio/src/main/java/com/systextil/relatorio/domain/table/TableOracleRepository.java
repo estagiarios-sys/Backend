@@ -21,7 +21,7 @@ class TableOracleRepository {
 	
 	List<String> getTables() throws SQLException {
         connection.connect();
-		List<String> tables = repository.getTables(connection.getIdConnection(), "COMERCIAL", "%");
+		List<String> tables = repository.getTables(connection.getIdConnection(), "COMERCIAL");
         connection.disconnect();
         
         return tables;

@@ -14,10 +14,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 class TableRepository {
 
-	List<String> getTables(Connection idConnection, String catalog, String tableNamePattern) throws SQLException {
+	List<String> getTables(Connection idConnection, String catalog) throws SQLException {
         List<String> tables = new ArrayList<>();
         DatabaseMetaData metaData = idConnection.getMetaData();
-        ResultSet data = metaData.getTables(catalog, metaData.getUserName(), tableNamePattern, new String[]{"TABLE"});
+        ResultSet data = metaData.getTables(catalog, metaData.getUserName(), "%", new String[]{"TABLE"});
 
         while (data.next()) {
             String tableName = data.getString("TABLE_NAME");
