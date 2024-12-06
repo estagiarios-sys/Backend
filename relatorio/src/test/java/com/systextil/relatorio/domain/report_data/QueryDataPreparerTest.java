@@ -25,8 +25,39 @@ class QueryDataPreparerTest {
 	private ReportDataStorageAccessor storageAccessor;
 	
 	@Test
+	@DisplayName("findJoinsByTablesPairs")
+	void cenario1() throws IOException {
+		List<RelationshipData> relationshipsData = new ArrayList<>();
+		RelationshipData relationshipData1 = new RelationshipData("BASI_010 e BASI_020", "INNER JOIN BASI_020 ON BASI_010 = BASI_020");
+		RelationshipData relationshipData2 = new RelationshipData("BASI_020 e BASI_010", "INNER JOIN BASI_010 ON BASI_020 = BASI_010");
+		RelationshipData relationshipData3 = new RelationshipData("BASI_010 e BASI_050", "INNER JOIN BASI_050 ON BASI_010 = BASI_050");
+		RelationshipData relationshipData4 = new RelationshipData("BASI_050 e BASI_010", "INNER JOIN BASI_010 ON BASI_050 = BASI_010");
+		RelationshipData relationshipData5 = new RelationshipData("BASI_020 e BASI_060", "INNER JOIN BASI_060 ON BASI_020 = BASI_060");
+		RelationshipData relationshipData6 = new RelationshipData("BASI_060 e BASI_020", "INNER JOIN BASI_020 ON BASI_060 = BASI_020");
+		RelationshipData relationshipData7 = new RelationshipData("BASI_010 e BASI_060", "INNER JOIN BASI_060 ON BASI_010 = BASI_060");
+		RelationshipData relationshipData8 = new RelationshipData("BASI_060 e BASI_010", "INNER JOIN BASI_010 ON BASI_060 = BASI_010");
+		
+		relationshipsData.add(relationshipData1);
+		relationshipsData.add(relationshipData2);
+		relationshipsData.add(relationshipData3);
+		relationshipsData.add(relationshipData4);
+		relationshipsData.add(relationshipData5);
+		relationshipsData.add(relationshipData6);
+		relationshipsData.add(relationshipData7);
+		relationshipsData.add(relationshipData8);
+		
+		when(storageAccessor.findRelationshipData()).thenReturn(relationshipsData);
+		
+		List<String> joins = queryDataPreparer.findJoinsByTablesPairs("BASI_010", List.of("BASI_010 e BASI_020", "BASI_010 e BASI_050", "BASI_020 e BASI_060"));
+		
+		List<String> expectedJoins = List.of("INNER JOIN BASI_020 ON BASI_010 = BASI_020", "INNER JOIN BASI_050 ON BASI_010 = BASI_050", "INNER JOIN BASI_060 ON BASI_020 = BASI_060 AND BASI_060 = BASI_010");
+		
+		assertEquals(expectedJoins, joins);
+	}
+	
+	@Test
 	@DisplayName("joinColumnsNameAndNickName")
-	void cenario1() {
+	void cenario2() {
 		QueryDataColumn column1 = new QueryDataColumn("NOME", "NOME_CLIENTE");
 		QueryDataColumn column2 = new QueryDataColumn("IDADE", null);
 		QueryDataColumn column3 = new QueryDataColumn("SALARIO", "PAGAMENTO_MENSAL");
@@ -40,28 +71,5 @@ class QueryDataPreparerTest {
 		expectedJoinedColumnsNameAndNickName.add("SALARIO AS \"PAGAMENTO_MENSAL\"");
 		
 		assertEquals(expectedJoinedColumnsNameAndNickName, joinedColumnsNameAndNickName);
-	}
-	
-	@Test
-	@DisplayName("findJoinsByTablesPairs")
-	void cenario2() throws IOException {
-		List<RelationshipData> relationshipsData = new ArrayList<>();
-		RelationshipData relationshipData = new RelationshipData("10 e 20", "ON 10 = 20");
-		RelationshipData relationshipData1 = new RelationshipData("10 e 50", "ON 10 = 50");
-		RelationshipData relationshipData2 = new RelationshipData("20 e 60", "ON 20 = 60");
-		RelationshipData relationshipData3 = new RelationshipData("60 e 10", "ON 10 = 60");
-		
-		relationshipsData.add(relationshipData);
-		relationshipsData.add(relationshipData1);
-		relationshipsData.add(relationshipData2);
-		relationshipsData.add(relationshipData3);
-		
-		when(storageAccessor.findRelationshipData()).thenReturn(relationshipsData);
-		
-		List<String> joins = queryDataPreparer.findJoinsByTablesPairs("10", List.of("10 e 20", "10 e 50", "20 e 60"));
-		
-		List<String> expectedJoins = List.of("ON 10 = 20", "ON 10 = 50", "ON 20 = 60 AND 10 = 60");
-		
-		assertEquals(expectedJoins, joins);
 	}
 }
