@@ -49,7 +49,7 @@ class ReportDataService {
     			queryDataPreparer.joinColumnsNameAndNickName(queryData.columns()),
     			queryData.conditions(),
     			queryData.orderBy(),
-    			queryDataPreparer.findJoinsByTablesPairs(queryData.tablesPairs())
+    			queryDataPreparer.findJoinsByTablesPairs(queryData.table(), queryData.tablesPairs())
     			);
     	
         if (dataBaseType.equals(ORACLE)) {
@@ -62,7 +62,7 @@ class ReportDataService {
         			queryData.totalizers(),
         			queryData.table(),
         			queryData.conditions(),
-        			queryDataPreparer.findJoinsByTablesPairs(queryData.tablesPairs())
+        			queryDataPreparer.findJoinsByTablesPairs(queryData.table(), queryData.tablesPairs())
         			);
         }
         ReportData reportData = findDataByQueries(finalQuery, totalizersQuery);
@@ -79,7 +79,7 @@ class ReportDataService {
     			queryDataPreparer.joinColumnsNameAndNickName(queryData.columns()),
     			queryData.conditions(),
     			queryData.orderBy(),
-    			queryDataPreparer.findJoinsByTablesPairs(queryData.tablesPairs())
+    			queryDataPreparer.findJoinsByTablesPairs(queryData.table(), queryData.tablesPairs())
     			);
     	
     	if (dataBaseType.equals(ORACLE)) {
@@ -92,7 +92,7 @@ class ReportDataService {
         			queryData.totalizers(),
         			queryData.table(),
         			queryData.conditions(),
-        			queryDataPreparer.findJoinsByTablesPairs(queryData.tablesPairs())
+        			queryDataPreparer.findJoinsByTablesPairs(queryData.table(), queryData.tablesPairs())
         			);
         }
     	
