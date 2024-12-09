@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 
 import com.systextil.relatorio.infra.exception_handler.UnsupportedHttpStatusException;
 
@@ -73,6 +74,10 @@ class PdfService {
 			noDataPdf.update(PdfStatus.ERRO);
         	repository.save(noDataPdf);
         	throw new HttpServerErrorException(exception.getLocalizedMessage(), exception.getStatusCode(), exception.getStatusText(), null, null, null);
+		} catch (ResourceAccessException exception) {
+			noDataPdf.update(PdfStatus.ERRO);
+			repository.save(noDataPdf);
+			throw new ResourceAccessException(exception.getLocalizedMessage());
 		}
     	if (response.getStatusCode().is2xxSuccessful()) {
     		LocalDateTime generatedPdfTime = LocalDateTime.now();

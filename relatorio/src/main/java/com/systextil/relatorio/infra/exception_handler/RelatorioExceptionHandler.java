@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 
 import java.net.ConnectException;
 import java.sql.SQLException;
@@ -104,6 +105,13 @@ public class RelatorioExceptionHandler {
     
     @ExceptionHandler(ConnectException.class)
     public ResponseEntity<Void> return500ErrorForConnectException(ConnectException exception) {
+    	logger.log(Level.SEVERE, exception.getLocalizedMessage());
+    	
+    	return ResponseEntity.internalServerError().build();
+    }
+    
+    @ExceptionHandler(ResourceAccessException.class)
+    public ResponseEntity<Void> return500ErrorForResourceAccessException(ResourceAccessException exception) {
     	logger.log(Level.SEVERE, exception.getLocalizedMessage());
     	
     	return ResponseEntity.internalServerError().build();
